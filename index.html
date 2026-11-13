@@ -213,6 +213,26 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
 #sheet h3{margin-top:18px}
 .avatar{background-size:cover;background-position:center;cursor:pointer}
 
+/* volo 3D, recensioni, impostazioni */
+.mk-fly{width:34px;height:34px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
+.mk-fly svg{width:100%;height:100%;display:block}
+.mk-fly path{fill:#2456f5;stroke:#fff;stroke-width:2;stroke-linejoin:round}
+.flybar{position:absolute;left:10px;right:10px;bottom:30px;z-index:9;background:var(--surface);border-radius:16px;padding:8px 10px;display:flex;gap:10px;align-items:center;box-shadow:0 6px 20px rgba(0,0,0,.35);font-size:14px}
+.flybar .sp{min-width:0}
+.flyprog{height:6px;border-radius:3px;background:var(--line);margin-top:5px;overflow:hidden}
+.flyprog i{display:block;height:100%;width:0;background:var(--accent)}
+.stars{display:flex;gap:4px;margin-top:8px}
+.stars button{border:0;background:none;font-size:34px;line-height:1;padding:2px;color:var(--line)}
+.stars button[aria-pressed=true]{color:#f2b01e}
+.opt{display:grid;grid-template-columns:1fr auto;gap:4px 14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.opt small{display:block;color:var(--muted);font-size:13px;font-weight:400}
+.opt b{font-weight:700}
+.opt input{width:26px;height:26px}
+.nav-turn{margin-top:6px;font:800 19px/1.2 var(--display)}
+#s-segui.on{position:fixed;inset:0;z-index:940;display:flex;flex-direction:column;padding:0;max-width:none;background:var(--bg)}
+#hostFollow{flex:1;min-height:0;border-radius:0;border:0}
+#hostFollow #m-full{display:none}
+
 /* in cammino */
 .mapclear{position:absolute;left:10px;top:10px;z-index:6;box-shadow:0 2px 10px rgba(0,0,0,.25)}
 .maphost.full .mapclear{top:calc(env(safe-area-inset-top,0px) + 12px)}
@@ -277,6 +297,9 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
     <symbol id="i-hand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 21s-6-5.6-6-10a6 6 0 0 1 12 0c0 4.4-6 10-6 10Z"/><circle cx="12" cy="11" r="2.2"/></symbol>
     <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></symbol>
     <symbol id="i-cloud" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M7 18.5a4 4 0 0 1-.5-8 5.5 5.5 0 0 1 10.6 1.2A3.4 3.4 0 0 1 17 18.5H7Z"/></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="2.5"/><circle cx="17.5" cy="5.5" r="2.5"/><circle cx="17.5" cy="18.5" r="2.5"/><path d="M8.2 10.8l7-4M8.2 13.2l7 4"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4.5L16.5 4a2.1 2.1 0 0 1 3 3L8 18.5 4 20Z"/><path d="M14.5 6l3 3"/></symbol>
     <symbol id="i-surf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20 9 4M19 20 15 4M12 5v2.5M12 10.5V13M12 16v3"/></symbol>
     <symbol id="i-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z"/></symbol>
     <symbol id="i-rain" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15.5a4 4 0 0 1-.5-8 5.5 5.5 0 0 1 10.6 1.2A3.4 3.4 0 0 1 17 15.5H7Z"/><path d="M9 18.5l-1 2.5M13 18.5l-1 2.5M17 18.5l-1 2.5"/></symbol>
@@ -307,6 +330,7 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
     <button data-st="legend">Legenda della mappa</button>
   </div>
   <div class="surfleg" id="surfleg" hidden></div>
+  <div class="flybar" id="fly" hidden><button class="round" id="fly-play" aria-label="Pausa o riprendi">⏸</button><div class="sp"><b id="fly-km"></b><div class="flyprog"><i id="fly-bar"></i></div></div><button class="round" id="fly-x" aria-label="Chiudi l'anteprima">✕</button></div>
 </div>
 
 <!-- ESPLORA -->
@@ -407,13 +431,13 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
 
 <!-- IN CAMMINO -->
 <section class="screen" id="s-vai">
-  <div class="nav-top"><p class="small muted" id="nav-kicker"></p><h3 id="nav-title"></h3><p class="nav-msg" id="nav-msg"></p></div>
+  <div class="nav-top"><p class="small muted" id="nav-kicker"></p><h3 id="nav-title"></h3><p class="nav-turn" id="nav-turn" hidden></p><p class="nav-msg" id="nav-msg"></p></div>
   <div class="maphost" id="hostNav"></div>
   <div class="nav-bot">
     <div class="stats"><div><b id="nav-time">0:00</b><span>Tempo</span></div><div><b id="nav-done">0,0 km</b><span>Fatti</span></div><div><b id="nav-left">…</b><span>Mancano</span></div><div><b id="nav-steps">0</b><span id="nav-steps-l">Passi del cane</span></div></div>
     <p class="small muted" id="nav-info"></p>
     <p class="small" id="nav-wx" style="margin-top:4px"></p>
-    <div class="row" style="margin-top:10px"><button class="btn" id="nav-pause">Pausa</button><button class="btn pri" id="nav-end">Chiudi attività</button></div>
+    <div class="row" style="margin-top:10px"><button class="round" id="nav-set" aria-label="Impostazioni di navigazione"><svg><use href="#i-gear"/></svg></button><button class="round" id="nav-share" aria-label="Condividi la posizione in tempo reale"><svg><use href="#i-share"/></svg></button><button class="btn" id="nav-pause">Pausa</button><button class="btn pri" id="nav-end">Chiudi attività</button></div>
   </div>
   <div class="sheetbg" id="nav-sheet" hidden><div class="box" id="nav-sheet-box"></div></div>
 </section>
@@ -466,6 +490,13 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
       <p style="margin-top:10px">Sentieri © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> (ODbL) · Mappe © <a href="https://www.mapbox.com/about/maps/" target="_blank" rel="noopener">Mapbox</a> · Meteo e quote <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> · Percorsi <a href="https://openrouteservice.org" target="_blank" rel="noopener">OpenRouteService</a> · Chat Gemini (Google)</p>
     </div>
   </div>
+</section>
+
+<!-- SEGUI: chi riceve il link vede la passeggiata in tempo reale -->
+<section class="screen" id="s-segui">
+  <div class="nav-top"><p class="small muted">Posizione condivisa con AllDogs</p><h3 id="fol-title">Passeggiata in corso</h3><p class="nav-msg" id="fol-msg">Cerco la posizione…</p></div>
+  <div class="maphost" id="hostFollow"></div>
+  <div class="nav-bot"><p class="small muted" id="fol-info"></p><div class="row" style="margin-top:8px"><a class="btn" id="fol-go" target="_blank" rel="noopener" hidden>Portami da loro</a><a class="btn pri" href="#esplora">Apri AllDogs</a></div></div>
 </section>
 
 <nav id="tabs" aria-label="Sezioni"><div>
@@ -772,7 +803,7 @@ async function loadWeather(points){
   // tutte le richieste insieme, non una dopo l'altra
   await Promise.all(parts.map(async part=>{
     let r=await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${part.map(k=>k.split(",")[0]).join(",")}&longitude=${part.map(k=>k.split(",")[1]).join(",")}`+
-      `&hourly=temperature_2m,apparent_temperature,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset&timezone=Europe%2FRome&forecast_days=7`);
+      `&hourly=temperature_2m,apparent_temperature,precipitation_probability,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset&timezone=Europe%2FRome&forecast_days=7`);
     if(!Array.isArray(r))r=[r];
     r.forEach((w,j)=>wx[part[j]]=w);
   }));
@@ -780,7 +811,7 @@ async function loadWeather(points){
 }
 function dayWx(p,day){
   const w=p&&wx[wxKey(p)];if(!w)return null;
-  const o=day*24,H=[];for(let h=0;h<24;h++)H.push({h,t:w.hourly.temperature_2m[o+h],f:w.hourly.apparent_temperature[o+h],rain:w.hourly.precipitation_probability[o+h]??0});
+  const o=day*24,H=[];for(let h=0;h<24;h++)H.push({h,t:w.hourly.temperature_2m[o+h],f:w.hourly.apparent_temperature[o+h],rain:w.hourly.precipitation_probability[o+h]??0,c:(w.hourly.weather_code||[])[o+h]??0});
   const sr=w.daily.sunrise[day],ss=w.daily.sunset[day];
   return {H,sr:parseInt(sr.slice(11,13))+(sr.slice(14,16)!=="00"?1:0),ss:parseInt(ss.slice(11,13)),srT:sr.slice(11,16),ssT:ss.slice(11,16),daily:w.daily};
 }
@@ -836,7 +867,7 @@ function initMap(){
       const t=e.originalEvent&&e.originalEvent.target;if(t&&t.closest&&t.closest(".mapboxgl-marker"))return; // tocco su un segnaposto: non è un nuovo punto
       if(drawing())addPt([e.lngLat.lat,e.lngLat.lng]);else setStart([e.lngLat.lat,e.lngLat.lng])}
   });
-  ["mousedown","touchstart","wheel"].forEach(ev=>M.on(ev,stopSpin));
+  ["mousedown","touchstart","wheel"].forEach(ev=>M.on(ev,()=>{if(fly&&fly.playing&&fly.started){fly.playing=false;paintFly()}}));
   M.on("dragstart",()=>{if(scene.mode==="nav")navFollow=false});
 }
 function setInteractive(on){if(!M)return;HANDLERS.forEach(h=>M[h]&&(on?M[h].enable():M[h].disable()))}
@@ -847,16 +878,32 @@ function fixSatellite(){
   const first=M.getStyle().layers.find(l=>l.type!=="background");
   M.addLayer({id:"sat2",type:"raster",source:"sat2"},first&&first.id);
 }
+// Mappa più dettagliata: sentieri e gradini più evidenti e visibili prima, curve di livello più marcate, più nomi di luoghi
+function detailMap(){
+  if(mapStyle!=="map"&&mapStyle!=="str")return;
+  const tryIt=fn=>{try{fn()}catch(e){}},W=["interpolate",["exponential",1.5],["zoom"],12,1.3,15,2.6,18,6];
+  ["road-path","road-path-trail","bridge-path","bridge-path-trail","tunnel-path","tunnel-path-trail"].forEach(id=>tryIt(()=>{if(!M.getLayer(id))return;M.setPaintProperty(id,"line-width",W);if(mapStyle==="map")M.setPaintProperty(id,"line-color","#7a4a22");M.setLayerZoomRange(id,12,24)}));
+  ["road-steps","bridge-steps","tunnel-steps"].forEach(id=>tryIt(()=>{if(!M.getLayer(id))return;M.setPaintProperty(id,"line-width",["interpolate",["exponential",1.5],["zoom"],13,2,16,5,18,9]);M.setLayerZoomRange(id,13,24)}));
+  tryIt(()=>M.getLayer("contour-line")&&M.setPaintProperty("contour-line","line-opacity",["interpolate",["linear"],["zoom"],11,.3,13,.55,16,.75]));
+  tryIt(()=>M.getLayer("poi-label")&&M.setFilter("poi-label",["<=",["get","filterrank"],["step",["zoom"],2,12,3,14,4,16,5]]));
+  tryIt(()=>M.getLayer("path-pedestrian-label")&&M.setLayerZoomRange("path-pedestrian-label",13,24));
+}
 function addLayers(){
   if(mapStyle==="sat")try{fixSatellite()}catch(e){console.warn(e)}
+  detailMap();
   const empty={type:"FeatureCollection",features:[]};
-  ["trails","sel","water","startpt","track"].forEach(s=>{if(!M.getSource(s))M.addSource(s,{type:"geojson",data:empty})});
+  ["trails","sel","selpath","water","startpt","track"].forEach(s=>{if(!M.getSource(s))M.addSource(s,{type:"geojson",data:empty})});
   if(!M.getSource("dem"))M.addSource("dem",{type:"raster-dem",tiles:[DEM_TILES],encoding:"terrarium",tileSize:256,maxzoom:14,attribution:"Rilievo: Terrain Tiles (Mapzen, AWS Open Data)"});
   M.addLayer({id:"ad-trails-line",type:"line",source:"trails",layout:{"line-cap":"round","line-join":"round"},paint:{"line-color":["get","col"],"line-width":["interpolate",["linear"],["zoom"],8,2,13,4],"line-opacity":.9}});
   M.addLayer({id:"ad-trails-hit",type:"line",source:"trails",paint:{"line-color":"#000","line-width":16,"line-opacity":0}});
   M.addLayer({id:"ad-trails-start",type:"circle",source:"startpt",paint:{"circle-color":["get","col"],"circle-radius":["interpolate",["linear"],["zoom"],8,3.5,13,7],"circle-stroke-color":"#fff","circle-stroke-width":2}});
   M.addLayer({id:"ad-sel-casing",type:"line",source:"sel",layout:{"line-cap":"round","line-join":"round"},paint:{"line-color":"#ffffff","line-width":9,"line-opacity":.95}});
   M.addLayer({id:"ad-sel-line",type:"line",source:"sel",layout:{"line-cap":"round","line-join":"round"},paint:{"line-color":["match",["get","sf"],"a",SFC.a,"n",SFC.n,"g",SFC.g,"u",SFC.u,"#ff5d2a"],"line-width":5}});
+  // frecce che mostrano il verso del percorso scelto
+  if(!M.hasImage("ad-arrow")){const c=document.createElement("canvas");c.width=c.height=40;const g=c.getContext("2d");
+    g.fillStyle="#fff";g.strokeStyle="#131a2a";g.lineWidth=3;g.lineJoin="round";g.beginPath();g.moveTo(8,8);g.lineTo(34,20);g.lineTo(8,32);g.lineTo(14,20);g.closePath();g.stroke();g.fill();
+    M.addImage("ad-arrow",g.getImageData(0,0,40,40),{pixelRatio:2})}
+  M.addLayer({id:"ad-sel-arrows",type:"symbol",source:"selpath",minzoom:12,layout:{"symbol-placement":"line","symbol-spacing":110,"icon-image":"ad-arrow","icon-size":.9,"icon-allow-overlap":true,"icon-ignore-placement":true}});
   M.addLayer({id:"ad-track",type:"line",source:"track",layout:{"line-cap":"round","line-join":"round"},paint:{"line-color":"#2f7bff","line-width":5,"line-opacity":.9}});
   M.addLayer({id:"ad-water",type:"circle",source:"water",paint:{"circle-color":"#1e88e5","circle-radius":6,"circle-stroke-color":"#fff","circle-stroke-width":2}});
   overlays();
@@ -907,8 +954,10 @@ function applyScene(){
   ["ad-trails-line","ad-trails-hit","ad-trails-start"].forEach(id=>vis(id,ex));
   clearMarkers();
   if(pinM&&sc.mode!=="crea"){pinM.remove();pinM=null}
-  if(sc.mode!=="nav")setData("track",fc([]));
+  if(sc.mode!=="nav"&&sc.mode!=="follow")setData("track",fc([]));
   syncClear();syncSurf();
+  {const sp=sc.mode==="trail"&&cur&&cur.tr?cur.tr.path:sc.mode==="crea"&&S.gen?S.gen[S.genIdx].path:sc.mode==="nav"&&nav?nav.o.path:sc.mode==="follow"&&follow&&follow.path?follow.path:null;
+    setData("selpath",fc(sp&&sp.length>1?[{type:"Feature",properties:{},geometry:{type:"LineString",coordinates:sp.map(ll)}}]:[]))}
   if(ex){
     const rows=S.rows||[];
     setData("trails",fc(rows.map(r=>lineF(r.tr.ways,{id:r.tr.id,col:vColor(r.res.v)}))));
@@ -934,13 +983,21 @@ function applyScene(){
       if(pinM){pinM.remove();pinM=null}
       S.draw.pts.forEach((p,i)=>{const el=document.createElement("div");el.className="mk-stop";el.style.cursor="grab";if(!i)el.style.borderColor="#1f8a4c";el.textContent=i?i+1:"▶";
         const m=new mapboxgl.Marker({element:el,draggable:true}).setLngLat(ll(p)).addTo(M);
-        m.on("dragend",()=>{const q=m.getLngLat();S.draw.pts[i]=r5([q.lat,q.lng]);drawRoute(false)});stopMarkers.push(m)});
+        let dragged=false;m.on("dragstart",()=>dragged=true);
+        m.on("dragend",()=>{const q=m.getLngLat();S.draw.pts[i]=r5([q.lat,q.lng]);drawRoute(false);setTimeout(()=>dragged=false,300)});
+        el.onclick=ev=>{ev.stopPropagation();if(dragged)return;if(confirm("Tolgo questo segnaposto?")){S.draw.pts.splice(i,1);drawRoute(false)}};
+        stopMarkers.push(m)});
       if(fitPending){fitPending=false;if(S.draw.pts.length>1)fitTo(boundsOf([S.draw.pts]));else M.jumpTo({center:ll(S.draw.pts[0]||S.start),zoom:14,pitch:map3d?55:0})}
     }
     else if(!pinM){const el=document.createElement("div");el.className="mk-pin";pinM=new mapboxgl.Marker({element:el,draggable:true,anchor:"bottom"}).setLngLat(ll(S.start)).addTo(M);
       pinM.on("dragend",()=>{const p=pinM.getLngLat();setStart([p.lat,p.lng],true)})}
     else pinM.setLngLat(ll(S.start));
     if(fitPending){fitPending=false;if(r)fitTo(boundsOf([r.path]));else M.jumpTo({center:ll(S.start),zoom:14,pitch:map3d?55:0})}
+  } else if(sc.mode==="follow"&&follow){
+    setData("sel",fc(follow.path?[lineF([follow.path])]:[]));setData("water",fc([]));
+    setData("track",fc(follow.track.length>1?[lineF([follow.track])]:[]));
+    if(follow.last)showMe(follow.last.p);
+    if(fitPending&&(follow.last||follow.path)){fitPending=false;if(follow.last)M.jumpTo({center:ll(follow.last.p),zoom:15.5});else fitTo(boundsOf([follow.path]),50)}
   } else if(sc.mode==="nav"&&nav){
     const o=nav.o;
     setData("sel",fc([lineF(o.ways)]));
@@ -966,24 +1023,67 @@ function syncSurf(){
 }
 function setSurf(on){surfOn=on;store.set("alldogs-surf",on);applyScene()}
 $("m-surf").onclick=()=>setSurf(!surfOn);
-// Anteprima 3D: mappa a tutto schermo con il rilievo, inclinata, che gira piano intorno al percorso
+// Anteprima 3D: una freccia percorre il sentiero dall'inizio alla fine, con il rilievo in 3D e la visuale che la segue da dietro
+let fly=null;
+function bearing(a,b){const r=Math.PI/180,y=Math.sin((b[1]-a[1])*r)*Math.cos(b[0]*r),x=Math.cos(a[0]*r)*Math.sin(b[0]*r)-Math.sin(a[0]*r)*Math.cos(b[0]*r)*Math.cos((b[1]-a[1])*r);return (Math.atan2(y,x)/r+360)%360}
 function stopSpin(){if(spin){cancelAnimationFrame(spin);spin=null}}
-function end3d(){if(!prev3d)return;prev3d=false;stopSpin();if(!map3d)terrain(false)}
+function end3d(){
+  if(!prev3d)return;prev3d=false;stopSpin();
+  if(fly){fly.mk.remove();fly=null}$("fly").hidden=true;
+  if(!map3d)terrain(false);else if(M)M.easeTo({pitch:55,duration:400});
+  syncSurf();
+}
+function flySource(){
+  if(scene.mode==="trail"&&cur&&cur.tr)return {path:cur.tr.path,prof:elev[cur.tr.id]&&elev[cur.tr.id].p,len:cur.tr.len};
+  const r=scene.mode==="crea"&&S.gen&&S.gen[S.genIdx];return r?{path:r.path,prof:r.prof,len:r.len}:null;
+}
 function preview3D(){
-  if(!M||!styleOK){toast("La mappa non è ancora pronta");return}
-  const bb=scene.mode==="trail"?boundsOf(scene.ways):scene.mode==="crea"&&S.gen?boundsOf([S.gen[S.genIdx].path]):null;if(!bb)return;
+  if(!M||!styleOK){toast("La mappa non è ancora pronta: riprova tra un attimo");return}
+  const src=flySource();if(!src||src.path.length<2)return;
+  if(prev3d)end3d();
   if(!curHost.classList.contains("full"))setFull(true);
   prev3d=true;
-  setTimeout(()=>{if(!prev3d)return;
-    M.setTerrain({source:"dem",exaggeration:1.4});try{M.setFog({})}catch(e){}
-    M.fitBounds(bb,{padding:70,maxZoom:15.5,pitch:62,bearing:M.getBearing(),duration:1200});
-    let last=0;const t0=performance.now()+1600;
-    const go=t=>{if(!prev3d){spin=null;return}if(t>t0){if(last)M.setBearing(M.getBearing()+(t-last)*.012);last=t}spin=requestAnimationFrame(go)};
-    stopSpin();spin=requestAnimationFrame(go)},400);
-  toast("Anteprima 3D: tocca la mappa per fermare la rotazione");
+  const P=dense(src.path,15),C=[0];for(let i=1;i<P.length;i++)C.push(C[i-1]+hav(P[i-1],P[i]));
+  const total=C[C.length-1],el=document.createElement("div");el.className="mk-fly";el.innerHTML=`<svg viewBox="0 0 24 24"><path d="M12 2.5 20 21 12 16.5 4 21Z"/></svg>`;
+  const b0=bearing(P[0],P[Math.min(P.length-1,5)]);
+  fly={P,C,total,prof:src.prof,len:src.len,d:0,i:0,brg:b0,playing:true,started:false,last:0,
+    speed:total/Math.min(90,Math.max(25,total/1000*14)), // tutto il percorso in 25-90 secondi
+    mk:new mapboxgl.Marker({element:el,rotationAlignment:"map",pitchAlignment:"map"}).setLngLat(ll(P[0])).setRotation(b0).addTo(M)};
+  $("surfleg").hidden=true;$("fly").hidden=false;paintFly();
+  setTimeout(()=>{if(!fly)return;
+    try{M.setTerrain({source:"dem",exaggeration:1.4});M.setFog({})}catch(e){console.warn("3D:",e)} // se il telefono non regge il rilievo, il volo funziona lo stesso in piano
+    M.easeTo({center:ll(P[0]),zoom:15.6,pitch:62,bearing:b0,duration:1300});
+    setTimeout(()=>{if(!fly)return;fly.started=true;fly.last=0;stopSpin();spin=requestAnimationFrame(flyStep)},1400)},450);
 }
+function flyStep(t){
+  if(!fly){spin=null;return}
+  const F=fly,dt=F.last?Math.min(100,t-F.last):0;F.last=t;
+  if(F.playing){
+    F.d=Math.min(F.total,F.d+dt/1000*F.speed);
+    let i=F.i;while(i<F.C.length-2&&F.C[i+1]<F.d)i++;F.i=i;
+    const a=F.P[i],b=F.P[i+1],sg=F.C[i+1]-F.C[i],g=sg>0?(F.d-F.C[i])/sg:0,p=[a[0]+(b[0]-a[0])*g,a[1]+(b[1]-a[1])*g];
+    let j=i+1;while(j<F.C.length-1&&F.C[j]-F.d<70)j++; // guarda 70 metri avanti: la visuale gira dolcemente
+    const tb=F.C[j]-F.d>5?bearing(p,F.P[j]):F.brg,diff=((tb-F.brg+540)%360)-180;
+    F.brg=(F.brg+diff*Math.min(1,dt/700)+360)%360;
+    F.mk.setLngLat(ll(p)).setRotation(sg>0?bearing(a,b):F.brg);
+    M.jumpTo({center:ll(p),bearing:F.brg});
+    paintFly();
+    if(F.d>=F.total){F.playing=false;paintFly();M.fitBounds(boundsOf([F.P]),{padding:70,pitch:55,bearing:F.brg,duration:1800})}
+  }
+  spin=requestAnimationFrame(flyStep);
+}
+function paintFly(){
+  if(!fly)return;const fr=fly.total?fly.d/fly.total:0,pr=fly.prof;
+  $("fly-km").textContent=`${km(fr*fly.len)} di ${km(fly.len)} km`+(pr&&pr.length?` · quota ${pr[Math.round(fr*(pr.length-1))]} m`:"");
+  $("fly-bar").style.width=(fr*100).toFixed(1)+"%";$("fly-play").textContent=fly.playing?"⏸":fr>=1?"↻":"▶";
+}
+$("fly-play").onclick=()=>{if(!fly||!fly.started)return;
+  if(!fly.playing&&fly.d>=fly.total){fly.d=0;fly.i=0;fly.brg=bearing(fly.P[0],fly.P[Math.min(fly.P.length-1,5)]);M.easeTo({center:ll(fly.P[0]),zoom:15.6,pitch:62,bearing:fly.brg,duration:800})}
+  fly.playing=!fly.playing;fly.last=0;paintFly()};
+$("fly-x").onclick=()=>setFull(false);
 function bindTools(root){
   root.querySelectorAll("[data-3d]").forEach(b=>b.onclick=preview3D);
+  root.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>{if(cur&&cur.tr)editTrail(cur.tr)});
   root.querySelectorAll("[data-surf]").forEach(b=>b.onclick=()=>{setSurf(true);if(curHost)curHost.scrollIntoView({behavior:"smooth",block:"start"});toast("Fondo colorato sulla mappa")});
 }
 // finestra a comparsa generica (legenda)
@@ -1033,13 +1133,14 @@ $("m-loc").onclick=async()=>{
   try{const p=await getPos();showMe(p);if(scene.mode==="crea")setStart(p);else M.flyTo({center:ll(p),zoom:Math.max(M.getZoom(),13)})}catch(e){toast("Non riesco a leggere la posizione")}};
 
 // ================= Navigazione =================
-const SCREENS=["esplora","sentiero","crea","salvati","attivita","cane","vai"];
+const SCREENS=["esplora","sentiero","crea","salvati","attivita","cane","vai","segui"];
 let lastList=0;
 function route(){
   let h=location.hash.slice(1)||"esplora";
-  if(!S.dog&&h!=="cane"){location.replace("#cane");return}
+  if(!S.dog&&h!=="cane"&&!h.startsWith("segui-")){location.replace("#cane");return}
   let scr=h,arg=null;
   if(h.startsWith("s-")){scr="sentiero";arg=+h.slice(2)}
+  if(h.startsWith("segui-")){scr="segui";arg=h.slice(6).replace(/[^a-zA-Z0-9_-]/g,"")}
   if(!SCREENS.includes(scr))scr="esplora";
   if(scr==="vai"&&!nav&&!restoreNav()){location.replace("#esplora");return}
   $("nav-pill").hidden=!nav||scr==="vai";
@@ -1059,6 +1160,13 @@ function route(){
   if(scr==="cane")showDog();
   if(scr==="attivita")showAct();
   if(scr==="vai")showNav();
+  if(scr==="segui")showFollow(arg);else stopFollow();
+  retryWx();
+}
+// se il meteo non era disponibile, riprovo ogni tanto da solo
+function retryWx(){
+  if(!S.wxFail||!S.ready||Date.now()-(S.wxT||0)<5*60e3)return;S.wxT=Date.now();
+  loadWeather(S.trails.map(t=>t.start)).then(()=>{S.wxFail=false;route()}).catch(()=>{});
 }
 addEventListener("hashchange",route);
 
@@ -1220,6 +1328,25 @@ function surfBlock(sh,d){
     ${notes.length?`<ul class="plain small" style="margin-top:8px">${notes.map(x=>`<li>${x}</li>`).join("")}</ul>`:""}
     <button class="btn sm" data-surf style="margin-top:10px">${icon("surf")}Colora il fondo sulla mappa</button>`;
 }
+// Recensione del percorso, pensata per il cane. Per ora resta sul telefono: per mostrarla agli altri utenti serve un archivio online.
+const REV_TAGS=[["ombra","Ombra buona"],["acqua","Acqua trovata"],["zampe","Fondo buono per le zampe"],["tranq","Tranquillo"],["liberi","Cani liberi o bestiame"],["vetri","Rifiuti o vetri"],["scivola","Scivoloso"],["caldo","Troppo esposto al sole"]];
+function reviewHTML(id){
+  const r=(store.get("alldogs-reviews")||{})[id]||{};
+  return `<div class="block" id="rev"><h2>La tua recensione</h2><p class="small muted">Com'è andata con ${dn()}? Serve a ricordarti com'era il percorso per lui.</p>
+    <div class="stars">${[1,2,3,4,5].map(n=>`<button type="button" data-star="${n}" aria-label="${n} su 5" aria-pressed="${(r.stars||0)>=n}">★</button>`).join("")}</div>
+    <div class="tags" style="margin-top:8px">${REV_TAGS.map(t=>`<button type="button" class="pill" data-tag="${t[0]}" aria-pressed="${!!(r.tags&&r.tags.includes(t[0]))}">${t[1]}</button>`).join("")}</div>
+    <textarea class="field" id="rev-note" style="margin-top:10px;min-height:70px" placeholder="Note: ombra, acqua, punti difficili per il cane…">${esc(r.note||"")}</textarea>
+    <button class="btn sm" id="rev-save" style="margin-top:8px">Salva la recensione</button>
+    <p class="small muted" style="margin-top:8px">${r.t?"Salvata il "+new Date(r.t).toLocaleDateString("it-IT",{day:"numeric",month:"long",year:"numeric"})+". ":""}Per ora la vedi solo tu, su questo telefono.</p></div>`;
+}
+function bindReview(id){
+  const root=$("rev");if(!root)return;let stars=((store.get("alldogs-reviews")||{})[id]||{}).stars||0;
+  root.querySelectorAll("[data-star]").forEach(b=>b.onclick=()=>{stars=+b.dataset.star===stars?0:+b.dataset.star;root.querySelectorAll("[data-star]").forEach(x=>x.setAttribute("aria-pressed",+x.dataset.star<=stars))});
+  root.querySelectorAll("[data-tag]").forEach(b=>b.onclick=()=>b.setAttribute("aria-pressed",b.getAttribute("aria-pressed")!=="true"));
+  $("rev-save").onclick=()=>{const all=store.get("alldogs-reviews")||{};
+    all[id]={stars,tags:[...root.querySelectorAll('[data-tag][aria-pressed="true"]')].map(b=>b.dataset.tag),note:$("rev-note").value.trim(),t:Date.now()};
+    store.set("alldogs-reviews",all);toast("Recensione salvata")};
+}
 function bindDays(root,again){root.querySelectorAll("[data-day]").forEach(b=>b.onclick=()=>{S.day=+b.dataset.day;$("f-day").value=S.day;again()})}
 async function showTrail(id){
   mountMap($("hostTrail"),false);
@@ -1235,11 +1362,12 @@ async function showTrail(id){
     const shade=!f?"…":f.wood>=.6?"Tanta (bosco)":f.wood>=.3?"In parte":"Poca";
     const sh=surfShare(tr),dom=sh&&SFK.slice().sort((a,b)=>sh[b]-sh[a])[0];
     $("det").innerHTML=detailHTML({title:tr.name,ft:f,prof:elev[id]&&elev[id].p,
-      tools:`<div class="row" style="margin-top:14px;flex-wrap:wrap"><button class="btn sm" data-3d>${icon("layers")}Anteprima 3D</button>${sh?`<button class="btn sm" data-surf>${icon("surf")}Colora il fondo</button>`:""}</div>`,sub:`${esc(tr.zone)}${tr.ref?" · sentiero n. "+esc(tr.ref):""}${tr.cai?" · CAI":""}${tr.scale?" · difficoltà "+tr.scale:""}`,it:item(tr),
+      tools:`<div class="row" style="margin-top:14px;flex-wrap:wrap"><button class="btn sm" data-3d>${icon("layers")}Anteprima 3D</button>${sh?`<button class="btn sm" data-surf>${icon("surf")}Colora il fondo</button>`:""}<button class="btn sm" data-edit>${icon("edit")}Modifica percorso</button></div>`,sub:`${esc(tr.zone)}${tr.ref?" · sentiero n. "+esc(tr.ref):""}${tr.cai?" · CAI":""}${tr.scale?" · difficoltà "+tr.scale:""}`,it:item(tr),
       sections:`${sh?`<div class="block"><h2>Fondo del percorso</h2>${surfBlock(sh,dog())}</div>`:""}<div class="block"><h2>Particolarità</h2>${tags}<p class="small muted" style="margin-top:8px">Ricavate in automatico da OpenStreetMap: elementi segnati vicino al tracciato.</p></div>
       <div class="block"><h2>Scheda per il cane</h2><div class="tiles"><div class="tile"><span>Acqua lungo il percorso</span><b>${water}</b></div><div class="tile"><span>Ombra (stima)</span><b>${shade}</b></div><div class="tile"><span>Fondo prevalente</span><b>${sh?SFL[dom]:"Da verificare"}</b></div><div class="tile"><span>Punti critici</span><b>Da verificare</b></div></div>
       <p class="small muted" style="margin-top:8px">${f&&f.w.length?"Le fontanelle sono i punti blu sulla mappa. ":""}Acqua e ombra sono stime dai dati di OpenStreetMap: verificale sul posto. Il sentiero non è ancora stato provato con un cane.</p></div>`})+
-      `<p class="small block"><a href="https://www.openstreetmap.org/relation/${tr.id}" target="_blank" rel="noopener">Vedi i dati del sentiero su OpenStreetMap</a></p>`;
+      reviewHTML(tr.id)+`<p class="small block"><a href="https://www.openstreetmap.org/relation/${tr.id}" target="_blank" rel="noopener">Vedi i dati del sentiero su OpenStreetMap</a></p>`;
+    bindReview(tr.id);
     bindDays($("det"),paint);syncSave();bindTools($("det"));
   };
   paint();
@@ -1276,7 +1404,22 @@ $("new-loc").onclick=async()=>{try{const p=await getPos();showMe(p);if(drawing()
 function targetKm(mins){const cap=capacity(dog()),want=mins/pace();return {want,k:Math.min(want,cap.km),cap}}
 function clearGen(){S.gen=null;S.genIdx=0;$("gen-out").innerHTML="";setScene({mode:"crea"},true);paintDraw();toast("Percorso rimosso")}
 // ---- Percorso disegnato a mano: l'utente mette i segnaposti, l'app li unisce seguendo strade e sentieri (OpenRouteService) ----
-function addPt(p){if(S.draw.pts.length>=40){toast("Puoi mettere al massimo 40 punti");return}S.draw.pts.push(r5(p));drawRoute(true)}
+function addPt(p){
+  const pts=S.draw.pts;if(pts.length>=40){toast("Puoi mettere al massimo 40 punti");return}
+  p=r5(p);
+  // se sto modificando un percorso e tocco vicino a un tratto già disegnato, il nuovo punto entra in mezzo a quel tratto (per deviarlo), altrimenti va in fondo
+  if(S.draw.edit&&pts.length>=2){let bi=-1,bd=Infinity;for(let i=0;i<pts.length-1;i++){const dv=hav(pts[i],p)+hav(p,pts[i+1])-hav(pts[i],pts[i+1]);if(dv<bd){bd=dv;bi=i}}
+    if(bd<hav(pts[pts.length-1],p)*.6){pts.splice(bi+1,0,p);drawRoute(false);return}}
+  pts.push(p);drawRoute(true);
+}
+// Modifica di un sentiero già pronto: lo trasformo in segnaposti che si possono spostare, togliere o aggiungere
+function editTrail(tr){
+  const n=Math.max(3,Math.min(20,Math.round(tr.len/350)+1)),raw=sample(tr.path,n).map(r5);
+  S.draw.pts=raw.filter((p,i)=>!i||hav(p,raw[i-1])>30);S.draw.edit=true;S.draw.route=null;S.gen=null;$("gen-out").innerHTML="";
+  S.mode="man";S.manKind="draw";store.set("alldogs-creamode","man");store.set("alldogs-mankind","draw");
+  $("draw-loop").checked=false;$("draw-follow").checked=true;
+  location.hash="crea";setTimeout(()=>{fitPending=true;drawRoute(false);toast("Sposta, togli o aggiungi i punti per cambiare il percorso")},350);
+}
 async function drawRoute(added){
   const D=S.draw,pts=D.pts,loop=$("draw-loop").checked&&pts.length>=2,follow=$("draw-follow").checked,key=store.get("alldogs-ors");
   const all=loop?pts.concat([pts[0]]):pts.slice(),my=++D.req;
@@ -1285,7 +1428,7 @@ async function drawRoute(added){
     if(follow&&key){
       D.busy=true;paintDraw();if(scene.mode==="crea")applyScene();
       try{
-        const r=await getJSON("https://api.openrouteservice.org/v2/directions/foot-walking/geojson",{method:"POST",headers:{"Authorization":key,"Content-Type":"application/json"},body:JSON.stringify({coordinates:all.map(ll),elevation:true,extra_info:["surface","green","waytype"],options:{avoid_features:["ferries"]}})});
+        const r=await getJSON("https://api.openrouteservice.org/v2/directions/foot-walking/geojson",{method:"POST",headers:{"Authorization":key,"Content-Type":"application/json"},body:JSON.stringify({language:"it",coordinates:all.map(ll),elevation:true,extra_info:["surface","green","waytype"],options:{avoid_features:["ferries"]}})});
         if(my!==D.req)return;D.route=parseRoute(r.features[0]);
       }catch(e){
         if(my!==D.req)return;
@@ -1303,13 +1446,13 @@ async function drawRoute(added){
 function paintDraw(){
   if(S.mode!=="man"||S.manKind!=="draw")return;
   const D=S.draw,r=D.route,n=D.pts.length,cap=capacity(dog());
-  $("draw-info").innerHTML=D.busy?"Calcolo il percorso…":!n?"<b>Tocca la mappa</b> per mettere il primo segnaposto: sarà la partenza. Poi aggiungi gli altri punti nell'ordine in cui vuoi passarci. Se sbagli, puoi trascinarli.":n===1||!r?"Partenza messa. Tocca la mappa per aggiungere il punto successivo.":
+  $("draw-info").innerHTML=D.busy?"Calcolo il percorso…":!n?"<b>Tocca la mappa</b> per mettere il primo segnaposto: sarà la partenza. Poi aggiungi gli altri punti nell'ordine in cui vuoi passarci. Puoi trascinare un segnaposto per spostarlo o toccarlo per toglierlo.":n===1||!r?"Partenza messa. Tocca la mappa per aggiungere il punto successivo.":
     `<b>${km(r.len)} km</b>${r.straight?"":" · ↑ "+r.up+" m"} · circa ${fmtH(r.len/1000*pace()/60+(r.up||0)/400)} con ${dn()} · ${n} punti`+
-    (r.len/1000>cap.km?`<br><b class="c1">Oltre il limite consigliato per ${dn()} (circa ${kmN(cap.km)} km).</b>`:"")+(D.msg?`<br><span class="small">${D.msg}</span>`:"");
+    (r.len/1000>cap.km?`<br><b class="c1">Oltre il limite consigliato per ${dn()} (circa ${kmN(cap.km)} km).</b>`:"")+(D.edit?`<br><span class="small">Stai modificando un sentiero: tocca la mappa vicino alla linea per aggiungere una deviazione, trascina o tocca i segnaposti per spostarli o toglierli.</span>`:"")+(D.msg?`<br><span class="small">${D.msg}</span>`:"");
   $("draw-undo").disabled=!n;$("draw-reset").disabled=!n;$("draw-use").disabled=!r||D.busy;
 }
 $("draw-undo").onclick=()=>{S.draw.pts.pop();drawRoute(false)};
-$("draw-reset").onclick=()=>{S.draw.pts=[];drawRoute(false)};
+$("draw-reset").onclick=()=>{S.draw.pts=[];S.draw.edit=false;drawRoute(false)};
 $("draw-loop").onchange=$("draw-follow").onchange=()=>drawRoute(false);
 $("draw-use").onclick=()=>{
   const r0=S.draw.route;if(!r0)return;
@@ -1371,13 +1514,21 @@ function parseRoute(f){
   ((ex.waytypes||{}).values||[]).forEach(([a,b,v])=>{if(v===8)for(let i=a;i<b&&i<cat.length;i++)cat[i]="g"});
   const segs=[];for(let i=0;i<cat.length;i++){const l=segs[segs.length-1];if(l&&l.c===cat[i])l.pts.push(c[i+1]);else segs.push({c:cat[i],pts:[c[i],c[i+1]]})}
   // profilo del dislivello: quote a distanze uguali
-  let prof=null;
+  let prof=null,upCalc=null;
   if(co.length>2&&co[0].length>2){const cum=[0];for(let i=1;i<c.length;i++)cum.push(cum[i-1]+hav(c[i-1],c[i]));
     const tot=cum[cum.length-1],n=Math.max(20,Math.min(80,Math.round(tot/60)));prof=[];let j=0;
-    for(let k=0;k<n;k++){const dd=tot*k/(n-1);while(j<cum.length-2&&cum[j+1]<dd)j++;const g=cum[j+1]>cum[j]?Math.min(1,Math.max(0,(dd-cum[j])/(cum[j+1]-cum[j]))):0;prof.push(Math.round(co[j][2]+(co[j+1][2]-co[j][2])*g))}}
+    for(let k=0;k<n;k++){const dd=tot*k/(n-1);while(j<cum.length-2&&cum[j+1]<dd)j++;const g=cum[j+1]>cum[j]?Math.min(1,Math.max(0,(dd-cum[j])/(cum[j+1]-cum[j]))):0;prof.push(Math.round(co[j][2]+(co[j+1][2]-co[j][2])*g))}
+    // salita calcolata come per i sentieri (quote ogni 25 m, media mobile, solo dislivelli oltre 3 m): il totale grezzo del servizio conta anche il "rumore" dei dati
+    const m=Math.max(3,Math.round(tot/25)),z=[];j=0;
+    for(let k=0;k<m;k++){const dd=tot*k/(m-1);while(j<cum.length-2&&cum[j+1]<dd)j++;const g=cum[j+1]>cum[j]?Math.min(1,Math.max(0,(dd-cum[j])/(cum[j+1]-cum[j]))):0;z.push(co[j][2]+(co[j+1][2]-co[j][2])*g)}
+    const sm=z.map((_,i)=>{const w=z.slice(Math.max(0,i-2),i+3);return w.reduce((a,b)=>a+b,0)/w.length});
+    let up=0,down=0,ref=sm[0];for(const v of sm){if(v-ref>=3){up+=v-ref;ref=v}else if(ref-v>=3){down+=ref-v;ref=v}}
+    upCalc=Math.round(Math.max(up,down))}
   let hard=0,unknown=0,tot=0;((ex.surface||{}).summary||[]).forEach(s=>{tot+=s.amount;if(SURF_HARD.includes(s.value))hard+=s.amount;else if(s.value===0)unknown+=s.amount});
   let green=null;const gs=(ex.green||{}).summary||[];if(gs.length)green=gs.reduce((a,s)=>a+s.value*s.amount,0)/100;
-  return {path:c,len:Math.round(pr.summary.distance),up:Math.round(pr.ascent||0),hard:tot?hard/tot:null,soft:tot?(tot-hard-unknown)/tot:null,green,segs,prof};
+  // indicazioni passo-passo (in italiano): a quanti metri dalla partenza e cosa fare
+  const turns=[];let off=0;(pr.segments||[]).forEach(sg=>(sg.steps||[]).forEach(st=>{if(st.type!==11&&st.type!==10&&st.instruction)turns.push({km:Math.round(off),text:st.instruction});off+=st.distance||0}));
+  return {turns,path:c,len:Math.round(pr.summary.distance),up:upCalc??Math.round(pr.ascent||0),hard:tot?hard/tot:null,soft:tot?(tot-hard-unknown)/tot:null,green,segs,prof};
 }
 function stopsFor(r,d,ai){
   const at=f=>r.path[Math.min(r.path.length-1,Math.round(f*(r.path.length-1)))],n=esc(d.name||"il cane");
@@ -1393,7 +1544,7 @@ async function generate(o){
     $("ors-inline-save").onclick=()=>{const v=$("ors-inline").value.trim();if(!v){toast("Incolla la chiave");return}store.set("alldogs-ors",v);generate(o)};return}
   const d=dog(),cap=capacity(d),{k}=targetKm(o.mins),target=k*1000;
   out.innerHTML=`<div class="note">Sto disegnando il giro (circa ${k.toFixed(1).replace(".",",")} km)…</div>`;$("gen").disabled=true;
-  const body=seed=>{const b={coordinates:[[S.start[1],S.start[0]]],options:{round_trip:{length:Math.round(target),points:4,seed}},elevation:true,extra_info:["surface","green","waytype"]};
+  const body=seed=>{const b={language:"it",coordinates:[[S.start[1],S.start[0]]],options:{round_trip:{length:Math.round(target),points:4,seed}},elevation:true,extra_info:["surface","green","waytype"]};
     b.options.avoid_features=o.prefs&&o.prefs.avoidSteps?["ferries","steps"]:["ferries"]; // mai traghetti: vicino al porto uscivano "giri" di centinaia di km
     if(o.prefs&&(o.prefs.green||o.prefs.quiet))b.options.profile_params={weightings:{green:o.prefs.green?.8:0,quiet:o.prefs.quiet?.6:0}};
     return b};
@@ -1436,9 +1587,9 @@ function showGen(){
     ${cmds}
     <div class="row" style="margin-top:16px;flex-wrap:wrap"><button class="btn pri" id="gen-start">${icon("play")}Avvia percorso</button><button class="btn" id="gen-save">${icon("heart")}Salva il giro</button>${S.gen.length>1?`<button class="btn" id="gen-next">Prova un altro giro</button>`:""}<a class="btn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${r.path[0][0]},${r.path[0][1]}">${icon("nav")}Portami alla partenza</a><button class="btn" data-3d>${icon("layers")}Anteprima 3D</button>${gsh?`<button class="btn" data-surf>${icon("surf")}Colora il fondo</button>`:""}<button class="btn" id="gen-clear">✕ Rimuovi percorso</button></div></div>`;
   bindTools($("gen-out"));
-  $("gen-start").onclick=()=>startNav({name:r.name||"Giro di "+km(r.len)+" km",kind:"giro",ways:[r.path],path:r.path,len:r.len,up:r.up,stops:r.stops.map(s=>({p:s.p,km:s.km,t:s.t,d:s.d})),water:[],scale:"CITY",loop:r.loop!==false});
+  $("gen-start").onclick=()=>startNav({name:r.name||"Giro di "+km(r.len)+" km",kind:"giro",ways:[r.path],path:r.path,len:r.len,up:r.up,stops:r.stops.map(s=>({p:s.p,km:s.km,t:s.t,d:s.d})),water:[],scale:"CITY",loop:r.loop!==false,turns:r.turns||null});
   $("gen-clear").onclick=clearGen;
-  $("gen-save").onclick=()=>{S.routes.unshift({t:Date.now(),name:`Giro di ${km(r.len)} km`,len:r.len,up:r.up,hard:r.hard,soft:r.soft,green:r.green,path:thin(r.path,15),stops:r.stops.map(s=>({p:s.p,km:s.km,t:s.t,d:s.d})),cmds:r.cmds||null,source:r.source,loop:r.loop!==false,prof:r.prof||null,segs:r.segs?r.segs.map(g=>({c:g.c,pts:g.pts.length>2?thin(g.pts,15):g.pts})):null});S.routes=S.routes.slice(0,20);store.set("alldogs-routes",S.routes);toast("Giro salvato")};
+  $("gen-save").onclick=()=>{S.routes.unshift({t:Date.now(),name:`Giro di ${km(r.len)} km`,len:r.len,up:r.up,hard:r.hard,soft:r.soft,green:r.green,path:thin(r.path,15),stops:r.stops.map(s=>({p:s.p,km:s.km,t:s.t,d:s.d})),cmds:r.cmds||null,source:r.source,loop:r.loop!==false,turns:r.turns||null,prof:r.prof||null,segs:r.segs?r.segs.map(g=>({c:g.c,pts:g.pts.length>2?thin(g.pts,15):g.pts})):null});S.routes=S.routes.slice(0,20);store.set("alldogs-routes",S.routes);toast("Giro salvato")};
   const nx=$("gen-next");if(nx)nx.onclick=()=>{S.genIdx=(S.genIdx+1)%S.gen.length;showGen();$("hostCrea").scrollIntoView({behavior:"smooth"})};
   $("gen-out").scrollIntoView({behavior:"smooth",block:"start"});
 }
@@ -1564,20 +1715,47 @@ const r5=p=>[+p[0].toFixed(5),+p[1].toFixed(5)];
 const fmtM=m=>m>=1000?km(m)+" km":Math.max(10,Math.round(m/10)*10)+" m";
 function clock(ms){const t=Math.floor(ms/1000),h=Math.floor(t/3600),m=Math.floor(t%3600/60),ss=String(t%60).padStart(2,"0");return h?`${h}:${String(m).padStart(2,"0")}:${ss}`:`${m}:${ss}`}
 function dense(path,step){const o=[path[0]];for(let i=1;i<path.length;i++){const a=path[i-1],b=path[i],d=hav(a,b),n=Math.floor(d/step);for(let j=1;j<=n;j++){const f=j*step/d;if(f<1)o.push([a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f])}o.push(b)}return o}
-function navPrep(){const P=dense(nav.o.path,20),C=[0];for(let i=1;i<P.length;i++)C.push(C[i-1]+hav(P[i-1],P[i]));nav.P=P;nav.C=C;nav.total=C[C.length-1]}
+function navPrep(){const P=dense(nav.o.path,20),C=[0];for(let i=1;i<P.length;i++)C.push(C[i-1]+hav(P[i-1],P[i]));nav.P=P;nav.C=C;nav.total=C[C.length-1];
+  nav.turns=nav.o.turns&&nav.o.turns.length?nav.o.turns:geoTurns(P,C);nav.said={}}
+// Impostazioni di navigazione (restano salvate)
+const NS=Object.assign({turns:true,voice:false,autopause:false,wake:true},store.get("alldogs-navset")||{});
+function say(t){if(!NS.voice||!window.speechSynthesis)return;try{const u=new SpeechSynthesisUtterance(String(t).replace(/<[^>]+>/g,""));u.lang="it-IT";speechSynthesis.speak(u)}catch(e){}}
+// avviso in primo piano: scritta colorata in alto, vibrazione e (se attiva) voce
+function alertNav(text,cls,ms){if(!nav)return;nav.tip={t:text,cls:cls||"c1",until:Date.now()+(ms||60e3)};try{navigator.vibrate&&navigator.vibrate([250,120,250])}catch(e){}say(text);paintNav()}
+// Per i sentieri (che non hanno indicazioni stradali) ricavo le curve dalla forma del tracciato
+function geoTurns(P,C){
+  const out=[],k=2;
+  for(let i=k;i<P.length-k;i++){const d=((bearing(P[i],P[i+k])-bearing(P[i-k],P[i])+540)%360)-180;
+    if(Math.abs(d)<50)continue;const l=out[out.length-1];
+    if(l&&C[i]-l.km<70){if(Math.abs(d)>Math.abs(l.a)){l.km=C[i];l.a=d}}else out.push({km:C[i],a:d})}
+  return out.map(t=>({km:t.km,text:(Math.abs(t.a)>=140?"il percorso torna indietro":Math.abs(t.a)>=95?"curva stretta":"il percorso piega")+(t.a>0?" a destra":" a sinistra")}));
+}
+function navSettings(){
+  const row=(k,t,sub)=>`<label class="opt"><span><b>${t}</b><small>${sub}</small></span><input type="checkbox" data-ns="${k}" ${NS[k]?"checked":""}></label>`;
+  openSheet(`<h2>Impostazioni di navigazione</h2>
+    ${row("turns","Indicazioni passo-passo","Ti scrivo in alto la prossima svolta e a quanti metri è")}
+    ${row("voice","Navigazione vocale","Leggo ad alta voce svolte, tappe, pausa acqua e avvisi")}
+    ${row("autopause","Pausa automatica","Se vi fermate metto in pausa il tempo e riparto quando camminate")}
+    ${row("wake","Mantieni acceso lo schermo","Consigliato: un sito non può seguirti con il GPS a schermo spento")}`);
+  $("sheet-box").querySelectorAll("[data-ns]").forEach(i=>i.onchange=()=>{NS[i.dataset.ns]=i.checked;store.set("alldogs-navset",NS);
+    if(i.dataset.ns==="voice"&&i.checked){if(window.speechSynthesis)say("Navigazione vocale attiva");else toast("Questo browser non sa parlare")}
+    if(i.dataset.ns==="wake"){if(i.checked)wakeOn();else{try{wake&&wake.release()}catch(e){}wake=null}}
+    paintNav()});
+}
+$("nav-set").onclick=navSettings;
 function navElapsed(){return nav.run+(nav.paused?0:Date.now()-nav.since)}
 function startNav(o){
   if(nav){if(!confirm("C'è già una passeggiata in corso. Vuoi chiuderla senza salvarla e iniziarne una nuova?"))return;stopNav()}
   nav={o,t0:Date.now(),run:0,since:Date.now(),paused:false,dist:0,track:[],idx:0,prog:0,gps:"wait",last:null,lastT:0,pos:null,water:0,off:null,tip:null};
   navPrep();navFollow=true;saveNav();location.hash="vai";
 }
-function saveNav(){if(!nav)return;navSaveT=Date.now();store.set(NAV_KEY,{o:nav.o,t0:nav.t0,run:navElapsed(),at:Date.now(),paused:nav.paused,dist:nav.dist,track:nav.track,idx:nav.idx,prog:nav.prog,water:nav.water})}
+function saveNav(){if(!nav)return;navSaveT=Date.now();store.set(NAV_KEY,{o:nav.o,t0:nav.t0,run:navElapsed(),at:Date.now(),paused:nav.paused,dist:nav.dist,track:nav.track,idx:nav.idx,prog:nav.prog,share:nav.share||null,water:nav.water})}
 function restoreNav(){
   const c=store.get(NAV_KEY);if(!c||!c.o||!c.o.path||Date.now()-c.at>6*3600e3){store.del(NAV_KEY);return false}
   // interruzione breve: il tempo continua a contare. Interruzione lunga: riparte in pausa, senza contare il buco.
   const gap=Date.now()-c.at,cont=!c.paused&&gap<10*60e3;
   nav={o:c.o,t0:c.t0,run:c.run+(cont?gap:0),since:Date.now(),paused:!cont,dist:c.dist||0,track:c.track||[],idx:c.idx||0,prog:c.prog||0,gps:"wait",last:null,lastT:0,pos:null,water:c.water||0,off:null,tip:null};
-  navPrep();nav.idx=Math.min(nav.idx,nav.P.length-1);navFollow=true;
+  navPrep();nav.idx=Math.min(nav.idx,nav.P.length-1);navFollow=true;nav.share=c.share||null;
   return true;
 }
 function stopNav(){
@@ -1585,7 +1763,7 @@ function stopNav(){
   clearInterval(navTick);navTick=null;try{wake&&wake.release()}catch(e){}wake=null;
   nav=null;store.del(NAV_KEY);$("nav-sheet").hidden=true;$("nav-pill").hidden=true;if(M&&styleOK)setData("track",fc([]));
 }
-async function wakeOn(){try{if(navigator.wakeLock&&nav&&document.visibilityState==="visible")wake=await navigator.wakeLock.request("screen")}catch(e){}}
+async function wakeOn(){try{if(navigator.wakeLock&&nav&&NS.wake&&document.visibilityState==="visible")wake=await navigator.wakeLock.request("screen")}catch(e){}}
 document.addEventListener("visibilitychange",()=>{if(!nav)return;if(document.visibilityState==="visible"){wakeOn();paintNav()}else saveNav()});
 function showNav(){
   mountMap($("hostNav"),true);
@@ -1596,7 +1774,8 @@ function showNav(){
     else navWatch=navigator.geolocation.watchPosition(onFix,e=>{if(!nav)return;nav.gps=e.code===1?"denied":nav.pos?"ok":"wait";paintNav()},{enableHighAccuracy:true,maximumAge:2000,timeout:30000});
     clearInterval(navTick);navTick=setInterval(navTickFn,1000);
     wakeOn();
-    loadWeather([nav.o.path[0]]).then(paintNav).catch(()=>{});
+    nav.wxT=Date.now();navWeather();
+    if(!store.get("alldogs-navset")){store.set("alldogs-navset",NS);navSettings()} // la prima volta mostro le impostazioni
   }
   paintNav();
 }
@@ -1605,16 +1784,18 @@ function onFix(pos){
   const p=[pos.coords.latitude,pos.coords.longitude],acc=pos.coords.accuracy||99,now=Date.now();
   nav.gps="ok";nav.pos=p;showMe(p);
   if(acc<=45){
-    if(!nav.last){nav.last=p;nav.lastT=now;if(!nav.paused)nav.track.push(r5(p))}
+    if(!nav.last){nav.last=p;nav.lastT=now;nav.moveT=now;if(!nav.paused)nav.track.push(r5(p))}
     else{
       const d=hav(nav.last,p),dt=Math.max(1,(now-nav.lastT)/1000);
       if(d>=Math.max(6,acc*.4)){
+        nav.moveT=now;
+        if(nav.paused&&nav.auto&&d>=10){nav.paused=false;nav.auto=false;nav.since=now;say("Si riparte")} // fine della pausa automatica
         // conta solo spostamenti credibili a piedi (fino a 3 m/s): scarta i salti del GPS
         if(!nav.paused&&d/dt<=3){nav.dist+=d;nav.track.push(r5(p));if(M&&styleOK&&scene.mode==="nav")setData("track",fc(nav.track.length>1?[lineF([nav.track])]:[]))}
         nav.last=p;nav.lastT=now;
       }
     }
-    navProgress(p);
+    navProgress(p);navAlerts(p);
   }
   if(navFollow&&M&&scene.mode==="nav")M.easeTo({center:ll(p),zoom:Math.max(M.getZoom(),16),duration:600});
   paintNav();
@@ -1632,8 +1813,42 @@ function navTickFn(){
   if(!nav)return;
   const el=navElapsed(),cap=capacity(dog()),w=wxAt(nav.pos||nav.o.path[0]);
   const every=(w&&w.f>cap.heat-3?15:20)*60e3; // pausa acqua: ogni 20 minuti, ogni 15 se fa caldo per lui
-  if(!nav.paused&&el-nav.water>=every){nav.water=el;nav.tip={t:`Pausa acqua per ${esc(dog().name||"il cane")}: fermatevi un paio di minuti, meglio all'ombra.`,until:Date.now()+120e3};try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}}
+  if(!nav.paused&&el-nav.water>=every){nav.water=el;nav.tip={t:`Pausa acqua per ${esc(dog().name||"il cane")}: fermatevi un paio di minuti, meglio all'ombra.`,until:Date.now()+120e3};try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}say(nav.tip.t)}
+  // pausa automatica: nessun movimento da 45 secondi
+  if(NS.autopause&&!nav.paused&&nav.gps==="ok"&&nav.moveT&&Date.now()-nav.moveT>45e3){nav.run=navElapsed();nav.paused=true;nav.auto=true;say("Pausa automatica")}
+  // meteo: ricontrollo ogni 15 minuti e avviso se sta cambiando
+  if(Date.now()-(nav.wxT||0)>15*60e3){nav.wxT=Date.now();navWeather()}
+  // posizione condivisa: un aggiornamento ogni 40 secondi
+  if(nav.share&&nav.pos&&Date.now()-nav.share.last>=40e3){nav.share.last=Date.now();sharePub({k:"p",p:r5(nav.pos),t:Date.now(),d:Math.round(nav.dist),e:Math.round(el/1000),pa:nav.paused?1:0})}
   if(Date.now()-navSaveT>15000)saveNav();
+  paintNav();
+}
+// Avvisi mentre si cammina: fuori percorso (svolta sbagliata), prossima svolta, tappe
+function navAlerts(p){
+  const o=nav.o,reaching=nav.prog<30&&hav(p,o.path[0])>150; // sto ancora andando alla partenza: non è un errore
+  if(nav.off>50&&!reaching){nav.offN=(nav.offN||0)+1;
+    if(nav.offN>=3&&!nav.paused&&Date.now()-(nav.offT||0)>45e3){nav.offT=Date.now();nav.wasOff=true;
+      alertNav(`Attenzione: siete fuori dal percorso di circa ${fmtM(nav.off)}. Forse avete sbagliato svolta: tornate verso la linea arancione.`,"c2",25e3)}}
+  else{if(nav.wasOff&&nav.off<=30){nav.wasOff=false;nav.offT=0;alertNav("Bene, siete di nuovo sul percorso.","c0",8e3)}nav.offN=0}
+  if(nav.off>50||nav.paused)return;
+  if(NS.turns){const i=nav.turns.findIndex(t=>t.km>nav.prog+5);
+    if(i>=0){const dd=nav.turns[i].km-nav.prog;if(dd<=70&&!nav.said["t"+i]){nav.said["t"+i]=1;say(`Tra ${Math.max(10,Math.round(dd/10)*10)} metri: ${nav.turns[i].text}`)}}}
+  const si=(o.stops||[]).findIndex(x=>Math.abs(x.km-nav.prog)<=40);
+  if(si>0&&!nav.said["s"+si]){nav.said["s"+si]=1;say(`Tappa ${si+1}: ${o.stops[si].t}. ${o.stops[si].d}`)}
+}
+// Meteo in tempo reale durante la passeggiata: confronto la previsione aggiornata con quella di prima
+async function navWeather(){
+  if(!nav)return;const p=nav.pos||nav.o.path[0],k=wxKey(p),old=wx[k];
+  try{delete wx[k];await loadWeather([p])}catch(e){if(old)wx[k]=old;return}
+  if(!nav)return;const w=dayWx(p,0);if(!w)return;
+  const hr=new Date().getHours(),nx=w.H.slice(hr,hr+3),cap=capacity(dog()),name=esc(dog().name||"il cane");
+  const now={rain:Math.max(...nx.map(x=>x.rain)),storm:nx.some(x=>x.c>=95),f:w.H[hr].f},prev=nav.wx0;nav.wx0=now;
+  if(!prev){if(now.storm)alertNav("Attenzione: nelle prossime due ore sono previsti temporali. Meglio un giro corto, vicino a un riparo.","c2",60e3);
+    else if(now.rain>=70)alertNav(`Pioggia probabile nelle prossime due ore (${now.rain}%): il fondo può diventare scivoloso.`,"c1",40e3)}
+  else if(now.storm&&!prev.storm)alertNav("Il meteo sta cambiando: temporale in arrivo nelle prossime due ore. Meglio rientrare.","c2",90e3);
+  else if(now.rain>=60&&prev.rain<60)alertNav(`Il meteo sta cambiando: ora la pioggia è probabile nelle prossime due ore (${now.rain}%).`,"c1",90e3);
+  else if(now.f>cap.heat&&prev.f<=cap.heat)alertNav(`Sta salendo il caldo: ${Math.round(now.f)}° percepiti, troppi per ${name}. Ombra, acqua e giro più corto.`,"c1",90e3);
+  else if(now.rain<40&&prev.rain>=60)alertNav("Buone notizie: la pioggia prevista si è allontanata.","c0",30e3);
   paintNav();
 }
 function paintNav(){
@@ -1651,14 +1866,14 @@ function paintNav(){
   const w=wxAt(nav.pos||o.path[0]);
   $("nav-wx").innerHTML=w?`Adesso ${Math.round(w.f)}° percepiti · pioggia ${w.rain}% · `+(w.f>cap.heat+4?`<b class="c2">troppo caldo per ${name}: accorcia e cerca ombra</b>`:w.f>cap.heat?`<b class="c1">fa caldo per ${name}: pause e tanta acqua</b>`:`<span class="c0">temperatura buona per ${name}</span>`):"";
   let msg,cls="";
-  if(nav.paused)msg="In pausa. Tocca Riprendi quando ripartite.";
-  else if(nav.tip&&Date.now()<nav.tip.until){msg=nav.tip.t;cls="c1"}
+  if(nav.tip&&Date.now()<nav.tip.until){msg=nav.tip.t;cls=nav.tip.cls||"c1"}
+  else if(nav.paused)msg=nav.auto?"Pausa automatica: riparto da solo quando camminate.":"In pausa. Tocca Riprendi quando ripartite.";
   else if(done/1000>cap.km){msg=`${name} ha superato il suo limite consigliato di ${kmN(cap.km)} km: meglio rientrare con calma.`;cls="c2"}
   else if(nav.gps==="denied")msg="Posizione non autorizzata: il tempo scorre lo stesso, ma non posso misurare la strada. Puoi attivarla dalle impostazioni del browser.";
   else if(nav.gps==="no")msg="Questo dispositivo non ha il GPS: il tempo scorre lo stesso.";
   else if(!nav.pos)msg="Cerco il segnale GPS…";
   else if(arrived)msg=`Siete arrivati! Tocca <b>Chiudi attività</b> per salvare la passeggiata.`;
-  else if(nav.off!=null&&nav.off>80){
+  else if(nav.off!=null&&nav.off>50){
     const ts=hav(nav.pos,o.path[0]);
     if(nav.prog<30&&ts>150)msg=`Sei a ${fmtM(ts)} dalla partenza. <a target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${o.path[0][0]},${o.path[0][1]}">Portami lì</a>`;
     else{msg=`Sei fuori dal percorso di circa ${fmtM(nav.off)}. Torna sulla linea arancione.`;cls="c1"}
@@ -1667,10 +1882,15 @@ function paintNav(){
     if(st){const dd=st.km-nav.prog,i=o.stops.indexOf(st)+1;msg=dd<=40?`<b>Tappa ${i}: ${st.t}.</b> ${st.d}`:`Prossima tappa tra ${fmtM(dd)}: <b>${st.t}</b>`}
     else msg=(o.water||[]).some(q=>hav(q,nav.pos)<=80)?`Fontanella qui vicino: fai bere ${name}.`:"Segui la linea arancione.";
   }
+  // prossima svolta (indicazioni passo-passo)
+  let turn="";
+  if(NS.turns&&nav.pos&&!arrived&&!(nav.off>50)){const t=nav.turns.find(x=>x.km>nav.prog+5);if(t){const dd=t.km-nav.prog;turn=dd<=30?`Adesso: ${esc(t.text)}`:dd<=600?`Tra ${fmtM(dd)}: ${esc(t.text)}`:""}}
+  $("nav-turn").hidden=!turn;$("nav-turn").textContent=turn.replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&lt;/g,"<").replace(/&gt;/g,">");
+  $("nav-share").classList.toggle("on",!!nav.share);
   const m=$("nav-msg");if(m.dataset.h!==msg){m.dataset.h=msg;m.innerHTML=msg}m.className="nav-msg "+cls;
   $("nav-pause").textContent=nav.paused?"Riprendi":"Pausa";
 }
-$("nav-pause").onclick=()=>{if(!nav)return;if(nav.paused){nav.paused=false;nav.since=Date.now()}else{nav.run=navElapsed();nav.paused=true}saveNav();paintNav()};
+$("nav-pause").onclick=()=>{if(!nav)return;nav.auto=false;nav.moveT=Date.now();if(nav.paused){nav.paused=false;nav.since=Date.now()}else{nav.run=navElapsed();nav.paused=true}saveNav();paintNav()};
 $("nav-end").onclick=()=>{
   if(!nav)return;
   const was=nav.paused;if(!was){nav.run=navElapsed();nav.paused=true}
@@ -1683,16 +1903,75 @@ $("nav-end").onclick=()=>{
     <div class="stack" style="margin-top:12px"><button class="btn pri wide" id="ns-save">Salva nelle attività</button><button class="btn wide" id="ns-cont">Continua a camminare</button><button class="btn wide" id="ns-drop">Chiudi senza salvare</button></div>`;
   $("nav-sheet").hidden=false;
   $("ns-cont").onclick=()=>{$("nav-sheet").hidden=true;if(!was){nav.paused=false;nav.since=Date.now()}paintNav()};
-  $("ns-drop").onclick=()=>{if(!confirm("La passeggiata non verrà salvata. Confermi?"))return;const back=o.kind==="trail"&&o.id?"s-"+o.id:"crea";stopNav();location.hash=back};
+  $("ns-drop").onclick=()=>{if(!confirm("La passeggiata non verrà salvata. Confermi?"))return;if(nav.share)sharePub({k:"e",t:Date.now(),d:Math.round(nav.dist),e:Math.round(el/1000)});const back=o.kind==="trail"&&o.id?"s-"+o.id:"crea";stopNav();location.hash=back};
   $("ns-save").onclick=()=>{
     const pick=document.querySelector('input[name="nsd"]:checked'),useGps=pick?pick.value==="gps":true,dist=Math.round(useGps?nav.dist:o.len);
     let tr=nav.track.length>1?thin(nav.track,15):[];if(tr.length>400)tr=sample(tr,400);
     S.acts.unshift({t:nav.t0,name:o.name,kind:o.kind,id:o.id||null,dur:Math.round(el),dist,plan:o.len,up:Math.round((o.up||0)*Math.min(1,dist/Math.max(1,o.len))),gps:useGps,track:tr});
     S.acts=S.acts.slice(0,200);
     if(!store.set("alldogs-acts",S.acts)){S.acts.slice(5).forEach(x=>delete x.track);store.set("alldogs-acts",S.acts)}
+    if(nav.share)sharePub({k:"e",t:Date.now(),d:dist,e:Math.round(el/1000)});
     stopNav();location.hash="attivita";toast("Passeggiata salvata nelle attività");
   };
 };
+
+// ================= Posizione condivisa in tempo reale =================
+// Il sito non ha un server suo: gli aggiornamenti passano da ntfy.sh (servizio pubblico gratuito) su un canale con nome casuale e segreto.
+// Chi ha il link (#segui-<canale>) vede la passeggiata su una mappa. I messaggi restano lì al massimo 12 ore.
+const RELAY="https://ntfy.sh/";
+function sharePub(o){if(!nav||!nav.share)return Promise.resolve();return fetch(RELAY+nav.share.id,{method:"POST",body:JSON.stringify(o)}).catch(()=>{})}
+function shareLink(){return location.origin+location.pathname+"#segui-"+nav.share.id}
+async function shareGo(){
+  const name=dog().name||"il cane",url=shareLink(),text=`Segui in tempo reale la passeggiata con ${name}`;
+  try{if(navigator.share){await navigator.share({title:"AllDogs",text,url});return}}catch(e){if(e&&e.name==="AbortError")return}
+  try{await navigator.clipboard.writeText(url);toast("Link copiato: incollalo in un messaggio")}catch(e){prompt("Copia questo link e mandalo a chi vuoi:",url)}
+}
+$("nav-share").onclick=()=>{
+  if(!nav)return;const on=!!nav.share;
+  openSheet(`<h2>Posizione in tempo reale</h2>
+    <p style="margin-top:8px">${on?"<b>La condivisione è attiva.</b> ":""}Chi apre il link vede su una mappa dove siete, il percorso e quanta strada avete fatto. Si aggiorna circa ogni 40 secondi e si ferma quando chiudi l'attività.</p>
+    <p class="small muted" style="margin-top:8px">La posizione passa da un servizio pubblico gratuito (ntfy.sh) su un indirizzo casuale e segreto: la vede solo chi ha il link. Dopo 12 ore viene cancellata. Funziona finché l'app resta aperta con lo schermo acceso.</p>
+    <div class="stack" style="margin-top:14px"><button class="btn pri wide" id="sh-go">${icon("share")}${on?"Manda di nuovo il link":"Attiva e manda il link"}</button>${on?`<button class="btn wide" id="sh-stop">Interrompi la condivisione</button>`:""}</div>`);
+  $("sh-go").onclick=async()=>{
+    if(!nav.share){const a=new Uint8Array(12);crypto.getRandomValues(a);
+      nav.share={id:"alldogs-"+[...a].map(x=>x.toString(16).padStart(2,"0")).join(""),last:0};
+      const o=nav.o;await sharePub({k:"s",name:o.name,dog:dog().name||"",len:o.len,poly:encPoly(sample(o.path,Math.min(160,o.path.length)))});saveNav()}
+    $("sheet").hidden=true;paintNav();shareGo()};
+  if(on)$("sh-stop").onclick=()=>{sharePub({k:"e",t:Date.now(),d:Math.round(nav.dist),e:Math.round(navElapsed()/1000)});nav.share=null;saveNav();$("sheet").hidden=true;paintNav();toast("Condivisione interrotta")};
+};
+function decPoly(str){const out=[];let i=0,a=0,b=0;const nx=()=>{let r=0,sh=0,c;do{c=str.charCodeAt(i++)-63;r|=(c&0x1f)<<sh;sh+=5}while(c>=0x20&&i<=str.length);return r&1?~(r>>1):r>>1};
+  while(i<str.length){a+=nx();b+=nx();out.push([a/1e5,b/1e5])}return out}
+let follow=null,followT=null;
+function stopFollow(){if(followT){clearInterval(followT);followT=null}follow=null}
+function showFollow(id){
+  if(!id){location.replace("#esplora");return}
+  mountMap($("hostFollow"),true);
+  if(!follow||follow.id!==id){stopFollow();follow={id,path:null,track:[],last:null,since:"all",name:"",dog:"",end:null,got:false};followT=setInterval(pollFollow,20000);pollFollow()}
+  setScene({mode:"follow"},true);paintFollow();
+}
+async function pollFollow(){
+  const F=follow;if(!F)return;
+  try{
+    const r=await fetch(`${RELAY}${F.id}/json?poll=1&since=${F.since}`);if(!r.ok)throw new Error(r.status);
+    const lines=(await r.text()).split("\n").filter(Boolean);if(follow!==F)return;
+    for(const ln of lines){let m,o;try{m=JSON.parse(ln);if(m.event!=="message")continue;o=JSON.parse(m.message)}catch(e){continue}
+      F.since=m.id;F.got=true;
+      if(o.k==="s"){F.name=String(o.name||"");F.dog=String(o.dog||"");F.len=+o.len||0;try{F.path=decPoly(String(o.poly||""))}catch(e){}fitPending=true}
+      else if(o.k==="p"&&Array.isArray(o.p)&&isFinite(o.p[0])&&isFinite(o.p[1])){const p=[+o.p[0],+o.p[1]];if(!F.last)fitPending=true;F.track.push(p);F.last={p,t:+o.t||Date.now(),d:+o.d||0,e:+o.e||0,pa:!!o.pa};F.end=null}
+      else if(o.k==="e")F.end={t:+o.t||Date.now(),d:+o.d||0,e:+o.e||0}}
+    F.err=false;
+  }catch(e){F.err=true}
+  if(scene.mode==="follow"){applyScene();if(F.last&&M&&!fitPending)M.easeTo({center:ll(F.last.p),duration:800})}
+  paintFollow();
+}
+function paintFollow(){
+  const F=follow;if(!F)return;
+  $("fol-title").textContent=F.name?(F.dog?`${F.dog}: ${F.name}`:F.name):"Passeggiata condivisa";
+  const ago=t=>{const m=Math.round((Date.now()-t)/60000);return m<1?"pochi secondi fa":m===1?"un minuto fa":m+" minuti fa"};
+  $("fol-msg").textContent=F.end?`Passeggiata conclusa ${ago(F.end.t)}.`:F.last?(F.last.pa?"In pausa":"In cammino")+` · posizione di ${ago(F.last.t)}`:F.err?"Non riesco a collegarmi: controlla la connessione.":F.got?"In attesa della prima posizione…":"Nessuna passeggiata attiva su questo link (forse è finita da più di 12 ore).";
+  const x=F.end||F.last;$("fol-info").textContent=x?`Fatti ${km(x.d)} km${F.len?" su "+km(F.len):""} in ${fmtDur(x.e*1000)}. Si aggiorna da solo ogni 20 secondi.`:"";
+  const go=$("fol-go");go.hidden=!F.last;if(F.last)go.href=`https://www.google.com/maps/dir/?api=1&destination=${F.last.p[0]},${F.last.p[1]}`;
+}
 
 // ================= Il mio cane =================
 const DF=["name","breed","age","weight","train","agil","coat","brachy"];
@@ -1790,7 +2069,7 @@ async function boot(){
   S.ready=true;S.featReady=S.trails.every(t=>FT[t.id]);fitPending=true;$("status").textContent="Scarico il meteo…";route();
   try{await loadWeather(S.trails.map(t=>t.start))}catch(e){
     // limite al minuto: aspetto e riprovo. Limite orario o giornaliero: inutile aspettare, mostro subito i verdetti senza meteo.
-    if(e.status===429&&!/daily|hourly/i.test(e.body&&e.body.reason||"")){$("status").textContent="Il meteo arriva tra un minuto…";await sleep(62000);try{await loadWeather(S.trails.map(t=>t.start))}catch(x){S.wxFail=true}}else S.wxFail=true}
+    if(e.status===429&&!/daily|hourly/i.test(e.body&&e.body.reason||"")){$("status").textContent="Il meteo arriva tra un minuto…";await sleep(62000);try{await loadWeather(S.trails.map(t=>t.start))}catch(x){S.wxFail=true}}else S.wxFail=true;S.wxT=Date.now()}
   $("status").textContent="";route();
   const feats=S.featReady?Promise.resolve():loadFeatures().then(()=>{S.featReady=true;if(onList())renderList();else if(cur&&location.hash==="#s-"+cur.tr.id)showTrail(cur.tr.id)}).catch(e=>{console.warn("Particolarità:",e);S.featFail=true;if(onList())renderList()});
   fillElev();await feats;

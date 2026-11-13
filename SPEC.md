@@ -58,3 +58,10 @@ che mappa, miniature, filtri, scheda, meteo funzionino a larghezza telefono (390
 - **Anteprima 3D** del percorso (rilievo + rotazione lenta). **Mappe**: Outdoor, Satellite, Strade, Topografica (OpenTopoMap), Notte; in più ombre del rilievo, radar pioggia (RainViewer), legenda.
 - **Foto profilo del cane** (salvata solo sul dispositivo, `alldogs-photo`).
 - Grafica e simboli propri: gli screenshot di AllTrails sono stati usati solo come riferimento per le funzioni, senza copiarne mappe, dati o stile.
+- **Anteprima 3D = volo**: una freccia percorre il tracciato con la visuale che la segue (pausa, ripeti, chiudi).
+- **Impostazioni di navigazione** (ingranaggio in Avvia percorso): indicazioni passo-passo (da OpenRouteService per i giri, dalla forma del tracciato per i sentieri),
+  navigazione vocale (sintesi vocale del browser), pausa automatica, schermo acceso. **Avvisi**: fuori percorso/svolta sbagliata, meteo che cambia (ricontrollo ogni 15 minuti).
+- **Modifica percorso** sui sentieri pronti: diventano segnaposti nel modo "Lo disegno io".
+- **Posizione in tempo reale**: link `#segui-<canale>`; gli aggiornamenti passano da ntfy.sh (canale casuale, 12 ore). Nessun server nostro.
+- **Recensioni**: per ora solo locali (`alldogs-reviews`). Per condividerle tra utenti serve un archivio online (da decidere con Giuseppe).
+- Mappa: sentieri e gradini più evidenti, più nomi di luoghi, frecce di direzione sul percorso scelto. Dislivello ricalcolato (interpolazione, soglia 3 m).

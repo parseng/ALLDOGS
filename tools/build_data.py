@@ -150,20 +150,25 @@ def height(p):
     x = (p[1] + 180) / 360 * n
     lat = math.radians(p[0])
     y = (1 - math.log(math.tan(lat) + 1 / math.cos(lat)) / math.pi) / 2 * n
-    tx, ty = int(x), int(y)
-    px, py = min(255, int((x - tx) * 256)), min(255, int((y - ty) * 256))
-    r, g, b = tile(tx, ty)[px, py]
-    return r * 256 + g + b / 256 - 32768
+    # interpolazione tra i 4 pixel vicini: profilo piu' morbido e fedele
+    gx, gy = x * 256 - .5, y * 256 - .5
+    x0, y0 = math.floor(gx), math.floor(gy)
+    fx, fy = gx - x0, gy - y0
+
+    def px(ix, iy):
+        r, g, b = tile(ix // 256, iy // 256)[ix % 256, iy % 256]
+        return r * 256 + g + b / 256 - 32768
+    return (px(x0, y0) * (1 - fx) + px(x0 + 1, y0) * fx) * (1 - fy) + (px(x0, y0 + 1) * (1 - fx) + px(x0 + 1, y0 + 1) * fx) * fy
 
 
 def elevation(path):
-    pts = resample(path, 50)
+    pts = resample(path, 25)
     z = [height(p) for p in pts]
     # media mobile per togliere il rumore, poi somma solo i dislivelli sopra una soglia
-    sm = [sum(z[max(0, i - 1):i + 2]) / len(z[max(0, i - 1):i + 2]) for i in range(len(z))]
+    sm = [sum(z[max(0, i - 2):i + 3]) / len(z[max(0, i - 2):i + 3]) for i in range(len(z))]
     up = down = 0.0
     ref = sm[0]
-    TH = 5
+    TH = 3
     for v in sm[1:]:
         if v - ref >= TH:
             up += v - ref
@@ -172,7 +177,7 @@ def elevation(path):
             down += ref - v
             ref = v
     # profilo per il grafico: quote a distanze uguali lungo il percorso
-    n = max(20, min(80, round(len(pts) / 2)))
+    n = max(20, min(140, round(len(pts) / 2)))
     prof = [round(sm[min(len(sm) - 1, round(i * (len(sm) - 1) / (n - 1)))]) for i in range(n)]
     return {"up": round(max(up, down)), "max": round(max(z)), "min": round(min(z)), "p": prof}
 
