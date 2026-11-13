@@ -14,9 +14,9 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/3.9.4/mapbox-gl.min.css">
 <style>
-/* App a schermate: contenuto che scorre, barra di navigazione fissa in basso, mappe a tutto schermo quando servono. */
+/* Versione 3: una sola mappa Mapbox che si sposta tra le schermate; barra in basso; schede grandi. */
 :root{
   --bg:#f6f7fb; --surface:#ffffff; --ink:#131a2a; --muted:#636b7d; --line:#e3e6ee;
   --accent:#2456f5; --accent-ink:#ffffff; --accent-soft:#e6ecff;
@@ -35,13 +35,13 @@
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 var(--body);-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 var(--body);-webkit-tap-highlight-color:transparent;overflow-x:hidden}
 h1,h2,h3{font-family:var(--display);margin:0;letter-spacing:-.01em;text-wrap:balance}
 h1{font-size:28px;font-weight:800;line-height:1.1}
 h2{font-size:19px;font-weight:600}
 h3{font-size:17px;font-weight:600;line-height:1.2}
 p{margin:0}
-button,input,select{font:inherit;color:inherit}
+button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
 a{color:var(--accent)}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -66,70 +66,96 @@ a{color:var(--accent)}
 /* controlli */
 .search{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:0 16px;height:50px}
 .search input{flex:1;border:0;background:none;outline:none;min-width:0;font-size:16px}
-.chips{display:flex;gap:8px;overflow-x:auto;margin:12px -16px 0;padding:0 16px 4px;scrollbar-width:none}
-.chips::-webkit-scrollbar{display:none}
-.chips select{flex:none;appearance:none;-webkit-appearance:none;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:9px 30px 9px 14px;font-size:15px;font-weight:500;
+.hscroll{display:flex;gap:8px;overflow-x:auto;margin:10px -16px 0;padding:0 16px 4px;scrollbar-width:none}
+.hscroll::-webkit-scrollbar{display:none}
+.hscroll select{flex:none;appearance:none;-webkit-appearance:none;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:9px 30px 9px 14px;font-size:15px;font-weight:500;
   background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);background-position:calc(100% - 16px) 55%,calc(100% - 11px) 55%;background-size:5px 5px;background-repeat:no-repeat}
-.chips select.act{border-color:var(--accent);background-color:var(--accent-soft)}
+.hscroll select.act{border-color:var(--accent);background-color:var(--accent-soft)}
+.flabel{font-size:12.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:12px}
+.pill{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 13px;font-size:14px;font-weight:500;white-space:nowrap}
+.pill[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.pill.x{background:var(--accent-soft);border-color:var(--accent);color:var(--ink)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:12px 18px;font-weight:700;font-size:15px;text-decoration:none;color:var(--ink)}
 .btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .btn.wide{width:100%}
+.btn.sm{padding:8px 14px;font-size:14px}
 .btn:disabled{opacity:.6}
 .btn svg{width:18px;height:18px}
-.round{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;flex:none;padding:0}
+.round{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;flex:none;padding:0;color:var(--ink)}
 .round svg{width:20px;height:20px}
 .round.saved{color:var(--no)}
 .round.saved svg{fill:currentColor}
-.fab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--tab) + env(safe-area-inset-bottom,0px) + 14px);z-index:800;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.round.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 
-/* elenco sentieri */
-.count{display:flex;align-items:baseline;justify-content:space-between;margin:18px 0 6px}
-.card{display:grid;grid-template-columns:92px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer}
-.thumb{width:92px;height:92px;border-radius:14px;background:var(--accent-soft);display:grid;place-items:center;overflow:hidden}
-.thumb svg{width:76px;height:76px}
-.thumb polyline{fill:none;stroke:var(--accent);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
-.card h3{overflow-wrap:anywhere}
-.card .sub{color:var(--muted);font-size:14px;margin-top:2px}
-.card .meta{font-size:14px;margin-top:5px;font-variant-numeric:tabular-nums}
+/* mappa condivisa */
+.maphost{position:relative;border-radius:var(--r);overflow:hidden;background:var(--accent-soft);border:1px solid var(--line)}
+#hostExplore{height:min(42vh,340px);min-height:230px;margin-top:14px}
+#hostCrea{height:min(44vh,360px);min-height:240px;margin-top:14px}
+.maphost.full{position:fixed;inset:0 0 calc(var(--tab) + env(safe-area-inset-bottom,0px)) 0;height:auto!important;z-index:880;border-radius:0;border:0;margin:0!important}
+#mapwrap,#map{position:absolute;inset:0}
+body > #mapwrap{display:none}
+#map .mapboxgl-canvas:focus{outline:none}
+.mapnote{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:20px;color:var(--muted);font-size:14px}
+.mapctl{position:absolute;right:10px;top:10px;z-index:5;display:flex;flex-direction:column;gap:8px}
+.mapctl .round{box-shadow:0 2px 10px rgba(0,0,0,.2)}
+.maphost.full .mapctl{top:calc(env(safe-area-inset-top,0px) + 12px)}
+.layers{position:absolute;right:60px;top:10px;z-index:6;background:var(--surface);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.25);padding:6px;display:flex;flex-direction:column;gap:4px;min-width:160px}
+.maphost.full .layers{top:calc(env(safe-area-inset-top,0px) + 12px)}
+.layers button{border:0;background:none;text-align:left;padding:9px 12px;border-radius:10px;font-weight:500;font-size:15px}
+.layers button[aria-pressed=true]{background:var(--accent-soft);font-weight:700}
+.overlay-top{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);left:12px;right:60px;z-index:7;display:flex;gap:8px;pointer-events:none}
+.overlay-top > :not(.sp){pointer-events:auto;box-shadow:0 2px 10px rgba(0,0,0,.18)}
+.peek{position:absolute;left:10px;right:10px;bottom:30px;z-index:8;background:var(--surface);border-radius:var(--r);padding:10px;box-shadow:0 8px 24px rgba(0,0,0,.25);display:none;cursor:pointer}
+.peek.on{display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:10px;align-items:center}
+.peek img{width:96px;height:72px;border-radius:10px;object-fit:cover;background:var(--accent-soft)}
+.peek .sub{color:var(--muted);font-size:13.5px}
+.mk-stop{width:24px;height:24px;border-radius:50%;background:#fff;color:#131a2a;border:2px solid #2456f5;font:700 12px/20px var(--body);text-align:center}
+.mk-me{width:16px;height:16px;border-radius:50%;background:#2f7bff;border:3px solid #fff;box-shadow:0 0 0 6px rgba(47,123,255,.25)}
+.mk-pin{width:28px;height:28px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#2456f5;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4);cursor:grab}
+
+/* schede sentiero grandi */
+.count{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 10px;margin:24px 0 10px}
+.count h2{white-space:nowrap}
+.tcard{cursor:pointer;margin:0 0 24px;min-width:0}
+.tcard .img{position:relative;aspect-ratio:5/3;border-radius:16px;overflow:hidden;background:var(--accent-soft)}
+.tcard .img > svg{position:absolute;inset:0;margin:auto;width:60%;height:70%}
+.tcard .img polyline,.fallback polyline{fill:none;stroke:var(--accent);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.tcard .img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.tcard .img .round{position:absolute;top:10px;right:10px;width:40px;height:40px}
+.tcard .badge{position:absolute;left:10px;top:10px;font:700 13px/1 var(--body);padding:7px 10px;border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.tcard h3{margin-top:10px;overflow-wrap:anywhere}
+.tcard .sub{color:var(--muted);font-size:14px;margin-top:2px}
+.tcard .meta{font-size:14.5px;margin-top:4px;font-variant-numeric:tabular-nums}
+.tcard .feat{font-size:13px;color:var(--muted);margin-top:4px}
+.carousel{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:16px;margin:0 -16px;padding:0 16px 4px;scrollbar-width:none}
+.carousel::-webkit-scrollbar{display:none}
+.carousel .tcard{flex:0 0 80%;max-width:360px;scroll-snap-align:start;margin-bottom:6px}
 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:baseline}
 .c0{color:var(--ok)} .c1{color:var(--warn)} .c2{color:var(--no)} .cw{color:var(--wait)}
 .b0{background:var(--ok)} .b1{background:var(--warn)} .b2{background:var(--no)} .bw{background:var(--wait)}
 .v0{background:var(--ok-bg);color:var(--ok)} .v1{background:var(--warn-bg);color:var(--warn)} .v2{background:var(--no-bg);color:var(--no)} .vw{background:var(--wait-bg);color:var(--wait)}
-.skel{height:92px;border-radius:14px;background:linear-gradient(90deg,var(--line),var(--surface),var(--line));background-size:200% 100%;animation:sk 1.4s infinite linear;margin:10px 0}
+.skel{aspect-ratio:5/3;border-radius:16px;background:linear-gradient(90deg,var(--line),var(--surface),var(--line));background-size:200% 100%;animation:sk 1.4s infinite linear;margin:10px 0 24px}
 @keyframes sk{to{background-position:-200% 0}}
 @media (prefers-reduced-motion:reduce){.skel{animation:none}}
 
-/* mappe */
-.mapfull{position:fixed;inset:0 0 calc(var(--tab) + env(safe-area-inset-bottom,0px)) 0;z-index:860;display:none;background:var(--bg)}
-.mapfull.on{display:block}
-.mapfull .leaflet-container,.hero .leaflet-container,#mapNew{width:100%;height:100%;background:var(--bg);font-family:var(--body)}
-.overlay-top{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);left:12px;right:12px;z-index:1000;display:flex;gap:8px;pointer-events:none}
-.overlay-top > :not(.sp){pointer-events:auto;box-shadow:0 2px 10px rgba(0,0,0,.18)}
-.peek{position:absolute;left:12px;right:12px;bottom:34px;z-index:1000;background:var(--surface);border-radius:var(--r);padding:4px 12px;box-shadow:0 8px 24px rgba(0,0,0,.25);display:none}
-.peek.on{display:block}
-.peek .card{border:0}
-.pin{width:26px;height:26px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--accent);border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4)}
-.stop{width:24px;height:24px;border-radius:50%;background:#fff;color:#131a2a;border:2px solid #2456f5;font:700 12px/20px var(--body);text-align:center}
-.me{width:16px;height:16px;border-radius:50%;background:#2f7bff;border:3px solid #fff;box-shadow:0 0 0 6px rgba(47,123,255,.25)}
-
 /* scheda sentiero */
-#s-sentiero,#s-giro{padding-top:0;padding-left:0;padding-right:0}
-.hero{position:relative;height:300px;background:var(--accent-soft)}
-.hero.full{position:fixed;inset:0;height:auto;z-index:950}
-.hero .overlay-top{justify-content:space-between}
-.hero .expand{position:absolute;right:12px;bottom:28px;z-index:1000}
+#s-sentiero{padding-top:0;padding-left:0;padding-right:0}
+#hostTrail{height:300px;border-radius:0;border:0}
+#hostTrail .overlay-top{justify-content:space-between}
 .sheet{position:relative;z-index:2;margin-top:-18px;background:var(--bg);border-radius:22px 22px 0 0;padding:22px max(16px,env(safe-area-inset-left,0px)) 0 max(16px,env(safe-area-inset-right,0px))}
 .verdict{display:inline-flex;align-items:center;gap:8px;font:800 16px/1 var(--display);padding:9px 14px;border-radius:10px;margin-top:12px}
 .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:18px 0 6px;font-variant-numeric:tabular-nums}
-.stats div{padding:0 10px;border-left:1px solid var(--line)}
+.stats div{padding:0 8px;border-left:1px solid var(--line);min-width:0}
 .stats div:first-child{padding-left:0;border-left:0}
-.stats b{display:block;font:600 17px/1.2 var(--display);white-space:nowrap}
+.stats b{display:block;font:600 16px/1.2 var(--display)}
 .stats span{font-size:12.5px;color:var(--muted)}
 .block{margin-top:26px}
 .block h2{margin-bottom:10px}
 .why{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}
 .why li{display:flex;gap:10px}
 .why .dot{flex:none;margin-top:7px}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 11px;font-size:14px}
 .days{display:flex;gap:6px;overflow-x:auto;margin:0 -16px;padding:0 16px 4px;scrollbar-width:none}
 .days button{flex:none;width:56px;padding:8px 0;border-radius:14px;border:1px solid transparent;background:none;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:13px;color:var(--muted)}
 .days button[aria-pressed=true]{border-color:var(--ink);color:var(--ink);font-weight:700}
@@ -148,10 +174,11 @@ ul.plain{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:5px}
 .bar .btn{flex:1;max-width:200px;padding:12px 8px;font-size:14px;gap:6px;white-space:nowrap}
 .pad-bar{height:70px}
 
-/* crea percorso */
-#mapNewWrap{height:42vh;min-height:240px;border-radius:var(--r);overflow:hidden;position:relative;margin-top:14px;border:1px solid var(--line)}
+/* crea giro */
 .seg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
-.seg button{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 0;font-weight:700;font-size:15px}
+.seg.three{grid-template-columns:repeat(3,1fr)}
+.seg button{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 0;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;gap:6px}
+.seg button svg{width:18px;height:18px}
 .seg button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .box{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px}
 .note{background:var(--accent-soft);border-radius:14px;padding:12px 14px;font-size:14.5px}
@@ -160,19 +187,36 @@ ul.plain{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:5px}
 ol.stops{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px;counter-reset:s}
 ol.stops li{display:grid;grid-template-columns:28px 1fr;gap:10px;counter-increment:s}
 ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;border:2px solid var(--accent);display:grid;place-items:center;font-weight:700;font-size:13px}
+.msgs{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.msg{max-width:86%;padding:10px 13px;border-radius:16px;font-size:15px;white-space:pre-wrap;overflow-wrap:anywhere}
+.msg.a{background:var(--surface);border:1px solid var(--line);border-bottom-left-radius:4px;align-self:flex-start}
+.msg.u{background:var(--accent);color:var(--accent-ink);border-bottom-right-radius:4px;align-self:flex-end}
+.msg.wait{color:var(--muted)}
+.chatin{display:flex;gap:8px;margin-top:10px}
+.chatin input{flex:1;min-width:0;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:12px 16px;font-size:16px}
+.chatin .round{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);width:48px;height:48px}
+.sugg{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
 
 /* cane */
 .avatar{width:64px;height:64px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font:800 28px/1 var(--display);flex:none}
 .form{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
 .form label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:500;min-width:0}
 .form label.w{grid-column:1/-1}
-.form input,.form select,.field{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:12px;font-size:16px;color:var(--ink)}
+.form input,.form select,.form textarea,.field{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:12px;font-size:16px;color:var(--ink);min-width:0}
+.form textarea{min-height:80px;resize:vertical}
 .form label.check{flex-direction:row;align-items:center;gap:10px;color:var(--ink);font-size:15px;grid-column:1/-1}
 .form label.check input{width:22px;height:22px;flex:none}
+.checks{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.checks label{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px;font-size:14.5px}
+.checks input{width:20px;height:20px;flex:none}
+.vax{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) 40px;gap:6px;margin-top:6px;align-items:center}
+.vax input{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px;font-size:15px;min-width:0}
+.vax button{width:36px;height:36px}
 .empty{text-align:center;padding:40px 10px;color:var(--muted)}
 .empty svg{width:48px;height:48px;margin-bottom:10px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--tab) + env(safe-area-inset-bottom,0px) + 80px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:14px;z-index:2000;display:none;white-space:nowrap}
 .toast.on{display:block}
+.mapboxgl-ctrl-attrib{font-size:10px}
 </style>
 </head>
 <body>
@@ -180,65 +224,109 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
     <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
-    <symbol id="i-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.600-7.5 10.200-7.5 10.200Z"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2Z"/></symbol>
     <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
     <symbol id="i-act" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 3 8-8"/><path d="M15 7h5v5"/></symbol>
-    <symbol id="i-paw" viewBox="0 0 24 24" fill="currentColor"><ellipse cx="6" cy="10.500" rx="2" ry="2.600"/><ellipse cx="10" cy="6.500" rx="2" ry="2.700"/><ellipse cx="14.500" cy="6.500" rx="2" ry="2.700"/><ellipse cx="18.500" cy="10.500" rx="2" ry="2.600"/><path d="M12.200 11.500c-3 0-5.700 3.300-5.700 5.700 0 1.700 1.400 2.600 3 2.300 1-.2 1.700-.6 2.700-.6s1.700.4 2.700.6c1.600.3 3-.6 3-2.300 0-2.400-2.700-5.700-5.700-5.700Z"/></symbol>
-    <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.200" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></symbol>
-    <symbol id="i-map" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M9 4 3 6.500v13.500l6-2.500 6 2.500 6-2.500V4l-6 2.500L9 4ZM9 4v13.500M15 6.500V20"/></symbol>
-    <symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.200" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12M3.500 6h.01M3.500 12h.01M3.500 18h.01"/></symbol>
-    <symbol id="i-expand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.200" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/></symbol>
-    <symbol id="i-nav" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M20.500 3.500 3.500 10.500l7 2.500 2.500 7 7.500-16.500Z"/></symbol>
-    <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.500v2M12 19.500v2M2.500 12h2M19.500 12h2M5.300 5.300l1.400 1.400M17.300 17.300l1.400 1.400M5.300 18.700l1.400-1.400M17.300 6.700l1.400-1.400"/></symbol>
-    <symbol id="i-cloud" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M7 18.500a4 4 0 0 1-.5-8 5.500 5.500 0 0 1 10.600 1.200A3.400 3.400 0 0 1 17 18.500H7Z"/></symbol>
-    <symbol id="i-rain" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15.500a4 4 0 0 1-.5-8 5.500 5.500 0 0 1 10.600 1.200A3.400 3.400 0 0 1 17 15.500H7Z"/><path d="M9 18.500l-1 2.500M13 18.500l-1 2.500M17 18.500l-1 2.500"/></symbol>
+    <symbol id="i-paw" viewBox="0 0 24 24" fill="currentColor"><ellipse cx="6" cy="10.5" rx="2" ry="2.6"/><ellipse cx="10" cy="6.5" rx="2" ry="2.7"/><ellipse cx="14.5" cy="6.5" rx="2" ry="2.7"/><ellipse cx="18.5" cy="10.5" rx="2" ry="2.6"/><path d="M12.2 11.5c-3 0-5.7 3.3-5.7 5.7 0 1.7 1.4 2.6 3 2.3 1-.2 1.7-.6 2.7-.6s1.7.4 2.7.6c1.6.3 3-.6 3-2.3 0-2.4-2.7-5.7-5.7-5.7Z"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></symbol>
+    <symbol id="i-map" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M9 4 3 6.5v13.5l6-2.5 6 2.5 6-2.5V4l-6 2.5L9 4ZM9 4v13.5M15 6.5V20"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/></symbol>
+    <symbol id="i-expand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/></symbol>
+    <symbol id="i-shrink" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10h-6V4M4 14h6v6M14 10l7-7M10 14l-7 7"/></symbol>
+    <symbol id="i-nav" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M20.5 3.5 3.5 10.5l7 2.5 2.5 7 7.5-16.5Z"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4V5Z"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/></symbol>
+    <symbol id="i-hand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 21s-6-5.6-6-10a6 6 0 0 1 12 0c0 4.4-6 10-6 10Z"/><circle cx="12" cy="11" r="2.2"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></symbol>
+    <symbol id="i-cloud" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M7 18.5a4 4 0 0 1-.5-8 5.5 5.5 0 0 1 10.6 1.2A3.4 3.4 0 0 1 17 18.5H7Z"/></symbol>
+    <symbol id="i-rain" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15.5a4 4 0 0 1-.5-8 5.5 5.5 0 0 1 10.6 1.2A3.4 3.4 0 0 1 17 15.5H7Z"/><path d="M9 18.5l-1 2.5M13 18.5l-1 2.5M17 18.5l-1 2.5"/></symbol>
   </defs>
 </svg>
 
+<!-- La mappa unica: viene spostata dentro la schermata attiva -->
+<div id="mapwrap">
+  <div id="map"></div>
+  <div class="mapctl">
+    <button class="round" id="m-full" aria-label="Mappa a tutto schermo"><svg><use href="#i-expand"/></svg></button>
+    <button class="round" id="m-layers" aria-label="Tipo di mappa"><svg><use href="#i-layers"/></svg></button>
+    <button class="round" id="m-loc" aria-label="Mostra dove sono"><svg><use href="#i-nav"/></svg></button>
+  </div>
+  <div class="layers" id="layers" hidden>
+    <button data-st="map">Mappa outdoor</button>
+    <button data-st="sat">Satellite</button>
+    <button data-st="3d">Rilievo 3D</button>
+  </div>
+</div>
+
 <!-- ESPLORA -->
 <section class="screen" id="s-esplora">
-  <p class="muted small" id="hello-sub">Napoli e Campania</p>
+  <p class="muted small">Napoli e Campania</p>
   <h1 id="hello">Dove andiamo oggi?</h1>
+  <div class="maphost" id="hostExplore"><div class="peek" id="peek"></div></div>
   <div class="search" style="margin-top:14px"><svg width="22" height="22"><use href="#i-search"/></svg><input id="q" type="search" placeholder="Cerca un sentiero o una zona" aria-label="Cerca un sentiero o una zona"></div>
-  <div class="chips">
+  <div class="hscroll" id="near-row" hidden></div>
+  <div class="hscroll">
     <select id="f-day" aria-label="Giorno"></select>
-    <select id="f-fit" aria-label="Adatto al cane"><option value="all">Tutti i verdetti</option><option value="0">Solo fattibili</option><option value="01">Fattibili e con prudenza</option></select>
+    <select id="f-fit" aria-label="Verdetto"><option value="all">Tutti i verdetti</option><option value="0">Solo fattibili</option><option value="01">Fattibili e con prudenza</option></select>
     <select id="f-len" aria-label="Lunghezza"><option value="all">Lunghezza</option><option value="0-5">Fino a 5 km</option><option value="5-10">Da 5 a 10 km</option><option value="10-99">Più di 10 km</option></select>
+    <select id="f-up" aria-label="Dislivello"><option value="all">Dislivello</option><option value="0-150">Fino a 150 m</option><option value="150-400">Da 150 a 400 m</option><option value="400-800">Da 400 a 800 m</option><option value="800-99999">Oltre 800 m</option></select>
     <select id="f-dif" aria-label="Difficoltà CAI"><option value="all">Difficoltà CAI</option><option value="T">T · turistico</option><option value="E">E · escursionistico</option><option value="EE">EE · esperti</option></select>
     <select id="f-zone" aria-label="Zona"><option value="all">Tutte le zone</option></select>
   </div>
+  <p class="flabel">Attività</p>
+  <div class="hscroll" id="f-act" style="margin-top:6px"></div>
+  <p class="flabel">Particolarità</p>
+  <div class="hscroll" id="f-feat" style="margin-top:6px"></div>
+  <p class="small muted" id="feat-status" style="margin-top:6px"></p>
+  <div id="reco-box">
+    <div class="count"><h2>Consigliati</h2><span class="muted small">i sentieri famosi della zona</span></div>
+    <div class="carousel" id="reco"></div>
+  </div>
   <div class="count"><h2 id="count">Sentieri</h2><span class="muted small" id="status"></span></div>
-  <div id="list"><div class="skel"></div><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
-  <button class="btn wide" id="more" hidden style="margin-top:14px">Mostra altri sentieri</button>
-  <button class="btn pri fab" id="to-map"><svg><use href="#i-map"/></svg>Mappa</button>
+  <button class="btn sm" id="reset" hidden style="margin-bottom:12px">Azzera i filtri</button>
+  <div id="list"><div class="skel"></div><div class="skel"></div></div>
+  <button class="btn wide" id="more" hidden>Mostra altri sentieri</button>
+  <p class="small muted" style="margin-top:18px">Sentieri © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> (ODbL) · Mappe e immagini © <a href="https://www.mapbox.com/about/maps/" target="_blank" rel="noopener">Mapbox</a> · Meteo e quote <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a></p>
 </section>
-<div class="mapfull" id="mapAllWrap">
-  <div id="mapAll"></div>
-  <div class="peek" id="peek"></div>
-  <div class="overlay-top"><button class="btn" id="to-list"><svg><use href="#i-list"/></svg>Elenco</button></div>
-</div>
 
 <!-- SCHEDA SENTIERO -->
 <section class="screen" id="s-sentiero">
-  <div class="hero" id="hero">
-    <div id="mapDet"></div>
-    <div class="overlay-top"><button class="round" id="det-back" aria-label="Indietro"><svg><use href="#i-back"/></svg></button><span class="sp"></span><button class="round" id="det-loc" aria-label="Mostra dove sono" hidden><svg><use href="#i-nav"/></svg></button><button class="round" id="det-save" aria-label="Salva"><svg><use href="#i-heart"/></svg></button></div>
-    <button class="round expand" id="det-expand" aria-label="Apri la mappa a tutto schermo"><svg><use href="#i-expand"/></svg></button>
+  <div class="maphost" id="hostTrail">
+    <div class="overlay-top"><button class="round" id="det-back" aria-label="Indietro"><svg><use href="#i-back"/></svg></button><span class="sp"></span><button class="round" id="det-save" aria-label="Salva"><svg><use href="#i-heart"/></svg></button></div>
   </div>
   <div class="sheet" id="det"></div>
   <div class="pad-bar"></div>
   <div class="bar"><button class="btn pri" id="bar-save"><svg><use href="#i-heart"/></svg><span>Salva</span></button><a class="btn" id="bar-go" target="_blank" rel="noopener"><svg><use href="#i-nav"/></svg>Portami lì</a><button class="btn" id="bar-map"><svg><use href="#i-map"/></svg>Mappa</button></div>
 </section>
 
-<!-- CREA PERCORSO -->
+<!-- CREA GIRO -->
 <section class="screen" id="s-crea">
   <h1>Crea un giro</h1>
-  <p class="muted" id="crea-sub" style="margin-top:6px">Scegli da dove parti: disegno un anello adatto al tuo cane e al meteo di oggi.</p>
-  <div id="mapNewWrap"><div id="mapNew"></div></div>
-  <div class="row" style="margin-top:10px"><button class="btn" id="new-loc"><svg><use href="#i-nav"/></svg>Parto da dove sono</button><span class="muted small">oppure tocca la mappa</span></div>
-  <div class="block" style="margin-top:20px"><h2>Quanto vuoi camminare?</h2><div class="seg" id="seg"></div><p class="muted small" id="seg-hint" style="margin-top:8px"></p></div>
-  <div class="block" id="rules" style="margin-top:20px"></div>
-  <button class="btn pri wide" id="gen" style="margin-top:16px">Crea il percorso</button>
+  <div class="seg three" id="crea-mode" style="margin-top:14px">
+    <button data-mode="chat"><svg><use href="#i-chat"/></svg>Chat</button>
+    <button data-mode="auto"><svg><use href="#i-bolt"/></svg>Automatico</button>
+    <button data-mode="man"><svg><use href="#i-hand"/></svg>Manuale</button>
+  </div>
+  <p class="muted" id="crea-sub" style="margin-top:10px"></p>
+  <div class="maphost" id="hostCrea"></div>
+  <div class="row" style="margin-top:10px;flex-wrap:wrap"><button class="btn sm" id="new-loc"><svg><use href="#i-nav"/></svg>Parto da dove sono</button><span class="muted small">oppure tocca la mappa per spostare la partenza</span></div>
+  <div id="p-chat" hidden>
+    <div id="chat-key"></div>
+    <div class="msgs" id="msgs"></div>
+    <div class="sugg" id="sugg"></div>
+    <form class="chatin" id="chat-form"><input id="chat-in" autocomplete="off" placeholder="Scrivi che giro vuoi fare" aria-label="Messaggio per l'assistente"><button class="round" aria-label="Invia"><svg><use href="#i-send"/></svg></button></form>
+    <p class="small muted" style="margin-top:8px">L'assistente usa Gemini di Google. Riceve il profilo del tuo cane (senza nome del veterinario né microchip) e il meteo. Può sbagliare: il percorso finale lo calcola l'app con i limiti del cane.</p>
+  </div>
+  <div id="p-auto" hidden>
+    <div class="block" style="margin-top:18px" id="auto-why"></div>
+    <button class="btn pri wide" id="auto-go" style="margin-top:14px"><svg><use href="#i-bolt"/></svg>Crea il giro con un tocco</button>
+  </div>
+  <div id="p-man" hidden>
+    <div class="block" style="margin-top:18px"><h2>Quanto vuoi camminare?</h2><div class="seg" id="seg"></div><p class="muted small" id="seg-hint" style="margin-top:8px"></p></div>
+    <div class="block" id="rules" style="margin-top:20px"></div>
+    <button class="btn pri wide" id="gen" style="margin-top:16px">Crea il percorso</button>
+  </div>
   <div id="gen-out" class="stack" style="margin-top:16px"></div>
 </section>
 
@@ -260,6 +348,7 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
 <section class="screen" id="s-cane">
   <div id="onb" hidden><h1>Parlami del tuo cane</h1><p class="muted" style="margin:8px 0 18px">Mi serve per dirti quali sentieri sono adatti a lui e quali no.</p></div>
   <div class="row" id="dog-head"><div class="avatar" id="avatar">L</div><div><h1 id="dog-title">Il mio cane</h1><p class="muted" id="dog-cap"></p></div></div>
+  <p class="small" id="dog-alert" style="margin-top:10px"></p>
   <div class="form" style="margin-top:20px">
     <label>Nome<input id="d-name" autocomplete="off"></label>
     <label>Razza<input id="d-breed" autocomplete="off" placeholder="Es. Labrador, meticcio"></label>
@@ -270,16 +359,36 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
     <label class="w">Pelo<select id="d-coat"><option value="corto">Corto</option><option value="lungo">Lungo o folto: soffre di più il caldo</option></select></label>
     <label class="check"><input id="d-brachy" type="checkbox">Muso schiacciato (carlino, bulldog, boxer…)</label>
   </div>
+  <div class="block"><h2>Salute</h2>
+    <p class="muted small" style="margin-bottom:10px">Se segni un problema, l'app usa limiti più prudenti e ne tiene conto quando crea i giri. Non sostituisce il veterinario.</p>
+    <div class="checks" id="pat"></div>
+    <div class="form" style="margin-top:10px"><label class="w" id="pat-other-l" hidden>Altro: scrivi quale<input id="pat-other" autocomplete="off"></label></div>
+  </div>
+  <div class="block"><h2>Libretto sanitario</h2>
+    <p class="muted small" style="margin-bottom:10px">Resta salvato solo su questo telefono.</p>
+    <div class="form">
+      <label class="w">Microchip<input id="h-chip" autocomplete="off" inputmode="numeric"></label>
+      <label>Veterinario<input id="h-vet" autocomplete="off"></label>
+      <label>Telefono veterinario<input id="h-vettel" type="tel" autocomplete="off"></label>
+      <div class="w" style="grid-column:1/-1"><span class="small muted" style="font-weight:500">Vaccini (nome e data del richiamo)</span><div id="vax"></div><button class="btn sm" id="vax-add" style="margin-top:8px" type="button">Aggiungi un vaccino</button></div>
+      <label>Antiparassitario<input id="h-antip" autocomplete="off" placeholder="Prodotto"></label>
+      <label>Prossima dose<input id="h-antipdate" type="date"></label>
+      <label class="w">Note<textarea id="h-note"></textarea></label>
+    </div>
+  </div>
   <button class="btn pri wide" id="dog-save" style="margin-top:18px">Salva</button>
   <div id="settings">
-    <div class="block"><h2>Creazione dei percorsi</h2>
-      <p class="muted small" style="margin-bottom:10px">Per disegnare i giri ad anello l'app usa OpenRouteService, un servizio gratuito. Registrati su <a href="https://openrouteservice.org/dev/#/signup" target="_blank" rel="noopener">openrouteservice.org</a>, copia la tua chiave e incollala qui. Resta salvata solo su questo telefono.</p>
-      <input class="field" id="ors-key" placeholder="Incolla qui la chiave" autocomplete="off" autocapitalize="off" spellcheck="false">
-      <button class="btn wide" id="ors-save" style="margin-top:10px">Salva la chiave</button>
+    <div class="block"><h2>Chiavi dei servizi</h2>
+      <p class="muted small" style="margin-bottom:10px"><b>Giri ad anello</b>: OpenRouteService, gratuito. Registrati su <a href="https://openrouteservice.org/dev/#/signup" target="_blank" rel="noopener">openrouteservice.org</a>, copia la chiave e incollala qui.</p>
+      <input class="field" id="ors-key" placeholder="Chiave OpenRouteService" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <p class="muted small" style="margin:14px 0 10px"><b>Chat con l'AI</b>: Gemini, gratuito. Crea la chiave su <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> e incollala qui.</p>
+      <input class="field" id="gem-key" placeholder="Chiave Gemini" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <button class="btn wide" id="keys-save" style="margin-top:10px">Salva le chiavi</button>
+      <p class="muted small" style="margin-top:8px">Le chiavi restano salvate solo su questo telefono.</p>
     </div>
     <div class="block small muted">
-      <p>Il verdetto è un <b>consiglio prudente, non una garanzia</b>. Osserva sempre il tuo cane, fermati ai primi segni di stanchezza o affanno e, se ha problemi di salute, chiedi al veterinario.</p>
-      <p style="margin-top:10px">Sentieri © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> (ODbL) · Meteo e quote <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> · Percorsi <a href="https://openrouteservice.org" target="_blank" rel="noopener">OpenRouteService</a> · Mappe © CARTO</p>
+      <p>Il verdetto è un <b>consiglio prudente, non una garanzia</b>. Osserva sempre il tuo cane, fermati ai primi segni di stanchezza o affanno. L'app <b>non sostituisce il veterinario</b>: per qualsiasi dubbio sulla salute chiedi a lui.</p>
+      <p style="margin-top:10px">Sentieri © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> (ODbL) · Mappe © <a href="https://www.mapbox.com/about/maps/" target="_blank" rel="noopener">Mapbox</a> · Meteo e quote <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> · Percorsi <a href="https://openrouteservice.org" target="_blank" rel="noopener">OpenRouteService</a> · Chat Gemini (Google)</p>
     </div>
   </div>
 </section>
@@ -293,45 +402,84 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
 </div></nav>
 <div class="toast" id="toast" role="status"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/3.9.4/mapbox-gl.min.js"></script>
 <script>
 "use strict";
 // ================= Impostazioni =================
+// Token PUBBLICO Mapbox (inizia con pk.): può stare nel codice. Le chiavi segrete (OpenRouteService, Gemini) le incolla l'utente.
+const MAPBOX_TOKEN="pk.eyJ1IjoicGFyc2VuZyIsImEiOiJjbXdmOWdvdm0wNXVpMnhxcDIyaHc0bmVnIn0.j8nlRTa34ZMNdK8Oz-Go4w";
+// Satellite: stile ufficiale, ma le foto aeree arrivano dalla Static Tiles API (l'API "raster tiles" v4 di questo account risponde 429).
+// Rilievo 3D: AWS Terrain Tiles (dati aperti).
+const STYLES={map:"mapbox://styles/mapbox/outdoors-v12",sat:"mapbox://styles/mapbox/satellite-streets-v12"};
+const SAT_TILES=`https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/512/{z}/{x}/{y}@2x?access_token=${MAPBOX_TOKEN}`;
 const AREA={s:40.52,w:13.85,n:41.02,e:14.85};
-const OVERPASS=["https://overpass-api.de/api/interpreter","https://overpass.kumi.systems/api/interpreter"];
+const OVERPASS=["https://overpass-api.de/api/interpreter","https://overpass.kumi.systems/api/interpreter","https://overpass.private.coffee/api/interpreter"];
 const ZONES=[["Ischia",40.69,13.85,40.77,13.97],["Procida",40.74,13.99,40.77,14.04],["Capri",40.53,14.19,40.57,14.27],["Campi Flegrei",40.78,14.02,40.90,14.18],
   ["Napoli",40.80,14.18,40.90,14.30],["Vesuvio",40.77,14.35,40.87,14.50],["Penisola Sorrentina",40.56,14.30,40.66,14.46],["Monti Lattari e Costiera",40.60,14.46,40.74,14.72],["Partenio e Monti di Sarno",40.80,14.50,41.02,14.85]];
+// Sentieri famosi: si cerca il tracciato OpenStreetMap con quel nome; se non c'è, si mostrano i sentieri vicini.
+const FAMOUS=[
+  {n:"Sentiero degli Dei",re:/degli dei/i,c:[40.6305,14.5065]},
+  {n:"Gran Cono del Vesuvio",re:/gran cono|vesuvio/i,c:[40.8216,14.4262]},
+  {n:"Valle delle Ferriere",re:/ferriere/i,c:[40.6450,14.5960]},
+  {n:"Monte Faito",re:/faito/i,c:[40.6690,14.4790]},
+  {n:"Punta Campanella",re:/campanella/i,c:[40.5700,14.3260]},
+  {n:"Baia di Ieranto",re:/[ij]eranto/i,c:[40.5790,14.3450]},
+  {n:"Monte Nuovo",re:/monte nuovo/i,c:[40.8355,14.0880]},
+  {n:"Lago d'Averno",re:/averno/i,c:[40.8385,14.0745]},
+  {n:"Cratere degli Astroni",re:/astroni/i,c:[40.8400,14.1580]},
+  {n:"Monte Epomeo",re:/epomeo/i,c:[40.7310,13.9010]},
+  {n:"Monte Solaro",re:/solaro/i,c:[40.5465,14.2250]},
+  {n:"Sentiero dei Fortini",re:/fortini/i,c:[40.5560,14.2000]}
+];
+const ACTS=[["facile","Passeggiata facile"],["escursione","Escursione"],["trekking","Trekking impegnativo"],["corsa","Corsa col cane"],["bagno","Bagno"],["citta","Giro in città"]];
+const FEATS=[["cascate","Cascate"],["panorama","Vista panoramica"],["laghi","Laghi"],["fiumi","Fiumi"],["bosco","Bosco"],["spiaggia","Spiaggia"],["grotte","Grotte"],["storia","Siti storici"],["vette","Vette"],["fontanelle","Fontanelle"],["citta","Passeggiata in città"]];
+const FEATL=Object.fromEntries(FEATS);
+const PATS=[["art","Articolazioni"],["cuore","Cuore"],["resp","Respirazione"],["peso","Sovrappeso"],["epi","Epilessia"],["diab","Diabete"],["conv","Convalescenza"],["altro","Altro"]];
 const VLABEL=["Fattibile","Con prudenza","Sconsigliato"];
 const EFFORT=["Facile","Media","Difficile"];
-const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}}};
+const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
 const $=id=>document.getElementById(id);
-const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const km=m=>(m/1000).toFixed(1).replace(".",",");
+const kmN=n=>String(n).replace(".",",");
 function hav(a,b){const R=6371000,r=Math.PI/180,dl=(b[0]-a[0])*r,dn=(b[1]-a[1])*r,x=Math.sin(dl/2)**2+Math.cos(a[0]*r)*Math.cos(b[0]*r)*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
 function fmtH(h){const m=Math.max(.25,Math.round(h*4)/4),hh=Math.floor(m),mm=Math.round((m-hh)*60);return hh?(hh+" h"+(mm?" "+mm+" min":"")):mm+" min"}
 async function getJSON(u,o){const r=await fetch(u,o);if(!r.ok){const e=new Error("HTTP "+r.status);e.status=r.status;try{e.body=await r.json()}catch(x){}throw e}return r.json()}
-function toast(t){const el=$("toast");el.textContent=t;el.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove("on"),2200)}
+function toast(t){const el=$("toast");el.textContent=t;el.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove("on"),2400)}
 const icon=(n,s)=>`<svg${s?` width="${s}" height="${s}"`:""}><use href="#i-${n}"/></svg>`;
-const dark=()=>matchMedia("(prefers-color-scheme: dark)").matches;
 const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const ll=p=>[p[1],p[0]]; // [lat,lon] -> [lon,lat]
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
 // ================= Stato =================
-const S={dog:store.get("alldogs-dog"),saved:store.get("alldogs-saved")||[],routes:store.get("alldogs-routes")||[],trails:[],day:0,limit:30,sel:null,wxFail:false,mins:40,start:null,gen:null,genIdx:0,ready:false};
-const DEF_DOG={name:"Luna",breed:"Meticcio",age:4,weight:22,train:"medio",agil:"media",coat:"corto",brachy:false};
+const S={dog:store.get("alldogs-dog"),saved:store.get("alldogs-saved")||[],routes:store.get("alldogs-routes")||[],trails:[],day:0,limit:20,sel:null,wxFail:false,
+  mins:40,start:store.get("alldogs-start")||[40.8359,14.2488],gen:null,genIdx:0,ready:false,featReady:false,act:null,feat:[],near:null,
+  mode:store.get("alldogs-creamode")||"chat",chat:[],busy:false};
+const DEF_DOG={name:"Luna",breed:"Meticcio",age:4,weight:22,train:"medio",agil:"media",coat:"corto",brachy:false,pat:{},patOther:"",health:{}};
 const dog=()=>S.dog||DEF_DOG;
 const dn=()=>esc(dog().name||"il tuo cane");
+const pats=d=>PATS.filter(p=>d.pat&&d.pat[p[0]]).map(p=>p[0]==="altro"&&d.patOther?"altro ("+d.patOther+")":p[1].toLowerCase());
 
 // ================= Regole per il cane =================
 function capacity(d){
   const base={poco:{km:6,up:300},medio:{km:12,up:700},molto:{km:20,up:1200}}[d.train]||{km:12,up:700};
-  let k=base.km,up=base.up,f=1;const notes=[],senior=d.weight>=25?7:9;
+  let k=base.km,up=base.up,f=1,fu=1,heat=0;const notes=[],senior=d.weight>=25?7:9,p=d.pat||{};
   if(d.age<1){k=Math.min(k,4);up=Math.min(up,200);notes.push("è un cucciolo, con le articolazioni ancora in crescita")}
   else if(d.age>=senior){f*=.6;notes.push("è anziano per la sua taglia")}
   if(d.weight<8){f*=.7;notes.push("è di taglia piccola")}
   if(d.weight>40){f*=.8;notes.push("è di taglia gigante")}
   if(d.brachy){f*=.6;notes.push("ha il muso schiacciato e respira con più fatica")}
-  const sensitive=d.brachy||d.coat==="lungo"||d.age<1||d.age>=senior||d.weight>35;
-  return {km:Math.round(k*f*10)/10,up:Math.round(up*f/10)*10,notes,heat:sensitive?21:24,sensitive};
+  if(p.art){f*=.7;fu*=.6;notes.push("ha problemi alle articolazioni")}
+  if(p.cuore){f*=.6;fu*=.5;heat-=3;notes.push("ha problemi di cuore")}
+  if(p.resp){f*=.7;heat-=3;notes.push("ha problemi respiratori")}
+  if(p.peso){f*=.8;heat-=2;notes.push("è in sovrappeso")}
+  if(p.epi){f*=.85;notes.push("soffre di epilessia (meglio giri non isolati)")}
+  if(p.diab){f*=.85;notes.push("ha il diabete")}
+  if(p.altro){f*=.85;notes.push("ha un problema di salute"+(d.patOther?" ("+d.patOther+")":""))}
+  if(p.conv){k=Math.min(k,3);up=Math.min(up,100);notes.push("è in convalescenza")}
+  const sensitive=d.brachy||d.coat==="lungo"||d.age<1||d.age>=senior||d.weight>35||p.cuore||p.resp||p.peso;
+  const agil=p.art||p.conv?"bassa":d.agil;
+  return {km:Math.max(1,Math.round(k*f*10)/10),up:Math.max(50,Math.round(up*f*fu/10)*10),notes,heat:(sensitive?21:24)+heat,sensitive,agil,health:pats(d).length>0};
 }
 const dogStep=w=>w<10?.3:w<25?.45:w<40?.6:.7;
 function steps(m,d){return {me:Math.round(m/.75/100)*100,dog:Math.round(m/dogStep(d.weight)/100)*100}}
@@ -339,9 +487,9 @@ function steps(m,d){return {me:Math.round(m/.75/100)*100,dog:Math.round(m/dogSte
 // giudizio su distanza, salita, difficoltà, caldo. item = {len (m), up (m o null), scale, start [lat,lon], loop, dogs}
 function verdict(it,d,day){
   const cap=capacity(d),why=[],add=(lvl,txt)=>why.push({lvl,txt}),k=it.len/1000,nm=esc(d.name||"il tuo cane");
-  if(k<=cap.km)add(0,`${km(it.len)} km: dentro le possibilità di ${nm} (fino a circa ${cap.km} km).`);
-  else if(k<=cap.km*1.3)add(1,`${km(it.len)} km: un po' oltre il limite consigliato di circa ${cap.km} km. Prevedi pause lunghe.`);
-  else add(2,`${km(it.len)} km: troppo lungo, il limite consigliato per ${nm} è circa ${cap.km} km.`);
+  if(k<=cap.km)add(0,`${km(it.len)} km: dentro le possibilità di ${nm} (fino a circa ${kmN(cap.km)} km).`);
+  else if(k<=cap.km*1.3)add(1,`${km(it.len)} km: un po' oltre il limite consigliato di circa ${kmN(cap.km)} km. Prevedi pause lunghe.`);
+  else add(2,`${km(it.len)} km: troppo lungo, il limite consigliato per ${nm} è circa ${kmN(cap.km)} km.`);
   if(it.loop===false)why[why.length-1].txt+=" Non è un anello: se torni a piedi la distanza raddoppia.";
   const up=it.up;
   if(up!=null){
@@ -351,9 +499,9 @@ function verdict(it,d,day){
   } else add(-1,"Sto calcolando il dislivello…");
   const s=it.scale;
   if(s==="EEA")add(2,"Difficoltà EEA: tratti attrezzati con cavi o scalette, i cani non possono farli.");
-  else if(s==="EE"){if(d.agil==="alta"&&d.train==="molto")add(1,"Difficoltà EE (escursionisti esperti): passaggi su roccia ed esposti. Solo con guinzaglio corto e molta attenzione.");
-    else add(2,"Difficoltà EE (escursionisti esperti): passaggi su roccia ed esposti, non adatti alla sua agilità o al suo allenamento.")}
-  else if(s==="E"){if(d.agil==="bassa")add(1,"Difficoltà E (escursionistica): pietre e gradini, faticoso per un cane poco agile.");else add(0,"Difficoltà E (escursionistica): un normale sentiero di montagna.")}
+  else if(s==="EE"){if(cap.agil==="alta"&&d.train==="molto"&&!cap.health)add(1,"Difficoltà EE (escursionisti esperti): passaggi su roccia ed esposti. Solo con guinzaglio corto e molta attenzione.");
+    else add(2,"Difficoltà EE (escursionisti esperti): passaggi su roccia ed esposti, non adatti alla sua agilità, al suo allenamento o alla sua salute.")}
+  else if(s==="E"){if(cap.agil==="bassa")add(1,"Difficoltà E (escursionistica): pietre e gradini, faticoso per un cane poco agile o con problemi alle zampe.");else add(0,"Difficoltà E (escursionistica): un normale sentiero di montagna.")}
   else if(s==="T")add(0,"Difficoltà T (turistica): sentiero facile.");
   else if(s==="CITY"){}
   else add(0,"Difficoltà non indicata nei dati: informati prima di partire.");
@@ -375,40 +523,50 @@ function verdict(it,d,day){
   } else if(S.wxFail)add(0,"Meteo non disponibile in questo momento: controlla la temperatura prima di partire.");
   else add(-1,"Sto caricando il meteo…");
   if(it.dogs==="no")add(2,"Secondo i dati di OpenStreetMap i cani non sono ammessi su questo sentiero.");
+  if(cap.health)add(0,`Limiti ridotti per la salute di ${nm}: in caso di dubbio chiedi al veterinario.`);
   const known=why.filter(x=>x.lvl>=0);
   const v=why.some(x=>x.lvl<0)&&!known.some(x=>x.lvl===2)?-1:Math.max(...known.map(x=>x.lvl));
   const r=Math.max(k/cap.km,up!=null?up/cap.up:0),effort=r<.5?0:r<.85?1:2;
   return {v,why,hours,best,cap,w,up,effort};
 }
-function bringList(it,d,res){
+function bringList(it,d,res,ft){
   const b=res.best??10,hot=res.w?Math.max(...res.w.H.slice(b,b+Math.max(1,Math.ceil(res.hours))).map(x=>x.f))>20:true;
   let L=Math.max(.5,d.weight*.025*res.hours*(hot?1.5:1));L=Math.ceil(L*4)/4;
-  const out=[`Acqua per ${esc(d.name||"il cane")}: almeno ${String(L).replace(".",",")} litri, più la tua. Con fontanelle lungo il percorso puoi portarne meno.`,"Ciotola pieghevole e sacchetti.","Pettorina e guinzaglio."];
+  const nw=ft&&ft.w?ft.w.length:0;
+  const out=[`Acqua per ${esc(d.name||"il cane")}: almeno ${String(L).replace(".",",")} litri, più la tua.`+(nw?` Lungo il percorso ci sono ${nw===1?"una fontanella segnata":nw+" fontanelle segnate"} su OpenStreetMap: non contarci troppo, possono essere chiuse.`:""),"Ciotola pieghevole e sacchetti.","Pettorina e guinzaglio."];
   if(res.hours>=2)out.push("Uno snack o un pasto leggero per lui.");
   if(it.scale==="E"||it.scale==="EE")out.push("Scarpette protettive se ha le zampe delicate: il fondo può essere roccioso.");
   if(hot)out.push("Un asciugamano da bagnare per rinfrescarlo nelle pause.");
   if(it.scale!=="CITY")out.push("Kit di primo soccorso: garze, pinzetta per le zecche, disinfettante.");
+  if(res.cap.health)out.push("Quello che il veterinario ti ha detto di portare per la sua condizione, e il suo numero di telefono.");
   return out;
 }
 
 // ================= Dati: sentieri =================
 function zoneOf(p){for(const z of ZONES)if(p[0]>=z[1]&&p[0]<=z[3]&&p[1]>=z[2]&&p[1]<=z[4])return z[0];return "Campania"}
-function thin(w,min){const o=[w[0]];for(let i=1;i<w.length-1;i++)if(hav(o[o.length-1],w[i])>=min)o.push(w[i]);o.push(w[w.length-1]);return o}
+function thin(w,min){const o=[w[0]];for(let i=1;i<w.length-1;i++)if(hav(o[o.length-1],w[i])>=min)o.push(w[i]);if(w.length>1)o.push(w[w.length-1]);return o}
 function chain(ways){const rest=ways.slice(1);let path=ways[0].slice();
   while(rest.length){const end=path[path.length-1];let bi=0,bd=Infinity,rev=false;
     rest.forEach((w,i)=>{const a=hav(end,w[0]),b=hav(end,w[w.length-1]);if(a<bd){bd=a;bi=i;rev=false}if(b<bd){bd=b;bi=i;rev=true}});
     let w=rest.splice(bi,1)[0];if(rev)w=w.slice().reverse();path=path.concat(w)}
   return path}
-function sample(path,n){const cum=[0];for(let i=1;i<path.length;i++)cum.push(cum[i-1]+hav(path[i-1],path[i]));
+function sample(path,n){if(path.length<2)return path.slice();const cum=[0];for(let i=1;i<path.length;i++)cum.push(cum[i-1]+hav(path[i-1],path[i]));
   const tot=cum[cum.length-1],out=[];let j=0;for(let k=0;k<n;k++){const d=tot*k/(n-1);while(j<cum.length-2&&cum[j+1]<d)j++;out.push(path[j])}return out}
-function hydrate(t){t.path=chain(t.ways);t.start=t.path[0];t.loop=hav(t.path[0],t.path[t.path.length-1])<500;t.zone=zoneOf(t.path[Math.floor(t.path.length/2)]);return t}
+function hydrate(t){t.path=chain(t.ways);t.start=t.path[0];t.loop=hav(t.path[0],t.path[t.path.length-1])<500;t.zone=zoneOf(t.path[Math.floor(t.path.length/2)]);
+  let a=90,b=-90,c=180,e=-180;for(const w of t.ways)for(const p of w){a=Math.min(a,p[0]);b=Math.max(b,p[0]);c=Math.min(c,p[1]);e=Math.max(e,p[1])}t.bb=[[c,a],[e,b]];return t}
+async function overpass(q){
+  let err;
+  for(const u of OVERPASS){for(let tries=0;tries<2;tries++){
+    try{return await getJSON(u,{method:"POST",body:"data="+encodeURIComponent(q),headers:{"Content-Type":"application/x-www-form-urlencoded"}})}
+    catch(e){err=e;if(e.status===429||e.status===504){await sleep(3000*(tries+1));continue}break}}}
+  throw err;
+}
+const TRAIL_KEY="alldogs-trails-v3";
 async function loadTrails(){
-  const c=store.get("alldogs-trails-v2");
+  const c=store.get(TRAIL_KEY);
   if(c&&Date.now()-c.t<14*864e5&&c.trails.length)return c.trails.map(hydrate);
-  const q=`[out:json][timeout:90];relation["route"="hiking"]["network"!~"^(iwn|nwn)$"](${AREA.s},${AREA.w},${AREA.n},${AREA.e});out tags geom;`;
-  let data,err;
-  for(const u of OVERPASS){try{data=await getJSON(u,{method:"POST",body:"data="+encodeURIComponent(q),headers:{"Content-Type":"application/x-www-form-urlencoded"}});break}catch(e){err=e}}
-  if(!data)throw err;
+  const q=`[out:json][timeout:120];relation["route"~"^(hiking|foot)$"]["network"!~"^(iwn|nwn)$"](${AREA.s},${AREA.w},${AREA.n},${AREA.e});out body geom;`;
+  const data=await overpass(q);
   const out=[];
   for(const el of data.elements){
     const t=el.tags||{};
@@ -416,19 +574,20 @@ async function loadTrails(){
     if(!ways.length)continue;
     let len=0;for(const w of ways)for(let i=1;i<w.length;i++)len+=hav(w[i-1],w[i]);
     if(len<500||len>40000)continue;
-    ways=ways.map(w=>thin(w,20));
+    ways=ways.map(w=>thin(w,25));
     const cai=/cai/i.test((t.operator||"")+(t.network||"")+(t["osmc:symbol"]||""))||!!t.cai_scale;
     const name=t.name||(t.from&&t.to?t.from+" – "+t.to:(t.ref?"Sentiero "+t.ref:""));
     if(!name)continue;
-    out.push({id:el.id,name,ref:t.ref||"",from:t.from||"",to:t.to||"",cai,scale:(t.cai_scale||"").toUpperCase(),operator:t.operator||"",dogs:t.dog||"",len:Math.round(len),ways});
+    out.push({id:el.id,name,type:t.route,ref:t.ref||"",from:t.from||"",to:t.to||"",cai,scale:(t.cai_scale||"").toUpperCase(),operator:t.operator||"",dogs:t.dog||"",len:Math.round(len),ways});
   }
-  store.set("alldogs-trails-v2",{t:Date.now(),trails:out});
+  if(!out.length)throw new Error("Nessun sentiero ricevuto");
+  if(!store.set(TRAIL_KEY,{t:Date.now(),trails:out}))console.warn("Spazio insufficiente per salvare i sentieri");
   return out.map(hydrate);
 }
 const elev=store.get("alldogs-elev-v1")||{};
 async function elevation(tr){
   if(elev[tr.id])return elev[tr.id];
-  const pts=sample(tr.path,100);
+  const pts=sample(tr.path,30); // Open-Meteo conta ogni punto come una richiesta: 30 punti bastano per una stima
   const r=await getJSON(`https://api.open-meteo.com/v1/elevation?latitude=${pts.map(p=>p[0]).join(",")}&longitude=${pts.map(p=>p[1]).join(",")}`),z=r.elevation;
   let up=0,down=0;for(let i=1;i<z.length;i++){const dz=z[i]-z[i-1];if(dz>0)up+=dz;else down-=dz}
   elev[tr.id]={up:Math.round(Math.max(up,down)),max:Math.round(Math.max(...z)),min:Math.round(Math.min(...z))};
@@ -436,8 +595,69 @@ async function elevation(tr){
 }
 const item=tr=>({len:tr.len,up:elev[tr.id]?elev[tr.id].up:null,scale:tr.scale,start:tr.start,loop:tr.loop,dogs:tr.dogs});
 
+// ================= Dati: particolarità (da OpenStreetMap, elementi vicino al tracciato) =================
+const FEAT_KEY="alldogs-feat-v1";
+let FT=store.get(FEAT_KEY)?.m||{};
+async function loadFeatures(){
+  const c=store.get(FEAT_KEY);
+  if(c&&Date.now()-c.t<14*864e5&&S.trails.every(t=>c.m[t.id])){FT=c.m;return}
+  const B=`${AREA.s},${AREA.w},${AREA.n},${AREA.e}`;
+  const q=`[out:json][timeout:180];(node["waterway"="waterfall"](${B});node["natural"~"^(peak|volcano|spring|cave_entrance)$"](${B});way["natural"="cave_entrance"](${B});node["tourism"="viewpoint"](${B});node["amenity"~"^(drinking_water|water_point)$"](${B});`+
+    `nw["historic"~"^(castle|ruins|archaeological_site|fort|monastery|tower|aqueduct|city_gate)$"](${B});nwr["natural"="water"](${B});nw["natural"="beach"](${B});nwr["natural"="wood"](${B});nwr["landuse"="forest"](${B}););out bb qt;way["waterway"="river"](${B});out geom qt;`;
+  const data=await overpass(q);
+  // indici a griglia
+  const G=.005,pts={},boxes={},BG=.01;
+  const putP=(k,p,r)=>{const key=Math.floor(p[0]/G)+","+Math.floor(p[1]/G);(pts[key]=pts[key]||[]).push({k,p,r})};
+  const putB=(k,b,pad)=>{const dl=pad/111000,dn=pad/84000,bb=[b.minlat-dl,b.minlon-dn,b.maxlat+dl,b.maxlon+dn];
+    for(let i=Math.floor(bb[0]/BG);i<=Math.floor(bb[2]/BG);i++)for(let j=Math.floor(bb[1]/BG);j<=Math.floor(bb[3]/BG);j++)(boxes[i+","+j]=boxes[i+","+j]||[]).push({k,bb})};
+  for(const el of data.elements){
+    const t=el.tags||{};
+    const p=el.lat!=null?[el.lat,el.lon]:el.bounds?[(el.bounds.minlat+el.bounds.maxlat)/2,(el.bounds.minlon+el.bounds.maxlon)/2]:null;
+    if(t.waterway==="waterfall")putP("cascate",p,300);
+    else if(t.waterway==="river"&&el.geometry){thin(el.geometry.map(g=>[g.lat,g.lon]),100).forEach(q=>putP("fiumi",q,120))}
+    else if(t.natural==="peak"||t.natural==="volcano")putP("vette",p,150);
+    else if(t.natural==="cave_entrance")putP("grotte",p,200);
+    else if(t.natural==="spring"){if(t.drinking_water==="yes")putP("fontanelle",p,120)}
+    else if(t.tourism==="viewpoint")putP("panorama",p,150);
+    else if(t.amenity)putP("fontanelle",p,120);
+    else if(t.historic)putP("storia",p,150);
+    else if(t.natural==="water"&&el.bounds){const b=el.bounds,diag=hav([b.minlat,b.minlon],[b.maxlat,b.maxlon]);
+      if(/river|canal|stream/.test(t.water||""))putB("fiumi",b,80);else if(!/wastewater|basin|pond|reflecting_pool|fountain/.test(t.water||"")&&diag>150)putB("laghi",b,150)}
+    else if(t.natural==="beach"&&el.bounds)putB("spiaggia",el.bounds,150);
+    else if((t.natural==="wood"||t.landuse==="forest")&&el.bounds)putB("bosco",el.bounds,0);
+  }
+  const m={};
+  for(const tr of S.trails){
+    const sm=sample(tr.path,Math.min(250,Math.max(10,Math.round(tr.len/80)))),f=new Set(),w=[];let woodN=0;
+    for(const p of sm){
+      const gi=Math.floor(p[0]/G),gj=Math.floor(p[1]/G);
+      for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++)for(const o of pts[(gi+a)+","+(gj+b)]||[]){
+        if(hav(p,o.p)<=o.r){f.add(o.k);if(o.k==="fontanelle"&&!w.some(x=>x[0]===o.p[0]&&x[1]===o.p[1]))w.push(o.p)}}
+      let inWood=false;
+      for(const o of boxes[Math.floor(p[0]/BG)+","+Math.floor(p[1]/BG)]||[]){
+        if(p[0]>=o.bb[0]&&p[0]<=o.bb[2]&&p[1]>=o.bb[1]&&p[1]<=o.bb[3]){if(o.k==="bosco")inWood=true;else f.add(o.k)}}
+      if(inWood)woodN++;
+    }
+    const wood=woodN/sm.length;if(wood>=.5)f.add("bosco");
+    if(tr.type==="foot"||tr.zone==="Napoli")f.add("citta");
+    m[tr.id]={f:[...f],w:w.map(p=>[+p[0].toFixed(5),+p[1].toFixed(5)]),wood:Math.round(wood*100)/100};
+  }
+  FT=m;store.set(FEAT_KEY,{t:Date.now(),m});
+}
+function acts(tr){
+  const up=elev[tr.id]?elev[tr.id].up:null,k=tr.len/1000,f=FT[tr.id]?FT[tr.id].f:[],hard=tr.scale==="EE"||tr.scale==="EEA",o=new Set();
+  if(k<=5&&!hard&&tr.scale!=="E"&&(up==null?tr.scale==="T":up<=150))o.add("facile");
+  if(!hard&&(tr.scale==="E"||(k>5&&k<=15)||(up!=null&&up>150&&up<=800)))o.add("escursione");
+  if(hard||k>15||(up!=null&&up>800))o.add("trekking");
+  if(k>=3&&k<=12&&!hard&&up!=null&&up/k<=40)o.add("corsa");
+  if(f.includes("spiaggia")||f.includes("laghi")||f.includes("fiumi"))o.add("bagno");
+  if(f.includes("citta"))o.add("citta");
+  return o;
+}
+
 // ================= Dati: meteo =================
-const wx={};
+const WX_KEY="alldogs-wx-v1";
+const wx=(()=>{const c=store.get(WX_KEY);return c&&Date.now()-c.t<3600e3&&c.d===new Date().toDateString()?c.wx:{}})();
 const wxKey=p=>(Math.round(p[0]*10)/10).toFixed(1)+","+(Math.round(p[1]*10)/10).toFixed(1);
 async function loadWeather(points){
   const keys=[...new Set(points.map(wxKey))].filter(k=>!wx[k]);
@@ -448,6 +668,7 @@ async function loadWeather(points){
     if(!Array.isArray(r))r=[r];
     r.forEach((w,j)=>wx[part[j]]=w);
   }
+  if(keys.length)store.set(WX_KEY,{t:Date.now(),d:new Date().toDateString(),wx});
 }
 function dayWx(p,day){
   const w=p&&wx[wxKey(p)];if(!w)return null;
@@ -459,8 +680,138 @@ const wxIcon=c=>c<=1?"sun":c<=48?"cloud":"rain";
 const wxText=c=>c===0?"Sereno":c<=2?"Poco nuvoloso":c===3?"Nuvoloso":c<=48?"Nebbia":c<=57?"Pioviggine":c<=67?"Pioggia":c<=77?"Neve":c<=82?"Rovesci":c<=86?"Neve":"Temporale";
 function dayName(i,daily){if(i===0)return "Oggi";if(i===1)return "Domani";const d=daily?new Date(daily.time[i]+"T12:00"):new Date(Date.now()+i*864e5);return d.toLocaleDateString("it-IT",{weekday:"long"}).replace(/^./,c=>c.toUpperCase())}
 
+// ================= Immagini Mapbox (miniature satellitari con il tracciato) =================
+function encPoly(pts){let o="",pa=0,pb=0;const e=v=>{v=v<0?~(v<<1):v<<1;let s="";while(v>=0x20){s+=String.fromCharCode((0x20|(v&0x1f))+63);v>>=5}return s+String.fromCharCode(v+63)};
+  for(const p of pts){const a=Math.round(p[0]*1e5),b=Math.round(p[1]*1e5);o+=e(a-pa)+e(b-pb);pa=a;pb=b}return o}
+function staticImg(path,w,h){
+  const p=encodeURIComponent(encPoly(sample(path,Math.min(70,path.length)))),s=path[0];
+  return `https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/static/path-6+ffffff-0.85(${p}),path-3+ff5d2a-1(${p}),pin-s+1f8a4c(${s[1].toFixed(5)},${s[0].toFixed(5)})/auto/${w||400}x${h||240}@2x?padding=36&access_token=${MAPBOX_TOKEN}`;
+}
+function staticPlace(c,w,h){return `https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/static/pin-l+2456f5(${c[1]},${c[0]})/${c[1]},${c[0]},13.2/${w||400}x${h||240}@2x?access_token=${MAPBOX_TOKEN}`}
+function svgThumb(path){
+  const pts=sample(path,40),lat0=pts[0][0]*Math.PI/180;let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+  const xy=pts.map(p=>{const x=p[1]*Math.cos(lat0),y=-p[0];x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y);return [x,y]});
+  const sc=64/Math.max(x1-x0,y1-y0,1e-6),ox=(76-(x1-x0)*sc)/2,oy=(76-(y1-y0)*sc)/2;
+  return `<svg viewBox="0 0 76 76" aria-hidden="true"><polyline points="${xy.map(p=>((p[0]-x0)*sc+ox).toFixed(1)+","+((p[1]-y0)*sc+oy).toFixed(1)).join(" ")}"/></svg>`;
+}
+
+// ================= Mappa unica Mapbox =================
+let M=null,styleOK=false,mapStyle=store.get("alldogs-mapstyle")==="sat"?"sat":"map",map3d=!!store.get("alldogs-map3d"),curHost=null,interactive=true;
+let scene={mode:"explore"},stopMarkers=[],pinM=null,meM=null,fitPending=false;
+const HANDLERS=["dragPan","scrollZoom","boxZoom","dragRotate","keyboard","doubleClickZoom","touchZoomRotate","touchPitch"];
+function mapOK(){return !!window.mapboxgl}
+function mountMap(host,inter){
+  const wrap=$("mapwrap");
+  if(wrap.parentNode!==host)host.prepend(wrap);
+  curHost=host;interactive=inter;
+  document.querySelectorAll(".maphost.full").forEach(h=>{if(h!==host)h.classList.remove("full")});
+  syncFullBtn();
+  if(!mapOK()){$("map").innerHTML=`<div class="mapnote">La mappa non si carica. Controlla la connessione e ricarica la pagina.</div>`;return}
+  if(!M)initMap();
+  setInteractive(inter||host.classList.contains("full"));
+  requestAnimationFrame(()=>{M.resize();applyScene()});
+}
+function initMap(){
+  mapboxgl.accessToken=MAPBOX_TOKEN;
+  try{
+    M=new mapboxgl.Map({container:"map",style:STYLES[mapStyle],center:[14.35,40.75],zoom:9,attributionControl:false,pitchWithRotate:true});
+  }catch(e){$("map").innerHTML=`<div class="mapnote">Questo telefono non riesce a mostrare la mappa (serve WebGL).</div>`;M=null;return}
+  M.addControl(new mapboxgl.AttributionControl({compact:true,customAttribution:"Sentieri © OpenStreetMap contributors"}),"bottom-left");
+  M.on("style.load",()=>{styleOK=true;addLayers();if(map3d)terrain(true);applyScene()});
+  M.on("error",e=>console.warn("Mapbox:",e&&e.error&&e.error.message));
+  M.on("mouseenter","ad-trails-hit",()=>M.getCanvas().style.cursor="pointer");M.on("mouseleave","ad-trails-hit",()=>M.getCanvas().style.cursor="");
+  M.on("click",e=>{
+    if(scene.mode==="explore"){const f=M.queryRenderedFeatures([[e.point.x-10,e.point.y-10],[e.point.x+10,e.point.y+10]],{layers:["ad-trails-hit","ad-trails-start"]});if(f.length){peek(f[0].properties.id);return}hidePeek()}
+    else if(scene.mode==="trail"&&!curHost.classList.contains("full"))setFull(true);
+    else if(scene.mode==="crea")setStart([e.lngLat.lat,e.lngLat.lng]);
+  });
+}
+function setInteractive(on){if(!M)return;HANDLERS.forEach(h=>M[h]&&(on?M[h].enable():M[h].disable()))}
+function fixSatellite(){
+  const L=M.getStyle().layers,ras=L.find(l=>l.type==="raster");if(!ras||M.getSource("sat2"))return;
+  const old=ras.source;M.removeLayer(ras.id);try{M.removeSource(old)}catch(e){}
+  M.addSource("sat2",{type:"raster",tiles:[SAT_TILES],tileSize:512,maxzoom:20,attribution:"© Mapbox © Maxar"});
+  const first=M.getStyle().layers.find(l=>l.type!=="background");
+  M.addLayer({id:"sat2",type:"raster",source:"sat2"},first&&first.id);
+}
+function addLayers(){
+  if(mapStyle==="sat")try{fixSatellite()}catch(e){console.warn(e)}
+  const empty={type:"FeatureCollection",features:[]};
+  ["trails","sel","water","startpt"].forEach(s=>{if(!M.getSource(s))M.addSource(s,{type:"geojson",data:empty})});
+  if(!M.getSource("dem"))M.addSource("dem",{type:"raster-dem",tiles:["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"],encoding:"terrarium",tileSize:256,maxzoom:14,attribution:"Rilievo: Terrain Tiles (Mapzen, AWS Open Data)"});
+  M.addLayer({id:"ad-trails-line",type:"line",source:"trails",layout:{"line-cap":"round","line-join":"round"},paint:{"line-color":["get","col"],"line-width":["interpolate",["linear"],["zoom"],8,2,13,4],"line-opacity":.9}});
+  M.addLayer({id:"ad-trails-hit",type:"line",source:"trails",paint:{"line-color":"#000","line-width":16,"line-opacity":0}});
+  M.addLayer({id:"ad-trails-start",type:"circle",source:"startpt",paint:{"circle-color":["get","col"],"circle-radius":["interpolate",["linear"],["zoom"],8,3.5,13,7],"circle-stroke-color":"#fff","circle-stroke-width":2}});
+  M.addLayer({id:"ad-sel-casing",type:"line",source:"sel",layout:{"line-cap":"round","line-join":"round"},paint:{"line-color":"#ffffff","line-width":9,"line-opacity":.95}});
+  M.addLayer({id:"ad-sel-line",type:"line",source:"sel",layout:{"line-cap":"round","line-join":"round"},paint:{"line-color":"#ff5d2a","line-width":5}});
+  M.addLayer({id:"ad-water",type:"circle",source:"water",paint:{"circle-color":"#1e88e5","circle-radius":6,"circle-stroke-color":"#fff","circle-stroke-width":2}});
+}
+function terrain(on){
+  if(!M||!styleOK)return;
+  if(on){M.setTerrain({source:"dem",exaggeration:1.4});try{M.setFog({})}catch(e){}if(M.getPitch()<30)M.easeTo({pitch:60,duration:800})}
+  else{M.setTerrain(null);M.easeTo({pitch:0,bearing:0,duration:600})}
+}
+function setStyleKind(k){
+  if(k==="3d"){map3d=!map3d;store.set("alldogs-map3d",map3d);terrain(map3d)}
+  else if(k!==mapStyle){mapStyle=k;store.set("alldogs-mapstyle",k);styleOK=false;M.setStyle(STYLES[k],{diff:false})}
+  syncLayersMenu();
+}
+function syncLayersMenu(){document.querySelectorAll("#layers button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.st==="3d"?map3d:b.dataset.st===mapStyle))}
+const fc=f=>({type:"FeatureCollection",features:f});
+const lineF=(ways,props)=>({type:"Feature",properties:props||{},geometry:{type:"MultiLineString",coordinates:ways.map(w=>w.map(ll))}});
+function setData(src,data){const s=M.getSource(src);if(s)s.setData(data)}
+function vis(id,on){if(M.getLayer(id))M.setLayoutProperty(id,"visibility",on?"visible":"none")}
+function vColor(v){return css(v<0?"--wait":["--ok","--warn","--no"][v])}
+function clearMarkers(){stopMarkers.forEach(m=>m.remove());stopMarkers=[]}
+function fitTo(bb,pad){if(!M)return;const full=curHost&&curHost.classList.contains("full");M.fitBounds(bb,{padding:pad??(full?60:30),maxZoom:15.5,duration:0,pitch:map3d?55:0})}
+function boundsOf(paths){let a=90,b=-90,c=180,e=-180;for(const w of paths)for(const p of w){a=Math.min(a,p[0]);b=Math.max(b,p[0]);c=Math.min(c,p[1]);e=Math.max(e,p[1])}return [[c,a],[e,b]]}
+function applyScene(){
+  if(!M||!styleOK)return;
+  const sc=scene,ex=sc.mode==="explore";
+  ["ad-trails-line","ad-trails-hit","ad-trails-start"].forEach(id=>vis(id,ex));
+  clearMarkers();
+  if(pinM&&sc.mode!=="crea"){pinM.remove();pinM=null}
+  if(ex){
+    const rows=S.rows||[];
+    setData("trails",fc(rows.map(r=>lineF(r.tr.ways,{id:r.tr.id,col:vColor(r.res.v)}))));
+    setData("startpt",fc(rows.map(r=>({type:"Feature",properties:{id:r.tr.id,col:vColor(r.res.v)},geometry:{type:"Point",coordinates:ll(r.tr.start)}}))));
+    const p=S.peek&&S.trails.find(t=>t.id===S.peek);
+    setData("sel",p?fc([lineF(p.ways)]):fc([]));setData("water",fc([]));
+    if(fitPending){fitPending=false;
+      if(S.near)M.jumpTo({center:ll(S.near.c),zoom:12});
+      else if(rows.length){fitTo(boundsOf(rows.map(r=>[r.tr.start])),40)}}
+  } else if(sc.mode==="trail"){
+    setData("sel",fc([lineF(sc.ways)]));
+    setData("water",fc((sc.water||[]).map(p=>({type:"Feature",properties:{},geometry:{type:"Point",coordinates:ll(p)}}))));
+    const el=document.createElement("div");el.className="mk-stop";el.style.borderColor="#1f8a4c";el.textContent="▶";
+    stopMarkers.push(new mapboxgl.Marker({element:el}).setLngLat(ll(sc.start)).addTo(M));
+    if(fitPending){fitPending=false;fitTo(boundsOf(sc.ways))}
+  } else if(sc.mode==="crea"){
+    setData("water",fc([]));
+    const r=S.gen&&S.gen[S.genIdx];
+    setData("sel",r?fc([lineF([r.path])]):fc([]));
+    if(r)(r.stops||[]).forEach((s,i)=>{const el=document.createElement("div");el.className="mk-stop";el.textContent=i+1;stopMarkers.push(new mapboxgl.Marker({element:el}).setLngLat(ll(s.p)).addTo(M))});
+    if(!pinM){const el=document.createElement("div");el.className="mk-pin";pinM=new mapboxgl.Marker({element:el,draggable:true,anchor:"bottom"}).setLngLat(ll(S.start)).addTo(M);
+      pinM.on("dragend",()=>{const p=pinM.getLngLat();setStart([p.lat,p.lng],true)})}
+    else pinM.setLngLat(ll(S.start));
+    if(fitPending){fitPending=false;if(r)fitTo(boundsOf([r.path]));else M.jumpTo({center:ll(S.start),zoom:14,pitch:map3d?55:0})}
+  }
+}
+function setScene(s,fit){scene=s;if(fit)fitPending=true;applyScene()}
+function setFull(on){
+  if(!curHost)return;curHost.classList.toggle("full",on);syncFullBtn();setInteractive(on||interactive);$("layers").hidden=true;
+  requestAnimationFrame(()=>{if(!M)return;M.resize();if(scene.mode==="trail"){fitTo(boundsOf(scene.ways))}else if(scene.mode==="crea"&&S.gen){fitTo(boundsOf([S.gen[S.genIdx].path]))}});
+}
+function syncFullBtn(){const on=curHost&&curHost.classList.contains("full");$("m-full").innerHTML=icon(on?"shrink":"expand");$("m-full").setAttribute("aria-label",on?"Riduci la mappa":"Mappa a tutto schermo")}
+$("m-full").onclick=()=>setFull(!(curHost&&curHost.classList.contains("full")));
+$("m-layers").onclick=()=>{$("layers").hidden=!$("layers").hidden;syncLayersMenu()};
+document.querySelectorAll("#layers button").forEach(b=>b.onclick=()=>{if(M)setStyleKind(b.dataset.st);$("layers").hidden=true});
+function getPos(){return new Promise((res,rej)=>{if(!navigator.geolocation)return rej(new Error("no geo"));navigator.geolocation.getCurrentPosition(p=>res([p.coords.latitude,p.coords.longitude]),rej,{enableHighAccuracy:true,timeout:12000,maximumAge:60000})})}
+function showMe(p){if(!M)return;if(!meM){const el=document.createElement("div");el.className="mk-me";meM=new mapboxgl.Marker({element:el})}meM.setLngLat(ll(p)).addTo(M)}
+$("m-loc").onclick=async()=>{try{const p=await getPos();showMe(p);if(scene.mode==="crea")setStart(p);else M.flyTo({center:ll(p),zoom:Math.max(M.getZoom(),13)})}catch(e){toast("Non riesco a leggere la posizione")}};
+
 // ================= Navigazione =================
-const SCREENS=["esplora","sentiero","crea","salvati","attivita","cane","giro"];
+const SCREENS=["esplora","sentiero","crea","salvati","attivita","cane"];
 let lastList=0;
 function route(){
   let h=location.hash.slice(1)||"esplora";
@@ -471,9 +822,9 @@ function route(){
   document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on",s.id==="s-"+scr));
   document.querySelectorAll("#tabs a").forEach(a=>a.classList.toggle("on",a.dataset.t===(scr==="sentiero"?"esplora":scr)));
   $("tabs").classList.toggle("hide",!S.dog);
-  if(scr!=="esplora")$("mapAllWrap").classList.remove("on");
-  $("hero").classList.remove("full");
-  if(scr==="esplora"){renderList();window.scrollTo(0,lastList)}
+  document.querySelectorAll(".maphost.full").forEach(h=>h.classList.remove("full"));
+  $("layers").hidden=true;
+  if(scr==="esplora"){mountMap($("hostExplore"),true);renderList();window.scrollTo(0,lastList)}
   else window.scrollTo(0,0);
   if(scr==="sentiero")showTrail(arg);
   if(scr==="crea")showCrea();
@@ -484,95 +835,101 @@ function route(){
 addEventListener("hashchange",route);
 
 // ================= Esplora =================
-function thumb(tr){
-  const pts=sample(tr.path,40),lat0=pts[0][0]*Math.PI/180;let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
-  const xy=pts.map(p=>{const x=p[1]*Math.cos(lat0),y=-p[0];x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y);return [x,y]});
-  const sc=64/Math.max(x1-x0,y1-y0,1e-6),ox=(76-(x1-x0)*sc)/2,oy=(76-(y1-y0)*sc)/2;
-  return `<svg viewBox="0 0 76 76" aria-hidden="true"><polyline points="${xy.map(p=>((p[0]-x0)*sc+ox).toFixed(1)+","+((p[1]-y0)*sc+oy).toFixed(1)).join(" ")}"/></svg>`;
-}
-function cardHTML(tr,res){
+function featLine(tr){const f=FT[tr.id];if(!f||!f.f.length)return "";return `<p class="feat">${f.f.filter(k=>k!=="citta").slice(0,4).map(k=>FEATL[k]).join(" · ")}</p>`}
+function cardHTML(tr,res,title){
   const sv=S.saved.includes(tr.id),e=elev[tr.id];
-  const fit=res.v<0?`<span class="cw"><i class="dot bw"></i>Sto valutando…</span>`:`<span class="c${res.v}"><i class="dot b${res.v}"></i><b>${VLABEL[res.v]}</b></span>`;
-  return `<article class="card" data-id="${tr.id}"><div class="thumb">${tr.th||(tr.th=thumb(tr))}</div>
-    <div><h3>${esc(tr.name)}</h3><p class="sub">${esc(tr.zone)}${tr.ref?" · n. "+esc(tr.ref):""}${tr.cai?" · CAI":""}</p>
-    <p class="meta">${fit} · ${km(tr.len)} km${e?" · ↑ "+e.up+" m":""} · ${fmtH(res.hours)}</p></div>
-    <button class="round ${sv?"saved":""}" data-save="${tr.id}" aria-label="${sv?"Togli dai salvati":"Salva"}">${icon("heart")}</button></article>`;
+  const badge=res.v<0?`<span class="badge vw">Sto valutando…</span>`:`<span class="badge v${res.v}">${VLABEL[res.v]}</span>`;
+  return `<article class="tcard" data-id="${tr.id}"><div class="img">${svgThumb(tr.path)}<img loading="lazy" alt="" src="${staticImg(tr.path)}" onerror="this.remove()">${badge}
+    <button class="round ${sv?"saved":""}" data-save="${tr.id}" aria-label="${sv?"Togli dai salvati":"Salva"}">${icon("heart")}</button></div>
+    <h3>${esc(title||tr.name)}</h3><p class="sub">${title?esc(tr.name)+" · ":""}${esc(tr.zone)}${tr.ref?" · n. "+esc(tr.ref):""}${tr.scale?" · "+tr.scale:""}</p>
+    <p class="meta">${km(tr.len)} km${e?" · ↑ "+e.up+" m":""} · ${fmtH(res.hours)} col cane</p>${featLine(tr)}</article>`;
+}
+function placeCard(f,i){
+  return `<article class="tcard" data-place="${i}"><div class="img"><img loading="lazy" alt="" src="${staticPlace(f.c)}" onerror="this.remove()"><span class="badge vw">Sentieri vicini</span></div>
+    <h3>${esc(f.n)}</h3><p class="sub">${esc(zoneOf(f.c))} · tracciato non ancora su OpenStreetMap</p><p class="meta">Tocca per vedere i sentieri nei dintorni</p></article>`;
 }
 function bindCards(root){
-  root.querySelectorAll(".card").forEach(c=>c.onclick=ev=>{
+  root.querySelectorAll(".tcard").forEach(c=>c.onclick=ev=>{
     const b=ev.target.closest("[data-save]");
     if(b){ev.stopPropagation();toggleSave(+b.dataset.save);b.classList.toggle("saved",S.saved.includes(+b.dataset.save));return}
+    if(c.dataset.place!=null){setNear(FAMOUS[+c.dataset.place]);return}
     lastList=window.scrollY;location.hash="s-"+c.dataset.id});
 }
+function setNear(f){
+  S.near=f?{n:f.n,c:f.c}:null;S.limit=20;fitPending=true;renderList();
+  if(f)$("hostExplore").scrollIntoView({behavior:"smooth",block:"start"});
+}
+function famousMatch(){
+  return FAMOUS.map((f,i)=>{
+    let best=null,bd=Infinity;
+    for(const tr of S.trails){if(!f.re.test(tr.name+" "+tr.from+" "+tr.to))continue;
+      const d=Math.min(...sample(tr.path,20).map(p=>hav(p,f.c)));if(d<8000&&d<bd){bd=d;best=tr}}
+    return {f,i,tr:best};
+  });
+}
+function activeFilters(){return $("q").value.trim()||S.act||S.feat.length||S.near||["f-fit","f-len","f-up","f-dif","f-zone"].some(id=>$(id).value!=="all")}
 function filtered(){
-  const d=dog(),q=$("q").value.trim().toLowerCase(),fit=$("f-fit").value,len=$("f-len").value,dif=$("f-dif").value,zone=$("f-zone").value;
+  const d=dog(),q=$("q").value.trim().toLowerCase(),fit=$("f-fit").value,len=$("f-len").value,upf=$("f-up").value,dif=$("f-dif").value,zone=$("f-zone").value;
   const rows=[];
   for(const tr of S.trails){
     if(q&&!(tr.name+" "+tr.ref+" "+tr.zone+" "+tr.from+" "+tr.to).toLowerCase().includes(q))continue;
     if(len!=="all"){const [a,b]=len.split("-").map(Number);if(tr.len<a*1000||tr.len>=b*1000)continue}
+    if(upf!=="all"){const e=elev[tr.id];if(!e)continue;const [a,b]=upf.split("-").map(Number);if(e.up<a||e.up>=b)continue}
     if(dif!=="all"&&tr.scale!==dif)continue;
     if(zone!=="all"&&tr.zone!==zone)continue;
+    if(S.act&&!acts(tr).has(S.act))continue;
+    if(S.feat.length){const f=FT[tr.id];if(!f||!S.feat.every(k=>f.f.includes(k)))continue}
+    let dist=0;if(S.near){dist=Math.min(...sample(tr.path,20).map(p=>hav(p,S.near.c)));if(dist>6000)continue}
     const res=verdict(item(tr),d,S.day);
     if(fit!=="all"&&!fit.includes(String(res.v)))continue;
-    rows.push({tr,res});
+    rows.push({tr,res,dist});
   }
-  rows.sort((a,b)=>((a.res.v<0?.5:a.res.v)-(b.res.v<0?.5:b.res.v))||(b.tr.cai-a.tr.cai)||a.tr.len-b.tr.len);
+  if(S.near)rows.sort((a,b)=>a.dist-b.dist);
+  else rows.sort((a,b)=>((a.res.v<0?.5:a.res.v)-(b.res.v<0?.5:b.res.v))||(b.tr.cai-a.tr.cai)||a.tr.len-b.tr.len);
   return rows;
 }
+function renderPills(){
+  $("f-act").innerHTML=ACTS.map(a=>`<button class="pill" data-a="${a[0]}" aria-pressed="${S.act===a[0]}">${a[1]}</button>`).join("");
+  $("f-feat").innerHTML=FEATS.map(a=>`<button class="pill" data-f="${a[0]}" aria-pressed="${S.feat.includes(a[0])}">${a[1]}</button>`).join("");
+  $("f-act").querySelectorAll("button").forEach(b=>b.onclick=()=>{S.act=S.act===b.dataset.a?null:b.dataset.a;S.limit=20;fitPending=true;renderList()});
+  $("f-feat").querySelectorAll("button").forEach(b=>b.onclick=()=>{const k=b.dataset.f,i=S.feat.indexOf(k);if(i>=0)S.feat.splice(i,1);else S.feat.push(k);S.limit=20;fitPending=true;renderList()});
+}
 function renderList(){
-  if(!S.ready)return;
   $("hello").textContent=`Dove andiamo con ${dog().name||"il tuo cane"}?`;
-  ["f-fit","f-len","f-dif","f-zone"].forEach(id=>$(id).classList.toggle("act",$(id).value!=="all"));
+  renderPills();
+  if(!S.ready)return;
+  ["f-fit","f-len","f-up","f-dif","f-zone"].forEach(id=>$(id).classList.toggle("act",$(id).value!=="all"));
   $("f-day").classList.toggle("act",S.day>0);
+  $("near-row").hidden=!S.near;
+  if(S.near){$("near-row").innerHTML=`<button class="pill x" id="near-x">Vicino a ${esc(S.near.n)} ✕</button>`;$("near-x").onclick=()=>setNear(null)}
+  $("feat-status").textContent=S.featReady?"":S.featFail?"Particolarità non disponibili ora: riprovo al prossimo avvio.":"Sto ricavando le particolarità da OpenStreetMap…";
+  const af=activeFilters();
+  $("reset").hidden=!af;
+  // Consigliati
+  $("reco-box").hidden=!!af;
+  if(!af){const d=dog();$("reco").innerHTML=famousMatch().map(m=>m.tr?cardHTML(m.tr,verdict(item(m.tr),d,S.day),m.f.n):placeCard(m.f,m.i)).join("");bindCards($("reco"))}
   const rows=filtered();S.rows=rows;
-  $("count").textContent=rows.length===1?"1 sentiero":rows.length+" sentieri";
-  $("list").innerHTML=rows.slice(0,S.limit).map(r=>cardHTML(r.tr,r.res)).join("")||`<div class="empty"><p>Nessun sentiero con questi filtri.</p></div>`;
+  $("count").textContent=af?(rows.length===1?"1 sentiero":rows.length+" sentieri"):`Tutti i sentieri (${rows.length})`;
+  $("list").innerHTML=rows.slice(0,S.limit).map(r=>cardHTML(r.tr,r.res)).join("")||`<div class="empty"><p>Nessun sentiero con questi filtri.</p>${$("f-up").value!=="all"&&!S.elevDone?`<p class="small">Sto ancora calcolando i dislivelli: riprova tra poco.</p>`:""}</div>`;
   $("more").hidden=rows.length<=S.limit;
   bindCards($("list"));
-  if($("mapAllWrap").classList.contains("on"))paintMap();
+  if(S.peek&&!rows.some(r=>r.tr.id===S.peek))hidePeek();
+  if(scene.mode==="explore")applyScene();
 }
 function toggleSave(id){const i=S.saved.indexOf(id);if(i>=0)S.saved.splice(i,1);else S.saved.push(id);store.set("alldogs-saved",S.saved);toast(i>=0?"Tolto dai salvati":"Salvato")}
-
-// mappa di tutti i sentieri
-let mapAll,layAll={},tiles=[];
-function baseLayer(m){const t=L.tileLayer(`https://{s}.basemaps.cartocdn.com/${dark()?"dark_all":"rastertiles/voyager"}/{z}/{x}/{y}{r}.png`,{maxZoom:19,attribution:"© OpenStreetMap · © CARTO"}).addTo(m);tiles.push(t);return t}
-function vColor(v){return css(v<0?"--wait":["--ok","--warn","--no"][v])}
-function openMap(){
-  $("mapAllWrap").classList.add("on");
-  if(!mapAll){mapAll=L.map("mapAll",{zoomControl:false,preferCanvas:true}).setView([40.75,14.35],10);baseLayer(mapAll);mapAll.on("click",()=>$("peek").classList.remove("on"))}
-  setTimeout(()=>{mapAll.invalidateSize();paintMap(true)},50);
+function peek(id){
+  const tr=S.trails.find(t=>t.id===id);if(!tr)return;S.peek=id;
+  const res=verdict(item(tr),dog(),S.day),p=$("peek");
+  p.innerHTML=`<img alt="" src="${staticImg(tr.path,200,150)}"><div><h3>${esc(tr.name)}</h3><p class="sub"><span class="c${Math.max(0,res.v)}"><i class="dot b${res.v<0?"w":res.v}"></i>${res.v<0?"Sto valutando…":VLABEL[res.v]}</span> · ${km(tr.len)} km · ${fmtH(res.hours)}</p></div><span>›</span>`;
+  p.classList.add("on");p.onclick=()=>{lastList=window.scrollY;location.hash="s-"+id};
+  applyScene();
+  if(M)M.fitBounds(tr.bb,{padding:{top:50,bottom:120,left:40,right:60},maxZoom:15,duration:500});
 }
-function paintMap(fit){
-  const show=new Map((S.rows||[]).map(r=>[r.tr.id,r.res]));
-  for(const id in layAll){if(!show.has(+id)){mapAll.removeLayer(layAll[id]);delete layAll[id]}}
-  const b=[];
-  show.forEach((res,id)=>{const tr=S.trails.find(t=>t.id===id),col=vColor(res.v);
-    if(!layAll[id]){const g=L.featureGroup([L.polyline(tr.ways,{weight:4,opacity:.85}),L.circleMarker(tr.start,{radius:7,weight:2,color:"#fff",fillOpacity:1})]).addTo(mapAll);
-      g.on("click",e=>{L.DomEvent.stopPropagation(e);peek(id)});layAll[id]=g}
-    const [line,dotm]=layAll[id].getLayers();line.setStyle({color:col});dotm.setStyle({fillColor:col});b.push(tr.start)});
-  if(fit&&b.length)mapAll.fitBounds(b,{padding:[40,40]});
-}
-function peek(id){const tr=S.trails.find(t=>t.id===id),p=$("peek");p.innerHTML=cardHTML(tr,verdict(item(tr),dog(),S.day));p.classList.add("on");bindCards(p);mapAll.fitBounds(L.polyline(tr.ways).getBounds(),{padding:[50,120]})}
+function hidePeek(){S.peek=null;$("peek").classList.remove("on");if(scene.mode==="explore"&&M&&styleOK)setData("sel",fc([]))}
 
 // ================= Scheda sentiero =================
-let mapDet,detLine,meMarker,cur=null;
-function setInteractive(m,on){["dragging","touchZoom","doubleClickZoom","scrollWheelZoom","boxZoom","keyboard"].forEach(h=>m[h]&&(on?m[h].enable():m[h].disable()))}
-function ensureDetMap(){if(mapDet)return;mapDet=L.map("mapDet",{zoomControl:false,attributionControl:true});baseLayer(mapDet);setInteractive(mapDet,false);
-  mapDet.on("locationfound",e=>{if(!meMarker)meMarker=L.marker(e.latlng,{icon:L.divIcon({className:"",html:'<div class="me"></div>',iconSize:[16,16],iconAnchor:[8,8]})}).addTo(mapDet);else meMarker.setLatLng(e.latlng)});
-  mapDet.on("locationerror",()=>toast("Non riesco a leggere la posizione"))}
-function heroFull(on){$("hero").classList.toggle("full",on);$("det-loc").hidden=!on;$("det-expand").hidden=on;setInteractive(mapDet,on);
-  if(!on){mapDet.stopLocate();if(meMarker){mapDet.removeLayer(meMarker);meMarker=null}}
-  setTimeout(()=>{mapDet.invalidateSize();if(detLine)mapDet.fitBounds(detLine.getBounds(),{padding:on?[40,40]:[30,30]})},60)}
-function drawHero(latlngs,stops){
-  ensureDetMap();if(detLine)mapDet.removeLayer(detLine);
-  const g=[L.polyline(latlngs,{color:"#fff",weight:8,opacity:.9}),L.polyline(latlngs,{color:css("--accent"),weight:4.5})];
-  const flat=Array.isArray(latlngs[0][0])?latlngs[0]:latlngs;
-  g.push(L.circleMarker(flat[0],{radius:7,color:"#fff",weight:3,fillColor:css("--ok"),fillOpacity:1}));
-  (stops||[]).forEach((p,i)=>g.push(L.marker(p,{icon:L.divIcon({className:"",html:`<div class="stop">${i+1}</div>`,iconSize:[24,24],iconAnchor:[12,12]})})));
-  detLine=L.featureGroup(g).addTo(mapDet);
-  setTimeout(()=>{mapDet.invalidateSize();mapDet.fitBounds(detLine.getBounds(),{padding:[30,30]})},60);
-}
-function weatherHTML(res,it){
+let cur=null;
+function weatherHTML(res){
   const w=res.w;if(!w)return `<p class="muted">${S.wxFail?"Meteo non disponibile in questo momento.":"Sto caricando il meteo…"}</p>`;
   const d=w.daily,lim=res.cap.heat,i=S.day;
   return `<div class="days">${d.time.map((t,k)=>`<button data-day="${k}" aria-pressed="${k===i}">${k===0?"oggi":new Date(t+"T12:00").toLocaleDateString("it-IT",{weekday:"short"})}${icon(wxIcon(d.weather_code[k]))}<b>${Math.round(d.temperature_2m_max[k])}°</b></button>`).join("")}</div>
@@ -582,7 +939,6 @@ function weatherHTML(res,it){
     <p class="small muted" style="margin-top:6px">Verde: fresco · arancione: caldo, con prudenza · rosso: troppo caldo.</p>`;
 }
 function detailHTML(o){
-  // o: {title, sub, it, extraStats, sections}
   const d=dog(),res=verdict(o.it,d,S.day),st=steps(o.it.len,d);
   const vb=res.v<0?`<span class="verdict vw">Sto valutando…</span>`:`<span class="verdict v${res.v}">${VLABEL[res.v]} per ${dn()}</span>`;
   return `<h1>${esc(o.title)}</h1><p class="muted" style="margin-top:6px">${o.sub}</p>${vb}
@@ -593,23 +949,31 @@ function detailHTML(o){
       ${res.cap.notes.length?`<p class="small muted" style="margin-top:10px">Limiti più prudenti perché ${dn()} ${res.cap.notes.join(", ")}.</p>`:""}
       <p class="small muted" style="margin-top:10px">Passi stimati: tu circa ${st.me.toLocaleString("it-IT")}, ${dn()} circa ${st.dog.toLocaleString("it-IT")} (stima da distanza e taglia).</p></div>
     ${o.sections||""}
-    <div class="block"><h2>Meteo</h2>${weatherHTML(res,o.it)}</div>
-    <div class="block"><h2>Cosa portare</h2><ul class="plain">${bringList(o.it,d,res).map(x=>`<li>${x}</li>`).join("")}</ul></div>
+    <div class="block"><h2>Meteo</h2>${weatherHTML(res)}</div>
+    <div class="block"><h2>Cosa portare</h2><ul class="plain">${bringList(o.it,d,res,o.ft).map(x=>`<li>${x}</li>`).join("")}</ul></div>
     <p class="small muted block">Il verdetto è un consiglio prudente, non una garanzia. Tempo stimato al passo di un cane, pause comprese.</p>`;
 }
 function bindDays(root,again){root.querySelectorAll("[data-day]").forEach(b=>b.onclick=()=>{S.day=+b.dataset.day;$("f-day").value=S.day;again()})}
 async function showTrail(id){
+  mountMap($("hostTrail"),false);
   const tr=S.trails.find(t=>t.id===id);
   if(!tr){$("det").innerHTML=`<p class="muted" style="padding:30px 0">${S.ready?"Sentiero non trovato.":"Sto caricando i sentieri…"}</p>`;return}
   cur={type:"trail",tr};S.sel=id;
+  const ft=FT[id];
+  setScene({mode:"trail",ways:tr.ways,start:tr.start,water:ft?ft.w:[]},true);
   const paint=()=>{
-    $("det").innerHTML=detailHTML({title:tr.name,sub:`${esc(tr.zone)}${tr.ref?" · sentiero n. "+esc(tr.ref):""}${tr.cai?" · CAI":""}${tr.scale?" · difficoltà "+tr.scale:""}`,it:item(tr),
-      sections:`<div class="block"><h2>Scheda per il cane</h2><div class="tiles"><div class="tile"><span>Ombra</span><b>Da verificare</b></div><div class="tile"><span>Acqua lungo il percorso</span><b>Da verificare</b></div><div class="tile"><span>Fondo</span><b>Da verificare</b></div><div class="tile"><span>Punti critici</span><b>Da verificare</b></div></div>
-      <p class="small muted" style="margin-top:8px">Questo sentiero non è ancora stato testato con un cane. Le schede con ombra, acqua, fondo e foto arriveranno con i sentieri provati di persona.</p></div>`})+
+    const f=FT[id];
+    const tags=f?(f.f.length?`<div class="tags">${f.f.map(k=>`<span class="tag">${FEATL[k]}</span>`).join("")}</div>`:`<p class="muted">Nessuna particolarità trovata vicino al tracciato.</p>`):`<p class="muted">Sto ricavando le particolarità…</p>`;
+    const water=!f?"…":f.w.length?`Sì: ${f.w.length===1?"1 fontanella":f.w.length+" fontanelle"}`:"Nessuna segnata";
+    const shade=!f?"…":f.wood>=.6?"Tanta (bosco)":f.wood>=.3?"In parte":"Poca";
+    $("det").innerHTML=detailHTML({title:tr.name,ft:f,sub:`${esc(tr.zone)}${tr.ref?" · sentiero n. "+esc(tr.ref):""}${tr.cai?" · CAI":""}${tr.scale?" · difficoltà "+tr.scale:""}`,it:item(tr),
+      sections:`<div class="block"><h2>Particolarità</h2>${tags}<p class="small muted" style="margin-top:8px">Ricavate in automatico da OpenStreetMap: elementi segnati vicino al tracciato.</p></div>
+      <div class="block"><h2>Scheda per il cane</h2><div class="tiles"><div class="tile"><span>Acqua lungo il percorso</span><b>${water}</b></div><div class="tile"><span>Ombra (stima)</span><b>${shade}</b></div><div class="tile"><span>Fondo</span><b>Da verificare</b></div><div class="tile"><span>Punti critici</span><b>Da verificare</b></div></div>
+      <p class="small muted" style="margin-top:8px">${f&&f.w.length?"Le fontanelle sono i punti blu sulla mappa. ":""}Acqua e ombra sono stime dai dati di OpenStreetMap: verificale sul posto. Il sentiero non è ancora stato provato con un cane.</p></div>`})+
       `<p class="small block"><a href="https://www.openstreetmap.org/relation/${tr.id}" target="_blank" rel="noopener">Vedi i dati del sentiero su OpenStreetMap</a></p>`;
     bindDays($("det"),paint);syncSave();
   };
-  paint();drawHero(tr.ways);
+  paint();
   $("bar-go").href=`https://www.google.com/maps/dir/?api=1&destination=${tr.start[0]},${tr.start[1]}`;
   if(!elev[id]){try{await elevation(tr);if(S.sel===id)paint()}catch(e){}}
 }
@@ -617,105 +981,215 @@ function syncSave(){
   let on=false;if(cur&&cur.type==="trail")on=S.saved.includes(cur.tr.id);
   $("det-save").classList.toggle("saved",on);$("bar-save").querySelector("span").textContent=on?"Salvato":"Salva";
 }
-$("det-back").onclick=()=>{if($("hero").classList.contains("full"))heroFull(false);else if(history.length>1)history.back();else location.hash="esplora"};
-$("det-expand").onclick=$("bar-map").onclick=()=>heroFull(true);
-$("det-loc").onclick=()=>mapDet.locate({watch:true,enableHighAccuracy:true});
+$("det-back").onclick=()=>{if($("hostTrail").classList.contains("full"))setFull(false);else if(history.length>1)history.back();else location.hash="esplora"};
+$("bar-map").onclick=()=>setFull(true);
 $("det-save").onclick=$("bar-save").onclick=()=>{if(cur&&cur.type==="trail"){toggleSave(cur.tr.id);syncSave()}};
 
 // ================= Crea un giro =================
-let mapNew,pin,newLine;
 const SURF_HARD=[1,3,4,5,14];
+const SUB={chat:"Scrivi all'assistente che giro vuoi fare: capisce la durata e cosa preferisci, poi l'app disegna l'anello.",auto:"Un tocco: uso la tua posizione, il profilo del cane e il meteo di adesso.",man:"Scegli la partenza sulla mappa e quanto vuoi camminare."};
+function setStart(p,fromDrag){S.start=p;store.set("alldogs-start",p);if(pinM&&!fromDrag)pinM.setLngLat(ll(p));if(M&&!fromDrag)M.easeTo({center:ll(p),zoom:Math.max(M.getZoom(),14)});
+  loadWeather([p]).then(()=>{rules();autoWhy()}).catch(()=>{})}
 function showCrea(){
-  const d=dog(),cap=capacity(d);
-  if(!mapNew){
-    mapNew=L.map("mapNew",{zoomControl:false}).setView(S.start||[40.8359,14.2488],14);baseLayer(mapNew);
-    pin=L.marker(mapNew.getCenter(),{draggable:true,icon:L.divIcon({className:"",html:'<div class="pin"></div>',iconSize:[26,26],iconAnchor:[13,26]})}).addTo(mapNew);
-    S.start=[pin.getLatLng().lat,pin.getLatLng().lng];
-    const moved=ll=>{S.start=[ll.lat,ll.lng];pin.setLatLng(ll);loadWeather([S.start]).then(rules).catch(()=>{})};
-    mapNew.on("click",e=>moved(e.latlng));pin.on("dragend",()=>moved(pin.getLatLng()));
-    mapNew.on("locationfound",e=>{moved(e.latlng);mapNew.setView(e.latlng,15)});mapNew.on("locationerror",()=>toast("Non riesco a leggere la posizione: tocca la mappa"));
-    loadWeather([S.start]).then(rules).catch(()=>{});
-  }
-  setTimeout(()=>mapNew.invalidateSize(),60);
-  const opts=[20,40,60,90];
+  mountMap($("hostCrea"),true);
+  setScene({mode:"crea"},true);
+  document.querySelectorAll("#crea-mode button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.mode===S.mode));
+  $("crea-sub").textContent=SUB[S.mode];
+  ["chat","auto","man"].forEach(m=>$("p-"+m).hidden=S.mode!==m);
+  loadWeather([S.start]).then(()=>{rules();autoWhy()}).catch(()=>{});
+  if(S.mode==="man")showMan();if(S.mode==="chat")showChat();if(S.mode==="auto")autoWhy();
+}
+document.querySelectorAll("#crea-mode button").forEach(b=>b.onclick=()=>{S.mode=b.dataset.mode;store.set("alldogs-creamode",S.mode);showCrea()});
+$("new-loc").onclick=async()=>{try{const p=await getPos();showMe(p);setStart(p)}catch(e){toast("Non riesco a leggere la posizione: tocca la mappa")}};
+function targetKm(mins){const cap=capacity(dog()),want=mins/60*3.5;return {want,k:Math.min(want,cap.km),cap}}
+function showMan(){
+  const d=dog(),opts=[20,40,60,90];
   $("seg").innerHTML=opts.map(m=>`<button data-m="${m}" aria-pressed="${m===S.mins}">${m<60?m+" min":m===60?"1 ora":"1 h 30"}</button>`).join("");
-  $("seg").querySelectorAll("button").forEach(b=>b.onclick=()=>{S.mins=+b.dataset.m;showCrea()});
-  const want=S.mins/60*3.5,k=Math.min(want,cap.km);
-  S.target=k*1000;
+  $("seg").querySelectorAll("button").forEach(b=>b.onclick=()=>{S.mins=+b.dataset.m;showMan()});
+  const {want,k}=targetKm(S.mins);
   $("seg-hint").textContent=k<want?`Per ${d.name||"il tuo cane"} accorcio a circa ${k.toFixed(1).replace(".",",")} km: è il suo limite consigliato.`:`Circa ${k.toFixed(1).replace(".",",")} km al passo di un cane.`;
   rules();
 }
+function nowWx(){const w=dayWx(S.start,0),hr=new Date().getHours();return w?{f:w.H[hr].f,t:w.H[hr].t,rain:w.H[hr].rain}:null}
 function rules(){
-  const d=dog(),cap=capacity(d),w=dayWx(S.start,0),hr=new Date().getHours();
-  const li=[`Lunghezza: circa ${km(S.target)} km (massimo consigliato ${cap.km} km).`,"Preferisco parchi, verde e strade non asfaltate."];
-  if(w){const f=w.H[hr].f,t=w.H[hr].t;
-    if(f>cap.heat+4)li.push(`<b class="c2">Adesso ci sono ${Math.round(f)}° percepiti: troppo caldo per ${dn()}. Meglio uscire più tardi.</b>`);
-    else if(f>cap.heat)li.push(`<b class="c1">Adesso ci sono ${Math.round(f)}° percepiti: fa caldo, giro breve e tanta acqua.</b>`);
-    else li.push(`Adesso ci sono ${Math.round(f)}° percepiti: va bene.`);
-    if(t>=25)li.push("Con questo sole l'asfalto può scottare le zampe: lo evito il più possibile.");
-    if(w.H[hr].rain>=60)li.push(`Pioggia probabile (${w.H[hr].rain}%).`)}
+  const d=dog(),cap=capacity(d),n=nowWx(),{k}=targetKm(S.mins);
+  const li=[`Lunghezza: circa ${k.toFixed(1).replace(".",",")} km (massimo consigliato ${kmN(cap.km)} km).`,"Preferisco parchi, verde e strade non asfaltate."];
+  if(cap.agil==="bassa")li.push("Evito le scale il più possibile.");
+  if(n){
+    if(n.f>cap.heat+4)li.push(`<b class="c2">Adesso ci sono ${Math.round(n.f)}° percepiti: troppo caldo per ${dn()}. Meglio uscire più tardi.</b>`);
+    else if(n.f>cap.heat)li.push(`<b class="c1">Adesso ci sono ${Math.round(n.f)}° percepiti: fa caldo, giro breve e tanta acqua.</b>`);
+    else li.push(`Adesso ci sono ${Math.round(n.f)}° percepiti: va bene.`);
+    if(n.t>=25)li.push("Con questo sole l'asfalto può scottare le zampe: lo evito il più possibile.");
+    if(n.rain>=60)li.push(`Pioggia probabile (${n.rain}%).`)}
   $("rules").innerHTML=`<h2>Regole di oggi per ${dn()}</h2><ul class="plain">${li.map(x=>`<li>${x}</li>`).join("")}</ul>`;
 }
-$("new-loc").onclick=()=>mapNew.locate({enableHighAccuracy:true});
+// scelta automatica della durata: allenamento, salute, caldo e pioggia di adesso
+function autoPlan(){
+  const d=dog(),cap=capacity(d),n=nowWx(),why=[];
+  let m={poco:30,medio:45,molto:60}[d.train]||45;why.push(`${dn()} ha un allenamento ${d.train==="poco"?"leggero":d.train==="molto"?"buono":"medio"}: parto da ${m} minuti.`);
+  if(cap.health){m=Math.min(m,30);why.push("Per la sua salute resto su un giro breve.")}
+  if(d.pat&&d.pat.conv){m=20}
+  if(n){if(n.f>cap.heat+4){m=Math.min(m,15);why.push(`Fa molto caldo (${Math.round(n.f)}° percepiti): solo un giretto corto nel verde.`)}
+    else if(n.f>cap.heat){m=Math.min(m,25);why.push(`Fa caldo (${Math.round(n.f)}° percepiti): accorcio il giro.`)}
+    else why.push(`Temperatura buona (${Math.round(n.f)}° percepiti).`);
+    if(n.rain>=60){m=Math.min(m,30);why.push(`Pioggia probabile (${n.rain}%): giro più corto.`)}}
+  const {k}=targetKm(m);
+  return {mins:m,km:k,why,prefs:{green:true,avoidSteps:cap.agil==="bassa"}};
+}
+function autoWhy(){if(S.mode!=="auto")return;const p=autoPlan();$("auto-why").innerHTML=`<h2>Cosa farei adesso</h2><ul class="plain">${p.why.map(x=>`<li>${x}</li>`).join("")}<li>Giro ad anello di circa <b>${p.km.toFixed(1).replace(".",",")} km</b> (${p.mins} minuti), preferendo il verde.</li></ul>`}
+$("auto-go").onclick=async()=>{
+  const b=$("auto-go");b.disabled=true;b.textContent="Cerco la tua posizione…";
+  try{const p=await getPos();showMe(p);setStart(p)}catch(e){toast("Posizione non disponibile: parto dal segnaposto")}
+  try{await loadWeather([S.start])}catch(e){}
+  const p=autoPlan();autoWhy();b.innerHTML=icon("bolt")+"Crea il giro con un tocco";b.disabled=false;
+  generate({mins:p.mins,prefs:p.prefs,source:"auto"});
+};
+$("gen").onclick=()=>generate({mins:S.mins,prefs:{green:true,avoidSteps:capacity(dog()).agil==="bassa"},source:"man"});
 function parseRoute(f){
   const c=f.geometry.coordinates.map(p=>[p[1],p[0]]),pr=f.properties,ex=pr.extras||{};
   let hard=0,unknown=0,tot=0;((ex.surface||{}).summary||[]).forEach(s=>{tot+=s.amount;if(SURF_HARD.includes(s.value))hard+=s.amount;else if(s.value===0)unknown+=s.amount});
   let green=null;const gs=(ex.green||{}).summary||[];if(gs.length)green=gs.reduce((a,s)=>a+s.value*s.amount,0)/100;
   return {path:c,len:Math.round(pr.summary.distance),up:Math.round(pr.ascent||0),hard:tot?hard/tot:null,soft:tot?(tot-hard-unknown)/tot:null,green};
 }
-function stopsFor(r,d){
+function stopsFor(r,d,ai){
   const at=f=>r.path[Math.min(r.path.length-1,Math.round(f*(r.path.length-1)))],n=esc(d.name||"il cane");
-  const acts=[["Partenza",`Cinque minuti al passo lento: lascia che ${n} annusi con calma.`],["Seduto e resta",`Fermatevi: "seduto", poi "resta" per venti secondi. Premialo.`],
+  let acts=[["Partenza",`Cinque minuti al passo lento: lascia che ${n} annusi con calma.`],["Seduto e resta",`Fermatevi: "seduto", poi "resta" per venti secondi. Premialo.`],
     ["Pausa acqua",`Cinque minuti all'ombra, acqua per tutti e due.`],["Cerca!",`Nascondi un premietto nell'erba e digli "cerca": annusare lo stanca e lo rilassa.`],["Cambio di ritmo",`Due minuti al passo svelto, poi "piano" e si torna tranquilli.`]];
-  const use=r.len<1500?[0,2,3]:r.len<3500?[0,1,2,3]:[0,1,2,3,4];
+  let use=r.len<1500?[0,2,3]:r.len<3500?[0,1,2,3]:[0,1,2,3,4];
+  if(ai&&ai.length){acts=ai.slice(0,6).map(s=>[esc(s.title||"Tappa"),esc(s.text||"")]);use=acts.map((_,i)=>i)}
   return use.map((a,i)=>({p:at(i/use.length),km:r.len*i/use.length,t:acts[a][0],d:acts[a][1]}));
 }
-async function generate(){
+async function generate(o){
   const key=store.get("alldogs-ors"),out=$("gen-out");
-  if(!key){out.innerHTML=`<div class="note"><b>Manca un passaggio.</b> Per disegnare i giri serve la chiave gratuita di OpenRouteService. La inserisci una volta sola nella sezione <a href="#cane">Il mio cane</a>, in fondo.</div>`;return}
-  $("gen").disabled=true;$("gen").textContent="Sto disegnando il giro…";out.innerHTML="";
-  const body=seed=>({coordinates:[[S.start[1],S.start[0]]],options:{round_trip:{length:Math.round(S.target),points:4,seed}},elevation:true,extra_info:["surface","green"]});
+  if(!key){out.innerHTML=`<div class="note"><b>Manca un passaggio.</b> Per disegnare i giri serve la chiave gratuita di OpenRouteService. Incollala qui sotto (resta solo su questo telefono).<input class="field" id="ors-inline" placeholder="Chiave OpenRouteService" autocomplete="off" autocapitalize="off" spellcheck="false" style="margin-top:10px"><button class="btn pri wide" id="ors-inline-save" style="margin-top:8px">Salva e crea il giro</button><p class="small" style="margin-top:8px">La chiave si crea su <a href="https://openrouteservice.org/dev/#/signup" target="_blank" rel="noopener">openrouteservice.org</a>.</p></div>`;
+    $("ors-inline-save").onclick=()=>{const v=$("ors-inline").value.trim();if(!v){toast("Incolla la chiave");return}store.set("alldogs-ors",v);generate(o)};return}
+  const d=dog(),cap=capacity(d),{k}=targetKm(o.mins),target=k*1000;
+  out.innerHTML=`<div class="note">Sto disegnando il giro (circa ${k.toFixed(1).replace(".",",")} km)…</div>`;$("gen").disabled=true;
+  const body=seed=>{const b={coordinates:[[S.start[1],S.start[0]]],options:{round_trip:{length:Math.round(target),points:4,seed}},elevation:true,extra_info:["surface","green"]};
+    if(o.prefs&&o.prefs.avoidSteps)b.options.avoid_features=["steps"];
+    if(o.prefs&&(o.prefs.green||o.prefs.quiet))b.options.profile_params={weightings:{green:o.prefs.green?.8:0,quiet:o.prefs.quiet?.6:0}};
+    return b};
   const base=Math.floor(Math.random()*1000);
-  const rs=await Promise.allSettled([1,2,3].map(i=>getJSON("https://api.openrouteservice.org/v2/directions/foot-walking/geojson",{method:"POST",headers:{"Authorization":key,"Content-Type":"application/json"},body:JSON.stringify(body(base+i))})));
-  $("gen").disabled=false;$("gen").textContent="Crea il percorso";
+  const call=b=>getJSON("https://api.openrouteservice.org/v2/directions/foot-walking/geojson",{method:"POST",headers:{"Authorization":key,"Content-Type":"application/json"},body:JSON.stringify(b)});
+  let rs=await Promise.allSettled([1,2,3].map(i=>call(body(base+i))));
+  // se le preferenze non sono accettate, riprovo senza
+  if(!rs.some(r=>r.status==="fulfilled")&&rs.some(r=>r.reason&&r.reason.status===400)&&(o.prefs&&(o.prefs.green||o.prefs.avoidSteps))){
+    rs=await Promise.allSettled([1,2,3].map(i=>{const b=body(base+i);delete b.options.profile_params;delete b.options.avoid_features;return call(b)}))}
+  $("gen").disabled=false;
   const ok=rs.filter(r=>r.status==="fulfilled"&&r.value.features&&r.value.features.length).map(r=>parseRoute(r.value.features[0]));
   if(!ok.length){const e=(rs.find(r=>r.status==="rejected")||{}).reason||{};
-    out.innerHTML=`<div class="err">${e.status===401||e.status===403?"La chiave di OpenRouteService non è valida. Controllala nella sezione Il mio cane.":e.status===429?"Hai raggiunto il limite gratuito di oggi di OpenRouteService. Riprova domani.":e.status===404||e.status===400?"Da questo punto non riesco a creare un giro. Sposta il segnaposto su una strada o un sentiero.":"Non riesco a creare il giro. Controlla la connessione e riprova."}</div>`;return}
-  const w=dayWx(S.start,0),hot=w&&w.H[new Date().getHours()].t>=25;
-  ok.forEach(r=>r.score=(r.hard??.5)*(hot?2:1)-(r.green??5)/10*.5+Math.abs(r.len-S.target)/S.target*.5);
-  ok.sort((a,b)=>a.score-b.score);S.gen=ok;S.genIdx=0;showGen();
+    out.innerHTML=`<div class="err">${e.status===401||e.status===403?"La chiave di OpenRouteService non è valida. Controllala nella sezione Il mio cane.":e.status===429?"Hai raggiunto il limite gratuito di oggi di OpenRouteService. Riprova domani.":e.status===404||e.status===400?"Da questo punto non riesco a creare un giro. Sposta il segnaposto su una strada o un sentiero.":"Non riesco a creare il giro. Controlla la connessione e che la chiave di OpenRouteService sia giusta (sezione Il mio cane)."}</div>`;return}
+  const n=nowWx(),hot=n&&n.t>=25;
+  ok.forEach(r=>r.score=(r.hard??.5)*(hot?2:1)-(r.green??5)/10*(o.prefs&&o.prefs.green?1:.5)+Math.abs(r.len-target)/target*.5);
+  ok.sort((a,b)=>a.score-b.score);
+  ok.forEach(r=>{r.stops=stopsFor(r,d,o.aiStops);r.cmds=o.aiCmds||null;r.note=o.note||"";r.source=o.source});
+  S.gen=ok;S.genIdx=0;showGen();
 }
 function genItem(r){return {len:r.len,up:r.up,scale:"CITY",start:r.path[0],loop:true}}
 function showGen(){
-  const r=S.gen[S.genIdx],d=dog(),res=verdict(genItem(r),d,0),st=stopsFor(r,d),sp=steps(r.len,d);
-  if(newLine)mapNew.removeLayer(newLine);
-  newLine=L.featureGroup([L.polyline(r.path,{color:"#fff",weight:8,opacity:.9}),L.polyline(r.path,{color:css("--accent"),weight:4.5}),
-    ...st.map((s,i)=>L.marker(s.p,{icon:L.divIcon({className:"",html:`<div class="stop">${i+1}</div>`,iconSize:[24,24],iconAnchor:[12,12]})}))]).addTo(mapNew);
-  mapNew.fitBounds(newLine.getBounds(),{padding:[30,30]});
+  const r=S.gen[S.genIdx],d=dog(),res=verdict(genItem(r),d,0),sp=steps(r.len,d);
+  if(!r.stops)r.stops=stopsFor(r,d);
+  setScene({mode:"crea"},true);
   const surf=r.hard==null?"":`<div class="block"><h2>Fondo</h2><div class="surf"><i style="width:${Math.round(r.soft*100)}%;background:var(--ok)"></i><i style="width:${Math.round(r.hard*100)}%;background:var(--wait)"></i></div>
     <p class="small muted">${Math.round(r.soft*100)}% terra, erba o sterrato · ${Math.round(r.hard*100)}% asfalto o pietra${r.green!=null?" · verde intorno: "+(r.green>=6?"tanto":r.green>=3?"medio":"poco"):""}</p></div>`;
-  $("gen-out").innerHTML=`<div class="box"><h2>Giro di ${km(r.len)} km</h2>
+  const cmds=r.cmds&&r.cmds.length?`<div class="block"><h2>Comandi da provare</h2><ul class="plain">${r.cmds.map(c=>`<li><b>${esc(c.command)}</b>${c.how?": "+esc(c.how):""}</li>`).join("")}</ul></div>`:"";
+  $("gen-out").innerHTML=`<div class="box"><h2>${esc(r.name||"Giro di "+km(r.len)+" km")}</h2>
     <span class="verdict v${Math.max(0,res.v)}">${VLABEL[Math.max(0,res.v)]} per ${dn()}</span>
     <div class="stats"><div><b>${km(r.len)} km</b><span>Lunghezza</span></div><div><b>${r.up} m</b><span>Dislivello</span></div><div><b>${fmtH(res.hours)}</b><span>Col cane</span></div><div><b>Anello</b><span>Tipo</span></div></div>
     <ul class="why" style="margin-top:12px">${res.why.map(x=>`<li><i class="dot ${x.lvl<0?"bw":"b"+x.lvl}"></i><span>${x.txt}</span></li>`).join("")}</ul>
     <p class="small muted" style="margin-top:10px">Passi stimati: tu circa ${sp.me.toLocaleString("it-IT")}, ${dn()} circa ${sp.dog.toLocaleString("it-IT")}.</p>
     ${surf}
-    <div class="block"><h2>Tappe e giochi</h2><ol class="stops">${st.map(s=>`<li><div><b>${s.t}</b> <span class="muted small">· km ${km(s.km)}</span><br>${s.d}</div></li>`).join("")}</ol>
-      <p class="small muted" style="margin-top:10px">Tappe proposte con regole fisse. In futuro le sceglierà l'AI in base al percorso.</p></div>
-    <div class="row" style="margin-top:16px;flex-wrap:wrap"><button class="btn pri" id="gen-save">${icon("heart")}Salva il giro</button>${S.gen.length>1?`<button class="btn" id="gen-next">Prova un altro giro</button>`:""}</div></div>`;
-  $("gen-save").onclick=()=>{S.routes.unshift({t:Date.now(),name:`Giro di ${km(r.len)} km`,len:r.len,up:r.up,hard:r.hard,soft:r.soft,green:r.green,path:thin(r.path,15)});S.routes=S.routes.slice(0,20);store.set("alldogs-routes",S.routes);toast("Giro salvato")};
-  const nx=$("gen-next");if(nx)nx.onclick=()=>{S.genIdx=(S.genIdx+1)%S.gen.length;showGen();$("mapNewWrap").scrollIntoView({behavior:"smooth"})};
+    <div class="block"><h2>Tappe e giochi</h2><ol class="stops">${r.stops.map(s=>`<li><div><b>${s.t}</b> <span class="muted small">· km ${km(s.km)}</span><br>${s.d}</div></li>`).join("")}</ol>
+      <p class="small muted" style="margin-top:10px">${r.source==="chat"?"Tappe proposte dall'assistente AI, distribuite lungo il giro.":"Tappe proposte con regole fisse."} I numeri corrispondono a quelli sulla mappa.</p></div>
+    ${cmds}
+    <div class="row" style="margin-top:16px;flex-wrap:wrap"><button class="btn pri" id="gen-save">${icon("heart")}Salva il giro</button>${S.gen.length>1?`<button class="btn" id="gen-next">Prova un altro giro</button>`:""}<a class="btn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${r.path[0][0]},${r.path[0][1]}">${icon("nav")}Portami alla partenza</a></div></div>`;
+  $("gen-save").onclick=()=>{S.routes.unshift({t:Date.now(),name:`Giro di ${km(r.len)} km`,len:r.len,up:r.up,hard:r.hard,soft:r.soft,green:r.green,path:thin(r.path,15),stops:r.stops.map(s=>({p:s.p,km:s.km,t:s.t,d:s.d})),cmds:r.cmds||null,source:r.source});S.routes=S.routes.slice(0,20);store.set("alldogs-routes",S.routes);toast("Giro salvato")};
+  const nx=$("gen-next");if(nx)nx.onclick=()=>{S.genIdx=(S.genIdx+1)%S.gen.length;showGen();$("hostCrea").scrollIntoView({behavior:"smooth"})};
   $("gen-out").scrollIntoView({behavior:"smooth",block:"start"});
 }
-$("gen").onclick=generate;
+
+// ---- Chat con l'AI (Gemini) ----
+const GEM_MODELS=["gemini-flash-latest","gemini-2.5-flash","gemini-2.0-flash"];
+const GEM_SCHEMA={type:"OBJECT",properties:{
+  reply:{type:"STRING",description:"Risposta breve all'utente, in italiano semplice"},
+  create:{type:"BOOLEAN",description:"true quando hai abbastanza informazioni per creare il giro adesso"},
+  minutes:{type:"INTEGER",description:"Durata del giro in minuti"},
+  prefer_green:{type:"BOOLEAN"},prefer_quiet:{type:"BOOLEAN"},avoid_steps:{type:"BOOLEAN"},
+  stops:{type:"ARRAY",items:{type:"OBJECT",properties:{title:{type:"STRING"},text:{type:"STRING"}},required:["title","text"]}},
+  commands:{type:"ARRAY",items:{type:"OBJECT",properties:{command:{type:"STRING"},how:{type:"STRING"}},required:["command","how"]}}
+},required:["reply","create"]};
+function sysPrompt(){
+  const d=dog(),cap=capacity(d),n=nowWx(),w=dayWx(S.start,0),hr=new Date().getHours();
+  const next=w?w.H.slice(hr,Math.min(24,hr+6)).map(x=>`${x.h}:00 ${Math.round(x.f)}° percepiti, pioggia ${x.rain}%`).join("; "):"non disponibile";
+  return `Sei l'assistente di AllDogs, un'app per passeggiate col cane a Napoli e in Campania. Parli in italiano semplice, frasi brevi, tono gentile.
+Il tuo compito: capire che giro ad anello vuole fare l'utente col suo cane, decidere la durata e le preferenze, e proporre tappe e comandi da dare al cane. Il percorso lo calcola l'app (OpenRouteService), tu non inventi strade né luoghi.
+Profilo del cane: nome ${d.name}; razza ${d.breed||"non indicata"}; età ${d.age} anni; peso ${d.weight} kg; allenamento ${d.train}; agilità ${cap.agil}; pelo ${d.coat}; muso schiacciato ${d.brachy?"sì":"no"}.
+Problemi di salute: ${pats(d).join(", ")||"nessuno indicato"}.
+Limite consigliato dall'app: circa ${kmN(cap.km)} km e ${cap.up} m di salita; oltre ${cap.heat}° percepiti fa troppo caldo per lui.
+Meteo alla partenza adesso: ${n?Math.round(n.f)+"° percepiti, pioggia "+n.rain+"%":"non disponibile"}. Prossime ore: ${next}. Ora attuale: ${hr}:00.
+La partenza è il segnaposto sulla mappa (l'utente può spostarlo o usare la sua posizione).
+Regole:
+- Fai al massimo una domanda alla volta e solo se serve davvero; se l'utente ha già detto abbastanza, crea il giro subito (create=true).
+- La durata deve rispettare i limiti del cane (a passo di cane circa 3,5 km/h). Se il caldo o la salute lo richiedono, accorcia e spiegalo.
+- Con create=true indica minutes, le preferenze, 3-5 tappe (title breve + text con cosa fare: pause, acqua, giochi di fiuto, ombra) e 3-5 comandi semplici adatti al cane e alla sua salute (command + how: come insegnarlo o usarlo, con premio).
+- Niente consigli medici o veterinari, niente farmaci né diagnosi. Se l'utente chiede cose di salute, rispondi che deve chiedere al veterinario.
+- Non garantire mai la sicurezza: è un consiglio prudente.
+- reply: massimo 3 frasi.`;
+}
+async function gemini(key){
+  const contents=S.chat.filter(m=>!m.err&&!m.local).map(m=>({role:m.r==="u"?"user":"model",parts:[{text:m.raw||m.t}]}));
+  const body=JSON.stringify({systemInstruction:{parts:[{text:sysPrompt()}]},contents,generationConfig:{responseMimeType:"application/json",responseSchema:GEM_SCHEMA,temperature:.6}});
+  let err;
+  for(const model of GEM_MODELS){
+    try{const r=await getJSON(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":key},body});
+      const txt=r.candidates&&r.candidates[0]&&r.candidates[0].content&&r.candidates[0].content.parts.map(p=>p.text||"").join("");
+      if(!txt)throw new Error("risposta vuota");
+      return JSON.parse(txt)}
+    catch(e){err=e;if(e.status===404)continue;throw e}
+  }
+  throw err;
+}
+function showChat(){
+  const key=store.get("alldogs-gemini");
+  $("chat-key").innerHTML=key?"":`<div class="note" style="margin-top:14px"><b>Serve la chiave Gemini (gratuita).</b> Creala su <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> con il tuo account Google, poi incollala qui. Resta solo su questo telefono.
+    <input class="field" id="gem-inline" placeholder="Chiave Gemini" autocomplete="off" autocapitalize="off" spellcheck="false" style="margin-top:10px"><button class="btn pri wide" id="gem-inline-save" style="margin-top:8px">Salva la chiave</button></div>`;
+  if(!key)$("gem-inline-save").onclick=()=>{const v=$("gem-inline").value.trim();if(!v){toast("Incolla la chiave");return}store.set("alldogs-gemini",v);toast("Chiave salvata");showChat()};
+  if(!S.chat.length)S.chat.push({r:"a",t:`Ciao! Che giro vuoi fare oggi con ${dog().name||"il tuo cane"}? Dimmi quanto tempo hai e cosa preferite: ombra, prati, posti tranquilli…`,local:true});
+  renderChat();
+}
+function renderChat(){
+  $("msgs").innerHTML=S.chat.map(m=>`<div class="msg ${m.r}${m.err?" err":""}">${esc(m.t)}</div>`).join("")+(S.busy?`<div class="msg a wait">Sto pensando…</div>`:"");
+  const sug=["Mezz'ora tranquilla nel verde","Un'ora, ma fa caldo","Giro breve con giochi di fiuto"];
+  $("sugg").innerHTML=S.chat.length<=1?sug.map(s=>`<button class="pill" type="button">${s}</button>`).join(""):"";
+  $("sugg").querySelectorAll("button").forEach(b=>b.onclick=()=>chatSend(b.textContent));
+}
+async function chatSend(text){
+  text=text.trim();if(!text||S.busy)return;
+  const key=store.get("alldogs-gemini");if(!key){showChat();toast("Prima incolla la chiave Gemini");return}
+  S.chat.push({r:"u",t:text});S.busy=true;renderChat();$("chat-in").value="";
+  try{await loadWeather([S.start])}catch(e){}
+  try{
+    const o=await gemini(key);S.busy=false;
+    S.chat.push({r:"a",t:o.reply||"…",raw:JSON.stringify(o)});renderChat();
+    if(o.create){
+      const mins=Math.max(10,Math.min(180,+o.minutes||40));
+      generate({mins,prefs:{green:!!o.prefer_green,quiet:!!o.prefer_quiet,avoidSteps:!!o.avoid_steps||capacity(dog()).agil==="bassa"},aiStops:o.stops,aiCmds:(o.commands||[]).slice(0,6),source:"chat"});
+    }
+  }catch(e){
+    S.busy=false;const st=e.status,msg=e.body&&e.body.error&&e.body.error.message||"";
+    S.chat.push({r:"a",err:true,t:st===400&&/key/i.test(msg)||st===401||st===403?"La chiave Gemini non è valida. Controllala nella sezione Il mio cane.":st===429?"Hai raggiunto il limite gratuito di Gemini per adesso. Riprova tra un po', oppure usa il modo Automatico.":"Non riesco a parlare con l'assistente. Controlla la connessione e riprova."});
+    renderChat();
+  }
+}
+$("chat-form").onsubmit=e=>{e.preventDefault();chatSend($("chat-in").value)};
 
 // ================= Salvati =================
 function showSaved(){
   const d=dog();
-  $("saved-routes").innerHTML=S.routes.length?S.routes.map((r,i)=>`<article class="card" data-r="${i}"><div class="thumb">${thumb({path:r.path})}</div><div><h3>${esc(r.name)}</h3><p class="sub">${new Date(r.t).toLocaleDateString("it-IT",{day:"numeric",month:"long"})}</p><p class="meta">${km(r.len)} km · ↑ ${r.up} m</p></div><button class="round" data-del="${i}" aria-label="Elimina">✕</button></article>`).join(""):`<p class="muted">Ancora nessun giro. Creane uno con il pulsante <b>+</b> qui sotto.</p>`;
-  $("saved-routes").querySelectorAll(".card").forEach(c=>c.onclick=ev=>{const del=ev.target.closest("[data-del]");
-    if(del){S.routes.splice(+del.dataset.del,1);store.set("alldogs-routes",S.routes);showSaved();return}
-    const r=S.routes[+c.dataset.r];S.gen=[r];S.genIdx=0;S.start=r.path[0];location.hash="crea";setTimeout(()=>{pin.setLatLng(r.path[0]);showGen()},150)});
+  $("saved-routes").innerHTML=S.routes.length?S.routes.map((r,i)=>`<article class="tcard" data-r="${i}"><div class="img">${svgThumb(r.path)}<img loading="lazy" alt="" src="${staticImg(r.path)}" onerror="this.remove()"><button class="round" data-del="${i}" aria-label="Elimina">✕</button></div><h3>${esc(r.name)}</h3><p class="sub">${new Date(r.t).toLocaleDateString("it-IT",{day:"numeric",month:"long"})}${r.source==="chat"?" · creato con l'AI":""}</p><p class="meta">${km(r.len)} km · ↑ ${r.up} m</p></article>`).join(""):`<p class="muted">Ancora nessun giro. Creane uno con il pulsante <b>+</b> qui sotto.</p>`;
+  $("saved-routes").querySelectorAll(".tcard").forEach(c=>c.onclick=ev=>{const del=ev.target.closest("[data-del]");
+    if(del){ev.stopPropagation();S.routes.splice(+del.dataset.del,1);store.set("alldogs-routes",S.routes);showSaved();toast("Giro eliminato");return}
+    const r=S.routes[+c.dataset.r];S.gen=[Object.assign({},r)];S.genIdx=0;S.start=r.path[0];location.hash="crea";setTimeout(showGen,150)});
   const rows=S.trails.filter(t=>S.saved.includes(t.id));
   $("saved-trails").innerHTML=rows.length?rows.map(tr=>cardHTML(tr,verdict(item(tr),d,S.day))).join(""):`<p class="muted">${S.saved.length&&!S.ready?"Sto caricando…":"Tocca il cuore su un sentiero per ritrovarlo qui."}</p>`;
   bindCards($("saved-trails"));
@@ -726,53 +1200,88 @@ function showAct(){const d=dog(),s=steps(5000,d);$("steps-box").innerHTML=`<h2>Q
 
 // ================= Il mio cane =================
 const DF=["name","breed","age","weight","train","agil","coat","brachy"];
+const HF=[["chip","h-chip"],["vet","h-vet"],["vettel","h-vettel"],["antip","h-antip"],["antipdate","h-antipdate"],["note","h-note"]];
+$("pat").innerHTML=PATS.map(p=>`<label><input type="checkbox" data-p="${p[0]}">${p[1]}</label>`).join("");
+$("pat").querySelector('[data-p="altro"]').onchange=e=>$("pat-other-l").hidden=!e.target.checked;
+function vaxRow(v){const div=document.createElement("div");div.className="vax";div.innerHTML=`<input placeholder="Es. polivalente" value="${esc(v.n||"")}" aria-label="Vaccino"><input type="date" value="${esc(v.d||"")}" aria-label="Data del richiamo"><button class="round" type="button" aria-label="Togli">✕</button>`;div.querySelector("button").onclick=()=>div.remove();$("vax").appendChild(div)}
+$("vax-add").onclick=()=>vaxRow({});
+const fmtD=s=>new Date(s+"T12:00").toLocaleDateString("it-IT",{day:"numeric",month:"long",year:"numeric"});
+function healthAlerts(d){
+  const h=d.health||{},today=new Date().toISOString().slice(0,10),out=[];
+  if(h.antipdate)out.push(h.antipdate<today?`<span class="c1">Antiparassitario: la data prevista (${fmtD(h.antipdate)}) è passata.</span>`:`Prossimo antiparassitario: ${fmtD(h.antipdate)}.`);
+  (h.vax||[]).filter(v=>v.d).forEach(v=>out.push(v.d<today?`<span class="c1">Richiamo ${esc(v.n||"vaccino")}: data passata (${fmtD(v.d)}).</span>`:`Richiamo ${esc(v.n||"vaccino")}: ${fmtD(v.d)}.`));
+  return out.join("<br>");
+}
 function showDog(){
   const first=!S.dog,d=dog();
   $("onb").hidden=!first;$("dog-head").style.display=first?"none":"flex";$("settings").style.display=first?"none":"block";
   $("dog-save").textContent=first?"Inizia":"Salva";
   DF.forEach(f=>{const el=$("d-"+f);if(el.type==="checkbox")el.checked=!!d[f];else el.value=first&&["name","breed","age","weight"].includes(f)?"":d[f]});
+  $("pat").querySelectorAll("input").forEach(i=>i.checked=!first&&!!(d.pat&&d.pat[i.dataset.p]));
+  $("pat-other").value=first?"":d.patOther||"";$("pat-other-l").hidden=!(d.pat&&d.pat.altro)||first;
+  const h=first?{}:d.health||{};HF.forEach(([k,id])=>$(id).value=h[k]||"");
+  $("vax").innerHTML="";(h.vax||[]).forEach(vaxRow);
   if(!first){const c=capacity(d);$("avatar").textContent=(d.name||"?").trim().charAt(0).toUpperCase();$("dog-title").textContent=d.name||"Il mio cane";
-    $("dog-cap").textContent=`Fino a circa ${c.km} km e ${c.up} m di salita`}
+    $("dog-cap").textContent=`Fino a circa ${kmN(c.km)} km e ${c.up} m di salita`;$("dog-alert").innerHTML=healthAlerts(d)}
+  else $("dog-alert").innerHTML="";
   $("ors-key").value=store.get("alldogs-ors")?"••••••••••••":"";
+  $("gem-key").value=store.get("alldogs-gemini")?"••••••••••••":"";
 }
 $("dog-save").onclick=()=>{
   const d={};DF.forEach(f=>{const el=$("d-"+f);d[f]=el.type==="checkbox"?el.checked:el.value.trim()});
   d.age=parseFloat(String(d.age).replace(",","."));d.weight=parseFloat(String(d.weight).replace(",","."));
   if(!d.name){toast("Scrivi il nome del cane");$("d-name").focus();return}
   if(!(d.age>=0)||!(d.weight>0)){toast("Inserisci età e peso");return}
-  const first=!S.dog;S.dog=d;store.set("alldogs-dog",d);toast("Profilo salvato");
+  d.pat={};$("pat").querySelectorAll("input").forEach(i=>{if(i.checked)d.pat[i.dataset.p]=true});
+  d.patOther=d.pat.altro?$("pat-other").value.trim():"";
+  d.health={};HF.forEach(([k,id])=>{const v=$(id).value.trim();if(v)d.health[k]=v});
+  d.health.vax=[...$("vax").querySelectorAll(".vax")].map(r=>{const i=r.querySelectorAll("input");return {n:i[0].value.trim(),d:i[1].value}}).filter(v=>v.n||v.d);
+  const first=!S.dog;S.dog=d;store.set("alldogs-dog",d);toast("Profilo salvato");S.chat=[];
   if(first)location.hash="esplora";else showDog();
 };
-$("ors-save").onclick=()=>{const v=$("ors-key").value.trim();if(!v||v.startsWith("•")){toast("Incolla la chiave");return}store.set("alldogs-ors",v);$("ors-key").value="••••••••••••";toast("Chiave salvata")};
+$("keys-save").onclick=()=>{
+  let n=0;const o=$("ors-key").value.trim(),g=$("gem-key").value.trim();
+  if(o&&!o.startsWith("•")){store.set("alldogs-ors",o);n++}else if(!o)store.del("alldogs-ors");
+  if(g&&!g.startsWith("•")){store.set("alldogs-gemini",g);n++}else if(!g)store.del("alldogs-gemini");
+  showDog();toast(n?"Chiavi salvate":"Nessuna chiave nuova");
+};
 
 // ================= Avvio =================
-$("q").addEventListener("input",()=>{S.limit=30;renderList()});
-["f-fit","f-len","f-dif","f-zone"].forEach(id=>$(id).addEventListener("change",()=>{S.limit=30;renderList()}));
+$("q").addEventListener("input",()=>{S.limit=20;fitPending=true;renderList()});
+["f-fit","f-len","f-up","f-dif","f-zone"].forEach(id=>$(id).addEventListener("change",()=>{S.limit=20;fitPending=true;renderList()}));
 $("f-day").innerHTML=[0,1,2,3,4,5,6].map(i=>`<option value="${i}">${dayName(i)}</option>`).join("");
 $("f-day").addEventListener("change",e=>{S.day=+e.target.value;renderList()});
-$("more").onclick=()=>{S.limit+=30;renderList()};
-$("to-map").onclick=openMap;$("to-list").onclick=()=>$("mapAllWrap").classList.remove("on");
-matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>tiles.forEach(t=>t.setUrl(`https://{s}.basemaps.cartocdn.com/${dark()?"dark_all":"rastertiles/voyager"}/{z}/{x}/{y}{r}.png`)));
+$("more").onclick=()=>{S.limit+=20;renderList()};
+$("reset").onclick=()=>{$("q").value="";["f-fit","f-len","f-up","f-dif","f-zone"].forEach(id=>$(id).value="all");S.act=null;S.feat=[];S.near=null;S.limit=20;fitPending=true;renderList()};
+syncLayersMenu();
 
+const onList=()=>(location.hash.slice(1)||"esplora")==="esplora";
 async function fillElev(){
-  const order=S.trails.filter(t=>!elev[t.id]).sort((a,b)=>(b.cai-a.cai)||a.len-b.len);let n=0;const onList=()=>(location.hash.slice(1)||"esplora")==="esplora";
-  for(const tr of order){
-    try{await elevation(tr)}catch(e){await new Promise(r=>setTimeout(r,4000))}
-    n++;$("status").textContent=`Calcolo i dislivelli: ${n} di ${order.length}`;
-    if(n%10===0&&onList()&&window.scrollY<200)renderList();
-    await new Promise(r=>setTimeout(r,120));
+  // prima i sentieri che l'utente sta guardando (elenco, consigliati, sentiero aperto), poi gli altri
+  const skip=new Set(),todo=t=>!elev[t.id]&&!skip.has(t.id),total=S.trails.filter(todo).length;let n=0;
+  const next=()=>{const want=[];if(cur&&cur.tr)want.push(cur.tr);famousMatch().forEach(m=>m.tr&&want.push(m.tr));(S.rows||[]).slice(0,S.limit).forEach(r=>want.push(r.tr));
+    return want.find(todo)||S.trails.filter(todo).sort((a,b)=>(b.cai-a.cai)||a.len-b.len)[0]};
+  for(let tr=next();tr;tr=next()){
+    let tries=0;
+    while(true){try{await elevation(tr);break}catch(e){if(e.status===429&&tries++<3){$("status").textContent="Pausa: il servizio delle quote chiede di rallentare…";await sleep(65000)}else{await sleep(4000);break}}}
+    n++;$("status").textContent=`Calcolo i dislivelli: ${n} di ${total}`;
+    if(!elev[tr.id])skip.add(tr.id); // non riuscito: non riprovare in questa sessione
+    if(n%5===0&&onList()&&window.scrollY<300)renderList();
+    await sleep(3500);
   }
-  $("status").textContent="";if(onList())renderList();else if(location.hash==="#salvati")showSaved();
+  S.elevDone=true;$("status").textContent="";if(onList())renderList();else if(location.hash==="#salvati")showSaved();
 }
 async function boot(){
   route();
   try{$("status").textContent="Scarico i sentieri…";S.trails=await loadTrails()}
-  catch(e){$("list").innerHTML=`<div class="err">Non riesco a scaricare i sentieri. Controlla la connessione e ricarica la pagina.</div>`;$("status").textContent="";return}
+  catch(e){$("list").innerHTML=`<div class="err">Non riesco a scaricare i sentieri da OpenStreetMap. Il servizio a volte è sovraccarico: riprova tra qualche minuto ricaricando la pagina.</div>`;$("status").textContent="";return}
   const zs=[...new Set(S.trails.map(t=>t.zone))].sort();$("f-zone").innerHTML=`<option value="all">Tutte le zone</option>`+zs.map(z=>`<option>${esc(z)}</option>`).join("");
-  S.ready=true;$("status").textContent="Scarico il meteo…";route();
-  try{await loadWeather(S.trails.map(t=>t.start))}catch(e){S.wxFail=true}
+  S.ready=true;S.featReady=S.trails.every(t=>FT[t.id]);fitPending=true;$("status").textContent="Scarico il meteo…";route();
+  try{await loadWeather(S.trails.map(t=>t.start))}catch(e){
+    if(e.status===429){$("status").textContent="Il meteo arriva tra un minuto…";await sleep(62000);try{await loadWeather(S.trails.map(t=>t.start))}catch(x){S.wxFail=true}}else S.wxFail=true}
   $("status").textContent="";route();
-  fillElev();
+  const feats=S.featReady?Promise.resolve():loadFeatures().then(()=>{S.featReady=true;if(onList())renderList();else if(cur&&location.hash==="#s-"+cur.tr.id)showTrail(cur.tr.id)}).catch(e=>{console.warn("Particolarità:",e);S.featFail=true;if(onList())renderList()});
+  fillElev();await feats;
 }
 boot();
 </script>
