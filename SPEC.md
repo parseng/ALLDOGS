@@ -38,3 +38,15 @@ passi stimati (utente e cane), salvati, giri salvati, tema chiaro/scuro, manifes
 ## Come provare
 Server locale (`python -m http.server` o `npx serve`) e browser: controllare con dati VERI che i sentieri si carichino,
 che mappa, miniature, filtri, scheda, meteo funzionino a larghezza telefono (390 px) in chiaro e scuro.
+
+## Aggiunte del 13 novembre 2026 (richieste da Giuseppe)
+- **Dati pronti**: `data/trails.json` (sentieri + dislivelli + particolarità) creato da `tools/build_data.py`. L'app non chiama più Overpass né il
+  servizio quote all'avvio (prima esauriva il limite giornaliero di Open-Meteo e i verdetti restavano su "Sto valutando"). Overpass resta come riserva se il file manca.
+- **Rimuovi percorso**: pulsante sulla mappa (Esplora: toglie il sentiero evidenziato e torna a tutti i sentieri; Crea giro: elimina il giro creato).
+- **Avvia percorso** (schermata `#vai`): GPS dal vivo, tempo, km fatti/mancanti, passi stimati, meteo, tappe, avvisi per il cane; "Chiudi attività" salva in Attività
+  (`alldogs-acts` in localStorage). Lo schermo deve restare acceso: un sito web non può usare il GPS in background.
+- **Andatura personale**: media minuti/km delle passeggiate salvate; sostituisce la media fissa (18 min/km) nelle stime e nel prompt dell'AI.
+- **Chat**: modelli Gemini di riserva con tempo massimo di 15 secondi ciascuno (i server gratuiti danno spesso errore 503).
+
+## Idee per dopo
+- Limitare il token Mapbox al dominio del sito. Contapassi vero e GPS a schermo spento richiedono un'app installata dallo store.
