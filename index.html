@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AllDogs – Sentieri per il tuo cane</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+/* Layout: pannello a sinistra (cane, giorno, elenco sentieri) e mappa a destra; su telefono mappa sopra e pannello sotto. */
+:root{
+  --bg:#f3f5f0; --panel:#ffffff; --fg:#1f2a22; --muted:#5d6b61; --line:#d9e0d6;
+  --accent:#2f5d46; --accent-soft:#e2ece5;
+  --ok:#2e7d4f; --ok-bg:#e0f1e6; --warn:#a86400; --warn-bg:#fcefd9; --no:#b3261e; --no-bg:#fbe3e1; --wait:#6b7280; --wait-bg:#eceef1;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#121815; --panel:#1a221e; --fg:#e6ece7; --muted:#9eaba2; --line:#2c3732;
+  --accent:#8cc5a5; --accent-soft:#22332a;
+  --ok:#7fd3a0; --ok-bg:#1d3326; --warn:#f2b55a; --warn-bg:#3a2c14; --no:#f28b82; --no-bg:#3d1d1b; --wait:#a3a9b3; --wait-bg:#262b30;
+  color-scheme:dark;
+}}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 var(--body);display:flex;flex-direction:column}
+header{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--panel)}
+header h1{font:800 22px/1 var(--display);margin:0;color:var(--accent);letter-spacing:-.01em}
+header p{margin:0;color:var(--muted);font-size:13px}
+main{flex:1;display:grid;grid-template-columns:minmax(320px,400px) 1fr;min-height:0}
+#side{min-width:0;overflow-y:auto;border-right:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column}
+#map{min-height:300px}
+section{padding:14px 16px;border-bottom:1px solid var(--line)}
+h2{font:700 16px/1.2 var(--display);margin:0 0 10px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px 10px}
+label{min-width:0;display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.02em}
+label.check{flex-direction:row;align-items:center;gap:8px;grid-column:1/-1;font-weight:400;font-size:14px;color:var(--fg);letter-spacing:0}
+input,select{width:100%;font:inherit;font-size:15px;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg);min-width:0}
+input[type=checkbox]{flex:none;width:18px;height:18px}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.days{display:flex;gap:6px;flex-wrap:wrap}
+.days button{font:inherit;font-size:14px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--bg);color:var(--fg);cursor:pointer}
+.days button[aria-pressed=true]{background:var(--accent);color:var(--panel);border-color:var(--accent)}
+#status{font-size:13px;color:var(--muted);margin-top:8px}
+.filters{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.filters input{flex:1 1 180px}.filters select{width:auto}
+#list{list-style:none;margin:0;padding:0}
+#list li{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;padding:9px 6px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:6px}
+#list li:hover,#list li.sel{background:var(--accent-soft)}
+#list .nm{font-weight:700;min-width:0;overflow-wrap:anywhere}
+#list .meta{grid-column:2;color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+.pill{grid-row:span 2;align-self:start;font-size:12px;font-weight:700;padding:3px 8px;border-radius:999px;white-space:nowrap;margin-top:2px}
+.v0{background:var(--ok-bg);color:var(--ok)} .v1{background:var(--warn-bg);color:var(--warn)} .v2{background:var(--no-bg);color:var(--no)} .vw{background:var(--wait-bg);color:var(--wait)}
+#detail{display:none}
+#detail.on{display:block}
+#detail h3{font:800 19px/1.2 var(--display);margin:6px 0 4px}
+.big{display:inline-block;font:800 16px/1 var(--display);padding:7px 12px;border-radius:8px;margin-top:4px}
+.facts{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin:12px 0;font-variant-numeric:tabular-nums}
+.facts div{background:var(--bg);border-radius:6px;padding:6px 8px}
+.facts b{display:block;font-size:16px}
+.facts span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.why{list-style:none;padding:0;margin:8px 0}
+.why li{display:flex;gap:8px;margin:5px 0}
+.dot{flex:none;width:10px;height:10px;border-radius:50%;margin-top:6px}
+.d0{background:var(--ok)} .d1{background:var(--warn)} .d2{background:var(--no)} .dw{background:var(--wait)}
+.hours{display:flex;gap:2px;overflow-x:auto;padding-bottom:4px;margin:6px 0 2px}
+.hours div{flex:none;width:30px;text-align:center;font-size:11px;font-variant-numeric:tabular-nums;border-radius:4px;padding:3px 0}
+.hours .h{color:var(--muted)}
+ul.bring{margin:6px 0;padding-left:20px}
+.note{font-size:13px;color:var(--muted)}
+.back{font:inherit;font-size:14px;background:none;border:none;color:var(--accent);cursor:pointer;padding:0;text-decoration:underline}
+a{color:var(--accent)}
+footer{padding:12px 16px;font-size:12px;color:var(--muted)}
+@media (max-width:760px){
+  main{grid-template-columns:minmax(0,1fr);grid-template-rows:45vh auto}
+  #map{grid-row:1}
+  #side{grid-row:2;border-right:none;overflow:visible}
+  body{height:auto}
+  .facts{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>AllDogs</h1>
+  <p>Prototipo 1 · sentieri della zona di Napoli, meteo e verdetto per il tuo cane</p>
+</header>
+<main>
+  <div id="side">
+    <section>
+      <h2>Il tuo cane</h2>
+      <div class="grid">
+        <label>Nome<input id="d-name" value="Luna"></label>
+        <label>Età (anni)<input id="d-age" type="number" min="0" max="25" step="0.5" value="4"></label>
+        <label>Peso (kg)<input id="d-weight" type="number" min="1" max="100" value="22"></label>
+        <label>Razza<input id="d-breed" value="Meticcio"></label>
+        <label>Allenamento<select id="d-train"><option value="poco">Poco (passeggiate in città)</option><option value="medio" selected>Medio (escursioni ogni tanto)</option><option value="molto">Molto (escursioni frequenti)</option></select></label>
+        <label>Agilità<select id="d-agil"><option value="bassa">Bassa (evita salti e rocce)</option><option value="media" selected>Media</option><option value="alta">Alta (si arrampica volentieri)</option></select></label>
+        <label>Pelo<select id="d-coat"><option value="corto" selected>Corto</option><option value="lungo">Lungo o folto (soffre di più il caldo)</option></select></label>
+        <label class="check"><input id="d-brachy" type="checkbox"> Muso schiacciato (carlino, bulldog, boxer…)</label>
+      </div>
+    </section>
+    <section>
+      <h2>Quando?</h2>
+      <div class="days" id="days"></div>
+      <div id="status">Avvio…</div>
+    </section>
+    <section id="listsec">
+      <h2>Sentieri</h2>
+      <div class="filters">
+        <input id="q" placeholder="Cerca per nome o numero (es. Vesuvio, 300)" aria-label="Cerca sentiero">
+        <select id="vf" aria-label="Filtra per verdetto"><option value="all">Tutti</option><option value="0">Solo fattibili</option><option value="01">Fattibili e con prudenza</option></select>
+      </div>
+      <ul id="list"></ul>
+    </section>
+    <section id="detail"></section>
+    <footer>
+      Il verdetto è un <b>consiglio prudente, non una garanzia</b>: osserva sempre il tuo cane, fermati ai primi segni di stanchezza o affanno e, se ha problemi di salute, chiedi al veterinario.
+      Il fondo (roccia, terra, asfalto) e l'ombra non sono ancora valutati: arriveranno con le schede dei sentieri testati.<br><br>
+      Sentieri © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> (ODbL) · Meteo e quote: <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> · Mappa: <a href="https://opentopomap.org" target="_blank" rel="noopener">OpenTopoMap</a>
+    </footer>
+  </div>
+  <div id="map"></div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+"use strict";
+// ---------- Impostazioni ----------
+const AREA = {s:40.52, w:13.85, n:41.02, e:14.85}; // Napoli, Campi Flegrei, Vesuvio, Lattari, isole
+const OVERPASS = ["https://overpass-api.de/api/interpreter","https://overpass.kumi.systems/api/interpreter"];
+const VLABEL = ["Fattibile","Con prudenza","Sconsigliato"];
+const store = {
+  get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+
+// ---------- Utilità ----------
+const $ = id => document.getElementById(id);
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function hav(a,b){const R=6371000,r=Math.PI/180;const dl=(b[0]-a[0])*r,dn=(b[1]-a[1])*r;
+  const x=Math.sin(dl/2)**2+Math.cos(a[0]*r)*Math.cos(b[0]*r)*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
+function fmtH(h){const m=Math.round(h*2)/2;const hh=Math.floor(m);return (hh?hh+" h":"")+(m%1?" 30 min":"")||"30 min"}
+async function getJSON(url,opt){const r=await fetch(url,opt);if(!r.ok)throw new Error("HTTP "+r.status);return r.json()}
+
+// ---------- Profilo cane ----------
+const DOG_FIELDS=["name","age","weight","breed","train","agil","coat","brachy"];
+function readDog(){const d={};for(const f of DOG_FIELDS){const el=$("d-"+f);d[f]=el.type==="checkbox"?el.checked:el.value}
+  d.age=parseFloat(d.age)||0;d.weight=parseFloat(d.weight)||10;return d}
+function loadDog(){const d=store.get("alldogs-dog");if(!d)return;for(const f of DOG_FIELDS){const el=$("d-"+f);if(!el||d[f]==null)continue;if(el.type==="checkbox")el.checked=d[f];else el.value=d[f]}}
+
+function capacity(d){
+  const base={poco:{km:6,up:300},medio:{km:12,up:700},molto:{km:20,up:1200}}[d.train];
+  let km=base.km,up=base.up,f=1;const notes=[];
+  const seniorAge=d.weight>=25?7:9;
+  if(d.age<1){km=Math.min(km,4);up=Math.min(up,200);notes.push("è un cucciolo: le articolazioni sono ancora in crescita")}
+  else if(d.age>=seniorAge){f*=0.6;notes.push("è un cane anziano per la sua taglia")}
+  if(d.weight<8){f*=0.7;notes.push("è di taglia piccola")}
+  if(d.weight>40){f*=0.8;notes.push("è di taglia gigante")}
+  if(d.brachy){f*=0.6;notes.push("ha il muso schiacciato e respira con più fatica")}
+  const sensitive=d.brachy||d.coat==="lungo"||d.age<1||d.age>=seniorAge||d.weight>35;
+  return {km:Math.round(km*f*10)/10,up:Math.round(up*f/10)*10,notes,heatLimit:sensitive?21:24,sensitive}
+}
+
+// ---------- Sentieri da OpenStreetMap ----------
+async function loadTrails(){
+  const cached=store.get("alldogs-trails-v1");
+  if(cached&&Date.now()-cached.t<7*864e5)return cached.trails;
+  const q=`[out:json][timeout:90];relation["route"="hiking"]["network"!~"^(iwn|nwn)$"](${AREA.s},${AREA.w},${AREA.n},${AREA.e});out tags geom;`;
+  let data,err;
+  for(const u of OVERPASS){try{data=await getJSON(u,{method:"POST",body:"data="+encodeURIComponent(q),headers:{"Content-Type":"application/x-www-form-urlencoded"}});break}catch(e){err=e}}
+  if(!data)throw err;
+  const trails=[];
+  for(const el of data.elements){
+    const t=el.tags||{};
+    const ways=(el.members||[]).filter(m=>m.type==="way"&&m.geometry&&m.geometry.length>1).map(m=>m.geometry.map(p=>[+p.lat.toFixed(5),+p.lon.toFixed(5)]));
+    if(!ways.length)continue;
+    let len=0;for(const w of ways)for(let i=1;i<w.length;i++)len+=hav(w[i-1],w[i]);
+    if(len<300||len>40000)continue;
+    const path=chain(ways);
+    const cai=/cai/i.test((t.operator||"")+(t.network||"")+(t["osmc:symbol"]||""))||!!t.cai_scale;
+    const name=t.name||(t.ref?"Sentiero "+t.ref:(t.from&&t.to?t.from+" – "+t.to:"Sentiero senza nome"));
+    trails.push({id:el.id,name,ref:t.ref||"",from:t.from||"",to:t.to||"",cai,scale:(t.cai_scale||"").toUpperCase(),
+      operator:t.operator||"",dogs:t.dog||"",len,ways,path,start:path[0],
+      loop:hav(path[0],path[path.length-1])<500});
+  }
+  store.set("alldogs-trails-v1",{t:Date.now(),trails});
+  return trails;
+}
+// unisce i tratti nell'ordine giusto, per poter calcolare salite e discese
+function chain(ways){
+  const rest=ways.slice(1);let path=ways[0].slice();
+  while(rest.length){
+    const end=path[path.length-1];let best=0,bd=Infinity,rev=false;
+    rest.forEach((w,i)=>{const a=hav(end,w[0]),b=hav(end,w[w.length-1]);if(a<bd){bd=a;best=i;rev=false}if(b<bd){bd=b;best=i;rev=true}});
+    let w=rest.splice(best,1)[0];if(rev)w=w.slice().reverse();path=path.concat(w);
+  }
+  return path;
+}
+function sample(path,n){
+  const cum=[0];for(let i=1;i<path.length;i++)cum.push(cum[i-1]+hav(path[i-1],path[i]));
+  const tot=cum[cum.length-1],out=[];let j=0;
+  for(let k=0;k<n;k++){const d=tot*k/(n-1);while(j<cum.length-2&&cum[j+1]<d)j++;out.push(path[j])}
+  return out;
+}
+
+// ---------- Quote (dislivello) ----------
+const elevCache=store.get("alldogs-elev-v1")||{};
+async function elevation(tr){
+  if(elevCache[tr.id])return elevCache[tr.id];
+  const pts=sample(tr.path,100);
+  const u=`https://api.open-meteo.com/v1/elevation?latitude=${pts.map(p=>p[0]).join(",")}&longitude=${pts.map(p=>p[1]).join(",")}`;
+  const r=await getJSON(u);const z=r.elevation;
+  let up=0,down=0;for(let i=1;i<z.length;i++){const dz=z[i]-z[i-1];if(dz>0)up+=dz;else down-=dz}
+  const e={up:Math.round(up),down:Math.round(down),min:Math.round(Math.min(...z)),max:Math.round(Math.max(...z)),start:Math.round(z[0])};
+  elevCache[tr.id]=e;store.set("alldogs-elev-v1",elevCache);return e;
+}
+
+// ---------- Meteo ----------
+const wxCache={};
+function wxKey(p){return (Math.round(p[0]*20)/20).toFixed(2)+","+(Math.round(p[1]*20)/20).toFixed(2)}
+async function loadWeather(points){
+  const keys=[...new Set(points.map(wxKey))].filter(k=>!wxCache[k]);
+  for(let i=0;i<keys.length;i+=80){
+    const part=keys.slice(i,i+80);
+    const u=`https://api.open-meteo.com/v1/forecast?latitude=${part.map(k=>k.split(",")[0]).join(",")}&longitude=${part.map(k=>k.split(",")[1]).join(",")}`+
+      `&hourly=temperature_2m,apparent_temperature,precipitation_probability&daily=sunrise,sunset&timezone=Europe%2FRome&forecast_days=3`;
+    let r=await getJSON(u);if(!Array.isArray(r))r=[r];
+    r.forEach((w,j)=>wxCache[part[j]]=w);
+  }
+}
+function dayWx(p,day){
+  const w=wxCache[wxKey(p)];if(!w)return null;
+  const o=day*24,H=[];
+  for(let h=0;h<24;h++)H.push({h,t:w.hourly.temperature_2m[o+h],f:w.hourly.apparent_temperature[o+h],rain:w.hourly.precipitation_probability[o+h]??0});
+  const sr=parseInt(w.daily.sunrise[day].slice(11,13))+(w.daily.sunrise[day].slice(14,16)!=="00"?1:0),ss=parseInt(w.daily.sunset[day].slice(11,13));
+  return {H,sr,ss};
+}
+
+// ---------- Verdetto ----------
+function verdict(tr,dog,day){
+  const cap=capacity(dog),why=[],e=elevCache[tr.id];
+  const km=tr.len/1000;
+  const add=(lvl,txt)=>why.push({lvl,txt});
+  // lunghezza
+  if(km<=cap.km)add(0,`${km.toFixed(1)} km: dentro le sue possibilità (fino a circa ${cap.km} km).`);
+  else if(km<=cap.km*1.3)add(1,`${km.toFixed(1)} km: un po' oltre il suo limite consigliato di circa ${cap.km} km. Prevedi pause lunghe.`);
+  else add(2,`${km.toFixed(1)} km: troppo lungo per lui, il limite consigliato è circa ${cap.km} km.`);
+  if(!tr.loop)why[why.length-1].txt+=" Il sentiero non è ad anello: se torni indietro a piedi la distanza raddoppia.";
+  // dislivello
+  let up=null;
+  if(e){up=Math.max(e.up,e.down);
+    if(up<=cap.up)add(0,`${up} m di salita: va bene (fino a circa ${cap.up} m).`);
+    else if(up<=cap.up*1.3)add(1,`${up} m di salita: impegnativo per lui (limite consigliato circa ${cap.up} m).`);
+    else add(2,`${up} m di salita: troppo per lui (limite consigliato circa ${cap.up} m).`);
+  } else add(-1,"Dislivello in calcolo…");
+  // difficoltà CAI
+  const s=tr.scale;
+  if(s==="EEA")add(2,"Difficoltà EEA (tratti attrezzati con cavi o scalette): i cani non possono farli.");
+  else if(s==="EE"){if(dog.agil==="alta"&&dog.train==="molto")add(1,"Difficoltà EE (escursionisti esperti): passaggi su roccia ed esposti. Solo con guinzaglio corto e molta attenzione.");
+    else add(2,"Difficoltà EE (escursionisti esperti): passaggi su roccia ed esposti, non adatti alla sua agilità o al suo allenamento.")}
+  else if(s==="E"){if(dog.agil==="bassa")add(1,"Difficoltà E (escursionistica): sentiero vero con pietre e gradini, faticoso per un cane poco agile.");else add(0,"Difficoltà E (escursionistica): sentiero di montagna normale.")}
+  else if(s==="T")add(0,"Difficoltà T (turistica): sentiero facile.");
+  else add(1,"Difficoltà non indicata nei dati: informati prima di partire.");
+  // durata
+  const hours=km/3+(up||0)/400;
+  // caldo e pioggia
+  const w=dayWx(tr.start,day);let best=null;
+  if(w){
+    const need=Math.max(1,Math.ceil(hours));
+    const limit=cap.heatLimit;
+    const ok=h=>h>=0&&h<24&&w.H[h].f<=limit,ok2=h=>h>=0&&h<24&&w.H[h].f<=limit+4;
+    const win=test=>{for(let h=Math.max(5,w.sr);h+need<=Math.min(21,w.ss+1);h++){let g=true;for(let k=0;k<need;k++)if(!test(h+k))g=false;if(g)return h}return null};
+    const maxF=Math.max(...w.H.slice(w.sr,w.ss+1).map(x=>x.f));
+    const sens=cap.sensitive?" (il tuo cane soffre di più il caldo, quindi siamo più severi)":"";
+    let h=win(ok);
+    if(h!=null){best=h;if(maxF>limit)add(0,`Caldo: nelle ore centrali si arriva a ${Math.round(maxF)}° percepiti. Parti verso le ${h}:00, quando sono ${Math.round(w.H[h].f)}°.`);
+      else add(0,`Temperature buone tutto il giorno (massimo ${Math.round(maxF)}° percepiti).`)}
+    else if((h=win(ok2))!=null){best=h;add(1,`Caldo: anche nelle ore migliori fa più di ${limit}° percepiti${sens}. Se vai, parti verso le ${h}:00 e porta tanta acqua.`)}
+    else add(2,`Troppo caldo per un'escursione di ${fmtH(hours)}: non c'è una finestra abbastanza fresca${sens}.`);
+    const rain=Math.max(...w.H.slice(best??8,(best??8)+need).map(x=>x.rain));
+    if(rain>=60)add(1,`Probabilità di pioggia ${rain}%: il fondo può diventare scivoloso.`);
+    const minT=Math.min(...w.H.slice(w.sr,w.ss+1).map(x=>x.t));
+    if(minT<3&&(dog.weight<10||dog.coat==="corto"))add(1,`Freddo: si scende a ${Math.round(minT)}°. Un cappottino può servire.`);
+  } else add(-1,"Meteo in caricamento…");
+  // altro
+  if(tr.dogs==="no")add(2,"Secondo i dati OSM i cani non sono ammessi su questo sentiero.");
+  const known=why.filter(x=>x.lvl>=0);
+  const v=why.some(x=>x.lvl<0)&&!known.some(x=>x.lvl===2)?-1:Math.max(...known.map(x=>x.lvl));
+  return {v,why,hours,best,cap,w,up};
+}
+
+function bringList(tr,dog,res){
+  const hot=res.w?Math.max(...res.w.H.slice(res.best??10,(res.best??10)+Math.ceil(res.hours)).map(x=>x.f))>20:true;
+  let L=Math.max(0.5,dog.weight*0.025*res.hours*(hot?1.5:1));L=Math.ceil(L*4)/4;
+  const items=[`Acqua per ${esc(dog.name||"il cane")}: almeno ${L.toString().replace(".",",")} litri, più la tua. Se lungo il percorso ci sono fontanelle puoi portarne meno.`,"Ciotola pieghevole e sacchetti.","Pettorina e guinzaglio (meglio non lungo sui sentieri stretti)."];
+  if(res.hours>=2)items.push("Qualche snack o un pasto leggero per lui.");
+  if(tr.scale==="E"||tr.scale==="EE")items.push("Scarpette protettive se ha zampe delicate: il fondo può essere roccioso.");
+  if(hot)items.push("Un asciugamano da bagnare per rinfrescarlo durante le pause.");
+  items.push("Kit di primo soccorso (garze, pinzetta per zecche, disinfettante).");
+  return items;
+}
+
+// ---------- Interfaccia ----------
+let map,trails=[],layers={},day=0,selected=null;
+function initMap(){
+  map=L.map("map",{zoomControl:true}).setView([40.75,14.35],10);
+  const topo=L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",{maxZoom:17,attribution:"Mappa © OpenTopoMap, dati © OpenStreetMap"});
+  const carto=L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© CARTO, dati © OpenStreetMap"});
+  topo.addTo(map);L.control.layers({"Escursionistica":topo,"Stradale":carto}).addTo(map);
+}
+const COLORS=()=>{const cs=getComputedStyle(document.documentElement);return {"-1":cs.getPropertyValue("--wait"),"0":cs.getPropertyValue("--ok"),"1":cs.getPropertyValue("--warn"),"2":cs.getPropertyValue("--no")}};
+function renderDays(){
+  const names=["Oggi","Domani","Dopodomani"];
+  $("days").innerHTML=names.map((n,i)=>`<button type="button" data-d="${i}" aria-pressed="${i===day}">${n}</button>`).join("");
+  $("days").querySelectorAll("button").forEach(b=>b.onclick=()=>{day=+b.dataset.d;renderDays();refresh()});
+}
+function refresh(){
+  const dog=readDog();store.set("alldogs-dog",dog);
+  const col=COLORS(),q=$("q").value.trim().toLowerCase(),vf=$("vf").value;
+  const rows=trails.map(tr=>({tr,res:verdict(tr,dog,day)}));
+  rows.sort((a,b)=>((a.res.v<0?1.5:a.res.v)-(b.res.v<0?1.5:b.res.v))||a.tr.len-b.tr.len);
+  let shown=0;const html=[];
+  for(const {tr,res} of rows){
+    const match=(!q||(tr.name+" "+tr.ref+" "+tr.from+" "+tr.to).toLowerCase().includes(q))&&(vf==="all"||vf.includes(String(res.v)));
+    const lay=layers[tr.id];
+    if(lay){lay.setStyle({color:col[res.v],opacity:match?.9:.15,weight:tr.id===selected?6:3});}
+    if(!match)continue;shown++;
+    if(shown>200)continue;
+    const e=elevCache[tr.id];
+    html.push(`<li data-id="${tr.id}" class="${tr.id===selected?"sel":""}"><span class="pill ${res.v<0?"vw":"v"+res.v}">${res.v<0?"In calcolo":VLABEL[res.v]}</span><span class="nm">${esc(tr.name)}${tr.ref&&!tr.name.includes(tr.ref)?" · "+esc(tr.ref):""}</span>
+      <span class="meta">${(tr.len/1000).toFixed(1)} km · ${e?"↑ "+Math.max(e.up,e.down)+" m":"↑ …"} · ${tr.scale||"diff. n.d."}${tr.cai?" · CAI":""}</span></li>`);
+  }
+  $("list").innerHTML=html.join("")||`<li class="note">Nessun sentiero corrisponde alla ricerca.</li>`;
+  $("list").querySelectorAll("li[data-id]").forEach(li=>li.onclick=()=>select(+li.dataset.id,true));
+  if(selected)showDetail(trails.find(t=>t.id===selected),dog);
+}
+async function select(id,zoom){
+  selected=id;const tr=trails.find(t=>t.id===id);
+  if(zoom&&layers[id])map.fitBounds(layers[id].getBounds(),{padding:[30,30]});
+  try{await elevation(tr)}catch(e){}
+  refresh();
+  if(window.innerWidth>760)$("detail").scrollIntoView({behavior:"smooth",block:"start"});
+}
+function showDetail(tr,dog){
+  const res=verdict(tr,dog,day),e=elevCache[tr.id];
+  const lvl=x=>x<0?"dw":"d"+x;
+  let hours="";
+  if(res.w){const lim=res.cap.heatLimit;
+    hours=`<h2 style="margin-top:14px">Temperatura percepita ora per ora</h2><div class="hours">`+
+      res.w.H.slice(6,22).map(x=>`<div class="${x.f<=lim?"v0":x.f<=lim+4?"v1":"v2"}"><div class="h">${x.h}</div>${Math.round(x.f)}°</div>`).join("")+
+      `</div><div class="note">Verde: fresco per lui · arancione: caldo, con prudenza · rosso: troppo caldo.</div>`}
+  const d=$("detail");d.className="on";
+  d.innerHTML=`<button class="back" type="button" id="close">← torna all'elenco</button>
+    <h3>${esc(tr.name)}</h3>
+    <div class="note">${[tr.ref&&"Sentiero n. "+esc(tr.ref),tr.from&&tr.to&&esc(tr.from)+" → "+esc(tr.to),tr.operator&&esc(tr.operator)].filter(Boolean).join(" · ")}</div>
+    <span class="big ${res.v<0?"vw":"v"+res.v}">${res.v<0?"Verdetto in calcolo":VLABEL[res.v]+" per "+esc(dog.name||"il tuo cane")}</span>
+    <div class="facts"><div><span>Lunghezza</span><b>${(tr.len/1000).toFixed(1)} km</b></div><div><span>Salita</span><b>${e?Math.max(e.up,e.down)+" m":"…"}</b></div>
+      <div><span>Quota max</span><b>${e?e.max+" m":"…"}</b></div><div><span>Tempo col cane</span><b>${fmtH(res.hours)}</b></div></div>
+    <h2>Perché</h2><ul class="why">${res.why.map(x=>`<li><span class="dot ${lvl(x.lvl)}"></span><span>${x.txt}</span></li>`).join("")}</ul>
+    ${res.cap.notes.length?`<div class="note">Limiti più prudenti perché ${esc(dog.name||"il cane")} ${res.cap.notes.join(", ")}.</div>`:""}
+    ${hours}
+    <h2 style="margin-top:14px">Cosa portare</h2><ul class="bring">${bringList(tr,dog,res).map(x=>`<li>${x}</li>`).join("")}</ul>
+    <div class="note">Tempo stimato al passo di un cane, con le pause. Il dislivello è calcolato dalle quote del terreno ed è approssimativo.
+    <a href="https://www.openstreetmap.org/relation/${tr.id}" target="_blank" rel="noopener">Vedi il sentiero su OpenStreetMap</a></div>`;
+  $("close").onclick=()=>{selected=null;d.className="";refresh();$("listsec").scrollIntoView({behavior:"smooth"})};
+}
+async function fillElevations(){
+  const todo=trails.filter(t=>!elevCache[t.id]);let n=0;
+  for(const tr of todo){
+    try{await elevation(tr)}catch(e){await new Promise(r=>setTimeout(r,3000))}
+    n++;if(n%8===0||n===todo.length){$("status").textContent=`Calcolo dei dislivelli: ${n} di ${todo.length}…`;refresh()}
+    await new Promise(r=>setTimeout(r,150));
+  }
+  $("status").textContent=`${trails.length} sentieri caricati. Tocca un sentiero per vedere il verdetto.`;
+}
+async function start(){
+  loadDog();renderDays();initMap();
+  DOG_FIELDS.forEach(f=>$("d-"+f).addEventListener("input",refresh));
+  $("q").addEventListener("input",refresh);$("vf").addEventListener("change",refresh);
+  try{
+    $("status").textContent="Scarico i sentieri da OpenStreetMap (può volerci un minuto la prima volta)…";
+    trails=await loadTrails();
+  }catch(e){$("status").textContent="Non riesco a scaricare i sentieri. Controlla la connessione e ricarica la pagina.";return}
+  for(const tr of trails){
+    const lay=L.polyline(tr.ways,{color:"#888",weight:3,opacity:.9}).addTo(map);
+    lay.bindTooltip(tr.name,{sticky:true});lay.on("click",()=>select(tr.id,false));layers[tr.id]=lay;
+  }
+  $("status").textContent="Scarico il meteo…";
+  try{await loadWeather(trails.map(t=>t.start))}catch(e){$("status").textContent="Meteo non disponibile al momento."}
+  refresh();
+  fillElevations();
+}
+start();
+</script>
+</body>
+</html>
