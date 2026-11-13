@@ -17,4 +17,4 @@ I sentieri, i dislivelli e le particolarità sono in `data/trails.json`, già ca
 
 Il verdetto è un consiglio prudente, non una garanzia. L'app non sostituisce il veterinario.
 
-Dati: © OpenStreetMap contributors (ODbL) · Mappe e immagini © Mapbox · Meteo: Open-Meteo · Quote e rilievo 3D: Terrain Tiles (Mapzen, AWS Open Data) · Percorsi: OpenRouteService · Chat: Gemini (Google).
+Dati: © OpenStreetMap contributors (ODbL) · Mappe e immagini © Mapbox · Meteo: Open-Meteo, di riserva MET Norway · Quote e rilievo 3D: Terrain Tiles (Mapzen, AWS Open Data) · Percorsi: OpenRouteService · Chat: Gemini (Google).

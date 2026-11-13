@@ -362,7 +362,7 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
   <button class="btn sm" id="reset" hidden style="margin-bottom:12px">Azzera i filtri</button>
   <div id="list"><div class="skel"></div><div class="skel"></div></div>
   <button class="btn wide" id="more" hidden>Mostra altri sentieri</button>
-  <p class="small muted" style="margin-top:18px">Sentieri © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> (ODbL) · Mappe e immagini © <a href="https://www.mapbox.com/about/maps/" target="_blank" rel="noopener">Mapbox</a> · Meteo e quote <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a></p>
+  <p class="small muted" style="margin-top:18px">Sentieri © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> (ODbL) · Mappe e immagini © <a href="https://www.mapbox.com/about/maps/" target="_blank" rel="noopener">Mapbox</a> · Meteo <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> e <a href="https://www.met.no/en" target="_blank" rel="noopener">MET Norway</a></p>
 </section>
 
 <!-- SCHEDA SENTIERO -->
@@ -487,7 +487,7 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
     </div>
     <div class="block small muted">
       <p>Il verdetto è un <b>consiglio prudente, non una garanzia</b>. Osserva sempre il tuo cane, fermati ai primi segni di stanchezza o affanno. L'app <b>non sostituisce il veterinario</b>: per qualsiasi dubbio sulla salute chiedi a lui.</p>
-      <p style="margin-top:10px">Sentieri © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> (ODbL) · Mappe © <a href="https://www.mapbox.com/about/maps/" target="_blank" rel="noopener">Mapbox</a> · Meteo e quote <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> · Percorsi <a href="https://openrouteservice.org" target="_blank" rel="noopener">OpenRouteService</a> · Chat Gemini (Google)</p>
+      <p style="margin-top:10px">Sentieri © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> (ODbL) · Mappe © <a href="https://www.mapbox.com/about/maps/" target="_blank" rel="noopener">Mapbox</a> · Meteo e quote <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> · Percorsi <a href="https://openrouteservice.org" target="_blank" rel="noopener">OpenRouteService</a> · Chat Gemini (Google) · Meteo di riserva <a href="https://www.met.no/en" target="_blank" rel="noopener">MET Norway</a> · Radar pioggia RainViewer · Mappa topografica OpenTopoMap</p>
     </div>
   </div>
 </section>
@@ -797,8 +797,59 @@ function acts(tr,res){
 const WX_KEY="alldogs-wx-v1";
 const wx=(()=>{const c=store.get(WX_KEY);return c&&Date.now()-c.t<3600e3&&c.d===new Date().toDateString()?c.wx:{}})();
 const wxKey=p=>(Math.round(p[0]*10)/10).toFixed(1)+","+(Math.round(p[1]*10)/10).toFixed(1);
+// Meteo: prima fonte Open-Meteo (una sola richiesta per tanti punti). Se è bloccata o non risponde, seconda fonte gratuita: MET Norway.
 async function loadWeather(points){
   const keys=[...new Set(points.map(wxKey))].filter(k=>!wx[k]);
+  if(!keys.length)return;
+  try{await omLoad(keys)}
+  catch(e){console.warn("Open-Meteo non disponibile, uso MET Norway",e.status||e);await metLoad(keys.filter(k=>!wx[k]))}
+  store.set(WX_KEY,{t:Date.now(),d:new Date().toDateString(),wx});
+}
+// ---- fonte di riserva: MET Norway (api.met.no), convertita nello stesso formato di Open-Meteo ----
+const romeT=ts=>new Date(ts).toLocaleString("sv-SE",{timeZone:"Europe/Rome",hour12:false}); // "2026-11-14 07:00:00"
+function sunTimes(lat,lon,day){
+  const d=new Date(day+"T12:00:00Z"),n=Math.floor((d-Date.UTC(d.getUTCFullYear(),0,0))/864e5),r=Math.PI/180,g=2*Math.PI/365*(n-1);
+  const eq=229.18*(0.000075+0.001868*Math.cos(g)-0.032077*Math.sin(g)-0.014615*Math.cos(2*g)-0.040849*Math.sin(2*g));
+  const dec=0.006918-0.399912*Math.cos(g)+0.070257*Math.sin(g)-0.006758*Math.cos(2*g)+0.000907*Math.sin(2*g)-0.002697*Math.cos(3*g)+0.00148*Math.sin(3*g);
+  const ha=Math.acos(Math.max(-1,Math.min(1,Math.cos(90.833*r)/(Math.cos(lat*r)*Math.cos(dec))-Math.tan(lat*r)*Math.tan(dec))))/r,noon=720-4*lon-eq;
+  const fm=m=>{const t=romeT(Date.parse(day+"T00:00:00Z")+m*60000);return t.slice(0,10)+"T"+t.slice(11,16)};
+  return [fm(noon-4*ha),fm(noon+4*ha)];
+}
+function metCode(sym){sym=sym||"";return /thunder/.test(sym)?95:/snow|sleet/.test(sym)?71:/heavyrain/.test(sym)?/showers/.test(sym)?82:65:/lightrain/.test(sym)?/showers/.test(sym)?80:61:/rain/.test(sym)?/showers/.test(sym)?81:63:/fog/.test(sym)?45:/^cloudy/.test(sym)?3:/partlycloudy/.test(sym)?2:/fair/.test(sym)?1:0}
+function metToOm(d,lat,lon){
+  const days=[];for(let i=0;i<7;i++)days.push(romeT(Date.now()+i*864e5).slice(0,10));
+  const N=168,T=new Array(N),F=new Array(N),P=new Array(N),C=new Array(N);
+  for(const e of d.properties.timeseries){
+    const t=romeT(e.time),di=days.indexOf(t.slice(0,10));if(di<0)continue;
+    const i=di*24+(+t.slice(11,13)),ins=e.data.instant.details,one=e.data.next_1_hours,nx=one||e.data.next_6_hours||e.data.next_12_hours||{},mm=(nx.details||{}).precipitation_amount??0,code=metCode((nx.summary||{}).symbol_code);
+    T[i]=ins.air_temperature;
+    // temperatura percepita: quella del servizio se c'è, altrimenti formula con umidità e vento
+    F[i]=ins.apparent_air_temperature??(ins.air_temperature+.33*((ins.relative_humidity||60)/100*6.105*Math.exp(17.27*ins.air_temperature/(237.7+ins.air_temperature)))-.7*(ins.wind_speed||0)-4);
+    // questa fonte non dà la probabilità di pioggia: la stimo dalla quantità prevista
+    const perH=one?mm:mm/6;let pr=(nx.details||{}).probability_of_precipitation;
+    if(pr==null)pr=perH<=0?5:perH<.1?25:perH<.3?45:perH<1?65:perH<3?80:90;
+    if(code>=61&&pr<50)pr=50;if(code>=95&&pr<70)pr=70;
+    P[i]=Math.round(pr);C[i]=code;
+  }
+  // riempio i buchi: temperature interpolate, pioggia e cielo ripetuti fino al dato successivo
+  const lin=A=>{let last=-1;for(let i=0;i<N;i++)if(A[i]!=null){if(last<0)for(let j=0;j<i;j++)A[j]=A[i];else for(let j=last+1;j<i;j++)A[j]=A[last]+(A[i]-A[last])*(j-last)/(i-last);last=i}if(last<0)throw new Error("meteo vuoto");for(let j=last+1;j<N;j++)A[j]=A[last]};
+  const fwd=A=>{let last=null,first=A.find(x=>x!=null)??0;for(let i=0;i<N;i++){if(A[i]!=null)last=A[i];else A[i]=last??first}};
+  lin(T);lin(F);fwd(P);fwd(C);
+  const r1=x=>Math.round(x*10)/10,daily={time:days,weather_code:[],temperature_2m_max:[],temperature_2m_min:[],precipitation_probability_max:[],sunrise:[],sunset:[]};
+  days.forEach((day,i)=>{const a=i*24,tt=T.slice(a,a+24),sun=sunTimes(lat,lon,day);
+    daily.temperature_2m_max.push(r1(Math.max(...tt)));daily.temperature_2m_min.push(r1(Math.min(...tt)));
+    daily.precipitation_probability_max.push(Math.max(...P.slice(a+7,a+21)));daily.weather_code.push(Math.max(...C.slice(a+8,a+20)));
+    daily.sunrise.push(sun[0]);daily.sunset.push(sun[1])});
+  return {src:"met",hourly:{temperature_2m:T.map(r1),apparent_temperature:F.map(r1),precipitation_probability:P,weather_code:C},daily};
+}
+async function metLoad(keys){
+  let ok=0,i=0;
+  const work=async()=>{while(i<keys.length){const k=keys[i++],[la,lo]=k.split(",");
+    try{wx[k]=metToOm(await getJSON(`https://api.met.no/weatherapi/locationforecast/2.0/complete?lat=${la}&lon=${lo}`),+la,+lo);ok++}catch(e){console.warn("MET Norway:",k,e.status||e)}}};
+  await Promise.all([1,2,3,4,5].map(work)); // cinque richieste alla volta, per non pesare sul servizio
+  if(!ok&&keys.length)throw new Error("meteo non disponibile");
+}
+async function omLoad(keys){
   const parts=[];for(let i=0;i<keys.length;i+=50)parts.push(keys.slice(i,i+50));
   // tutte le richieste insieme, non una dopo l'altra
   await Promise.all(parts.map(async part=>{
@@ -807,7 +858,6 @@ async function loadWeather(points){
     if(!Array.isArray(r))r=[r];
     r.forEach((w,j)=>wx[part[j]]=w);
   }));
-  if(keys.length)store.set(WX_KEY,{t:Date.now(),d:new Date().toDateString(),wx});
 }
 function dayWx(p,day){
   const w=p&&wx[wxKey(p)];if(!w)return null;
