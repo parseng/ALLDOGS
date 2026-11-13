@@ -197,6 +197,22 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
 .chatin .round{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);width:48px;height:48px}
 .sugg{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
 
+/* mappe, legenda, fondo, grafico */
+.layers{max-height:calc(100% - 20px);overflow-y:auto;min-width:190px}
+.layers p{font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:6px 12px 2px}
+.surfleg{position:absolute;left:10px;right:10px;bottom:30px;z-index:5;background:var(--surface);border-radius:12px;padding:8px 10px;display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12.5px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.surfleg i,.sw{display:inline-block;width:14px;height:14px;border-radius:4px;margin-right:5px;vertical-align:-2px;border:1px solid rgba(0,0,0,.35)}
+.surf i{box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+.chart{width:100%;height:auto;display:block;margin-top:6px}
+.chart text{font:500 11px var(--body);fill:var(--muted)}
+.seg.two{grid-template-columns:repeat(2,1fr)}
+.lg{display:grid;grid-template-columns:46px 1fr;gap:9px 10px;align-items:center;font-size:14.5px;margin-top:8px}
+.lg svg{width:46px;height:18px;display:block}
+.lg small{display:block;color:var(--muted);font-size:12.5px}
+#sheet .box{max-height:86vh;overflow-y:auto}
+#sheet h3{margin-top:18px}
+.avatar{background-size:cover;background-position:center;cursor:pointer}
+
 /* in cammino */
 .mapclear{position:absolute;left:10px;top:10px;z-index:6;box-shadow:0 2px 10px rgba(0,0,0,.25)}
 .maphost.full .mapclear{top:calc(env(safe-area-inset-top,0px) + 12px)}
@@ -261,6 +277,7 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
     <symbol id="i-hand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 21s-6-5.6-6-10a6 6 0 0 1 12 0c0 4.4-6 10-6 10Z"/><circle cx="12" cy="11" r="2.2"/></symbol>
     <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></symbol>
     <symbol id="i-cloud" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M7 18.5a4 4 0 0 1-.5-8 5.5 5.5 0 0 1 10.6 1.2A3.4 3.4 0 0 1 17 18.5H7Z"/></symbol>
+    <symbol id="i-surf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20 9 4M19 20 15 4M12 5v2.5M12 10.5V13M12 16v3"/></symbol>
     <symbol id="i-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z"/></symbol>
     <symbol id="i-rain" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15.5a4 4 0 0 1-.5-8 5.5 5.5 0 0 1 10.6 1.2A3.4 3.4 0 0 1 17 15.5H7Z"/><path d="M9 18.5l-1 2.5M13 18.5l-1 2.5M17 18.5l-1 2.5"/></symbol>
   </defs>
@@ -273,13 +290,23 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
     <button class="round" id="m-full" aria-label="Mappa a tutto schermo"><svg><use href="#i-expand"/></svg></button>
     <button class="round" id="m-layers" aria-label="Tipo di mappa"><svg><use href="#i-layers"/></svg></button>
     <button class="round" id="m-loc" aria-label="Mostra dove sono"><svg><use href="#i-nav"/></svg></button>
+    <button class="round" id="m-surf" aria-label="Colora il tipo di fondo" hidden><svg><use href="#i-surf"/></svg></button>
   </div>
   <button class="btn sm mapclear" id="m-clear" hidden>✕ Rimuovi percorso</button>
   <div class="layers" id="layers" hidden>
-    <button data-st="map">Mappa outdoor</button>
+    <p>Mappa di base</p>
+    <button data-st="map">Outdoor</button>
     <button data-st="sat">Satellite</button>
+    <button data-st="str">Strade</button>
+    <button data-st="topo">Topografica</button>
+    <button data-st="dark">Notte</button>
+    <p>In più</p>
     <button data-st="3d">Rilievo 3D</button>
+    <button data-st="hill">Ombre del rilievo</button>
+    <button data-st="rain">Pioggia adesso</button>
+    <button data-st="legend">Legenda della mappa</button>
   </div>
+  <div class="surfleg" id="surfleg" hidden></div>
 </div>
 
 <!-- ESPLORA -->
@@ -334,7 +361,7 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
   </div>
   <p class="muted" id="crea-sub" style="margin-top:10px"></p>
   <div class="maphost" id="hostCrea"></div>
-  <div class="row" style="margin-top:10px;flex-wrap:wrap"><button class="btn sm" id="new-loc"><svg><use href="#i-nav"/></svg>Parto da dove sono</button><span class="muted small">oppure tocca la mappa per spostare la partenza</span></div>
+  <div class="row" style="margin-top:10px;flex-wrap:wrap"><button class="btn sm" id="new-loc"><svg><use href="#i-nav"/></svg>Parto da dove sono</button><span class="muted small" id="start-hint">oppure tocca la mappa per spostare la partenza</span></div>
   <div id="p-chat" hidden>
     <div id="chat-key"></div>
     <div class="msgs" id="msgs"></div>
@@ -347,9 +374,18 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
     <button class="btn pri wide" id="auto-go" style="margin-top:14px"><svg><use href="#i-bolt"/></svg>Crea il giro con un tocco</button>
   </div>
   <div id="p-man" hidden>
-    <div class="block" style="margin-top:18px"><h2>Quanto vuoi camminare?</h2><div class="seg" id="seg"></div><p class="muted small" id="seg-hint" style="margin-top:8px"></p></div>
-    <div class="block" id="rules" style="margin-top:20px"></div>
-    <button class="btn pri wide" id="gen" style="margin-top:16px">Crea il percorso</button>
+    <div class="seg two" id="man-kind" style="margin-top:16px"><button data-k="auto">Anello automatico</button><button data-k="draw">Lo disegno io</button></div>
+    <div id="man-auto">
+      <div class="block" style="margin-top:18px"><h2>Quanto vuoi camminare?</h2><div class="seg" id="seg"></div><p class="muted small" id="seg-hint" style="margin-top:8px"></p></div>
+      <div class="block" id="rules" style="margin-top:20px"></div>
+      <button class="btn pri wide" id="gen" style="margin-top:16px">Crea il percorso</button>
+    </div>
+    <div id="man-draw" hidden>
+      <div class="note" id="draw-info" style="margin-top:14px"></div>
+      <div class="form" style="margin-top:12px"><label class="check"><input type="checkbox" id="draw-loop">Torna alla partenza (anello)</label><label class="check"><input type="checkbox" id="draw-follow" checked>Segui strade e sentieri</label></div>
+      <div class="row" style="margin-top:12px;flex-wrap:wrap"><button class="btn sm" id="draw-undo">Annulla l'ultimo punto</button><button class="btn sm" id="draw-reset">Cancella tutto</button></div>
+      <button class="btn pri wide" id="draw-use" style="margin-top:14px">Usa questo percorso</button>
+    </div>
   </div>
   <div id="gen-out" class="stack" style="margin-top:16px"></div>
 </section>
@@ -385,7 +421,8 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
 <!-- CANE -->
 <section class="screen" id="s-cane">
   <div id="onb" hidden><h1>Parlami del tuo cane</h1><p class="muted" style="margin:8px 0 18px">Mi serve per dirti quali sentieri sono adatti a lui e quali no.</p></div>
-  <div class="row" id="dog-head"><div class="avatar" id="avatar">L</div><div><h1 id="dog-title">Il mio cane</h1><p class="muted" id="dog-cap"></p></div></div>
+  <div class="row" id="dog-head"><div class="avatar" id="avatar" role="button" tabindex="0" aria-label="Cambia la foto del cane">L</div><div><h1 id="dog-title">Il mio cane</h1><p class="muted" id="dog-cap"></p>
+    <div class="row" style="margin-top:8px"><button class="btn sm" id="photo-btn" type="button">Aggiungi una foto</button><button class="btn sm" id="photo-del" type="button" hidden>Togli la foto</button></div><input type="file" id="photo-in" accept="image/*" hidden></div></div>
   <p class="small" id="dog-alert" style="margin-top:10px"></p>
   <div class="form" style="margin-top:20px">
     <label>Nome<input id="d-name" autocomplete="off"></label>
@@ -439,6 +476,7 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
   <a href="#cane" data-t="cane"><svg><use href="#i-paw"/></svg>Il mio cane</a>
 </div></nav>
 <a class="btn pri sm" id="nav-pill" href="#vai" hidden><svg><use href="#i-play"/></svg>Passeggiata in corso · torna alla mappa</a>
+<div class="sheetbg" id="sheet" hidden><div class="box" id="sheet-box"></div></div>
 <div class="toast" id="toast" role="status"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/3.9.4/mapbox-gl.min.js"></script>
@@ -449,7 +487,12 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
 const MAPBOX_TOKEN="pk.eyJ1IjoicGFyc2VuZyIsImEiOiJjbXdmOWdvdm0wNXVpMnhxcDIyaHc0bmVnIn0.j8nlRTa34ZMNdK8Oz-Go4w";
 // Satellite: stile ufficiale, ma le foto aeree arrivano dalla Static Tiles API (l'API "raster tiles" v4 di questo account risponde 429).
 // Rilievo 3D: AWS Terrain Tiles (dati aperti).
-const STYLES={map:"mapbox://styles/mapbox/outdoors-v12",sat:"mapbox://styles/mapbox/satellite-streets-v12"};
+const STYLES={map:"mapbox://styles/mapbox/outdoors-v12",sat:"mapbox://styles/mapbox/satellite-streets-v12",str:"mapbox://styles/mapbox/streets-v12",dark:"mapbox://styles/mapbox/dark-v11",
+  // carta topografica classica con curve di livello: OpenTopoMap (dati OpenStreetMap + SRTM)
+  topo:{version:8,sources:{topo:{type:"raster",tiles:["a","b","c"].map(x=>`https://${x}.tile.opentopomap.org/{z}/{x}/{y}.png`),tileSize:256,maxzoom:17,attribution:"Mappa © OpenTopoMap (CC-BY-SA) · dati © OpenStreetMap"}},layers:[{id:"topo",type:"raster",source:"topo"}]}};
+const DEM_TILES="https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png";
+// tipo di fondo: a = asfalto o pietra, n = terra o erba, g = gradini, u = non indicato nei dati
+const SFC={a:"#7b8494",n:"#2e9d5b",g:"#e0483a",u:"#ffffff"},SFL={a:"Asfalto o pietra",n:"Terra o erba",g:"Gradini",u:"Non indicato"},SFK=["n","a","g","u"];
 const SAT_TILES=`https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/512/{z}/{x}/{y}@2x?access_token=${MAPBOX_TOKEN}`;
 const AREA={s:40.52,w:13.85,n:41.02,e:14.85};
 const OVERPASS=["https://overpass-api.de/api/interpreter","https://overpass.kumi.systems/api/interpreter","https://overpass.private.coffee/api/interpreter"];
@@ -494,7 +537,8 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 // ================= Stato =================
 const S={dog:store.get("alldogs-dog"),saved:store.get("alldogs-saved")||[],routes:store.get("alldogs-routes")||[],trails:[],day:0,limit:20,sel:null,wxFail:false,
   mins:40,start:store.get("alldogs-start")||[40.8359,14.2488],gen:null,genIdx:0,ready:false,featReady:false,act:null,feat:[],near:null,
-  mode:store.get("alldogs-creamode")||"chat",chat:[],busy:false,acts:store.get("alldogs-acts")||[]};
+  mode:store.get("alldogs-creamode")||"chat",chat:[],busy:false,acts:store.get("alldogs-acts")||[],
+  manKind:store.get("alldogs-mankind")||"auto",draw:{pts:[],route:null,busy:false,msg:"",req:0}};
 const DEF_DOG={name:"Luna",breed:"Meticcio",age:4,weight:22,train:"medio",agil:"media",coat:"corto",brachy:false,pat:{},patOther:"",health:{}};
 const dog=()=>S.dog||DEF_DOG;
 const dn=()=>esc(dog().name||"il tuo cane");
@@ -760,7 +804,8 @@ function svgThumb(path){
 }
 
 // ================= Mappa unica Mapbox =================
-let M=null,styleOK=false,mapStyle=store.get("alldogs-mapstyle")==="sat"?"sat":"map",map3d=!!store.get("alldogs-map3d"),curHost=null,interactive=true;
+let M=null,styleOK=false,mapStyle=(k=>STYLES[k]?k:"map")(store.get("alldogs-mapstyle")),map3d=!!store.get("alldogs-map3d"),curHost=null,interactive=true;
+let hillOn=!!store.get("alldogs-hill"),rainOn=false,rainPath=null,surfOn=!!store.get("alldogs-surf"),prev3d=false,spin=null;
 let scene={mode:"explore"},stopMarkers=[],pinM=null,meM=null,fitPending=false;
 const HANDLERS=["dragPan","scrollZoom","boxZoom","dragRotate","keyboard","doubleClickZoom","touchZoomRotate","touchPitch"];
 function mapOK(){return !!window.mapboxgl}
@@ -787,8 +832,11 @@ function initMap(){
   M.on("click",e=>{
     if(scene.mode==="explore"){const f=M.queryRenderedFeatures([[e.point.x-10,e.point.y-10],[e.point.x+10,e.point.y+10]],{layers:["ad-trails-hit","ad-trails-start"]});if(f.length){peek(f[0].properties.id);return}hidePeek()}
     else if(scene.mode==="trail"&&!curHost.classList.contains("full"))setFull(true);
-    else if(scene.mode==="crea")setStart([e.lngLat.lat,e.lngLat.lng]);
+    else if(scene.mode==="crea"){
+      const t=e.originalEvent&&e.originalEvent.target;if(t&&t.closest&&t.closest(".mapboxgl-marker"))return; // tocco su un segnaposto: non è un nuovo punto
+      if(drawing())addPt([e.lngLat.lat,e.lngLat.lng]);else setStart([e.lngLat.lat,e.lngLat.lng])}
   });
+  ["mousedown","touchstart","wheel"].forEach(ev=>M.on(ev,stopSpin));
   M.on("dragstart",()=>{if(scene.mode==="nav")navFollow=false});
 }
 function setInteractive(on){if(!M)return;HANDLERS.forEach(h=>M[h]&&(on?M[h].enable():M[h].disable()))}
@@ -803,14 +851,33 @@ function addLayers(){
   if(mapStyle==="sat")try{fixSatellite()}catch(e){console.warn(e)}
   const empty={type:"FeatureCollection",features:[]};
   ["trails","sel","water","startpt","track"].forEach(s=>{if(!M.getSource(s))M.addSource(s,{type:"geojson",data:empty})});
-  if(!M.getSource("dem"))M.addSource("dem",{type:"raster-dem",tiles:["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"],encoding:"terrarium",tileSize:256,maxzoom:14,attribution:"Rilievo: Terrain Tiles (Mapzen, AWS Open Data)"});
+  if(!M.getSource("dem"))M.addSource("dem",{type:"raster-dem",tiles:[DEM_TILES],encoding:"terrarium",tileSize:256,maxzoom:14,attribution:"Rilievo: Terrain Tiles (Mapzen, AWS Open Data)"});
   M.addLayer({id:"ad-trails-line",type:"line",source:"trails",layout:{"line-cap":"round","line-join":"round"},paint:{"line-color":["get","col"],"line-width":["interpolate",["linear"],["zoom"],8,2,13,4],"line-opacity":.9}});
   M.addLayer({id:"ad-trails-hit",type:"line",source:"trails",paint:{"line-color":"#000","line-width":16,"line-opacity":0}});
   M.addLayer({id:"ad-trails-start",type:"circle",source:"startpt",paint:{"circle-color":["get","col"],"circle-radius":["interpolate",["linear"],["zoom"],8,3.5,13,7],"circle-stroke-color":"#fff","circle-stroke-width":2}});
   M.addLayer({id:"ad-sel-casing",type:"line",source:"sel",layout:{"line-cap":"round","line-join":"round"},paint:{"line-color":"#ffffff","line-width":9,"line-opacity":.95}});
-  M.addLayer({id:"ad-sel-line",type:"line",source:"sel",layout:{"line-cap":"round","line-join":"round"},paint:{"line-color":"#ff5d2a","line-width":5}});
+  M.addLayer({id:"ad-sel-line",type:"line",source:"sel",layout:{"line-cap":"round","line-join":"round"},paint:{"line-color":["match",["get","sf"],"a",SFC.a,"n",SFC.n,"g",SFC.g,"u",SFC.u,"#ff5d2a"],"line-width":5}});
   M.addLayer({id:"ad-track",type:"line",source:"track",layout:{"line-cap":"round","line-join":"round"},paint:{"line-color":"#2f7bff","line-width":5,"line-opacity":.9}});
   M.addLayer({id:"ad-water",type:"circle",source:"water",paint:{"circle-color":"#1e88e5","circle-radius":6,"circle-stroke-color":"#fff","circle-stroke-width":2}});
+  overlays();
+}
+// sovrapposizioni: ombre del rilievo (dagli stessi dati del 3D) e radar della pioggia (RainViewer)
+async function overlays(){
+  if(!M||!styleOK)return;
+  const before=M.getLayer("ad-trails-line")?"ad-trails-line":undefined;
+  if(hillOn&&!M.getLayer("ad-hill")){
+    if(!M.getSource("demhs"))M.addSource("demhs",{type:"raster-dem",tiles:[DEM_TILES],encoding:"terrarium",tileSize:256,maxzoom:14});
+    M.addLayer({id:"ad-hill",type:"hillshade",source:"demhs",paint:{"hillshade-exaggeration":.65}},before)}
+  if(!hillOn&&M.getLayer("ad-hill"))M.removeLayer("ad-hill");
+  if(rainOn&&!M.getLayer("ad-rain")){
+    try{
+      if(!rainPath){const r=await getJSON("https://api.rainviewer.com/public/weather-maps.json");rainPath=r.host+r.radar.past[r.radar.past.length-1].path}
+      if(!rainOn||!styleOK||M.getLayer("ad-rain"))return;
+      if(!M.getSource("rain"))M.addSource("rain",{type:"raster",tiles:[rainPath+"/256/{z}/{x}/{y}/2/1_1.png"],tileSize:256,maxzoom:7,attribution:"Radar pioggia: RainViewer"});
+      M.addLayer({id:"ad-rain",type:"raster",source:"rain",paint:{"raster-opacity":.65}},M.getLayer("ad-trails-line")?"ad-trails-line":undefined);
+    }catch(e){rainOn=false;toast("Il radar della pioggia non è disponibile ora");syncLayersMenu()}
+  }
+  if(!rainOn&&M.getLayer("ad-rain"))M.removeLayer("ad-rain");
 }
 function terrain(on){
   if(!M||!styleOK)return;
@@ -818,18 +885,21 @@ function terrain(on){
   else{M.setTerrain(null);M.easeTo({pitch:0,bearing:0,duration:600})}
 }
 function setStyleKind(k){
-  if(k==="3d"){map3d=!map3d;store.set("alldogs-map3d",map3d);terrain(map3d)}
+  if(k==="3d"){map3d=!map3d;store.set("alldogs-map3d",map3d);prev3d=false;stopSpin();terrain(map3d)}
+  else if(k==="hill"){hillOn=!hillOn;store.set("alldogs-hill",hillOn);overlays()}
+  else if(k==="rain"){rainOn=!rainOn;overlays();if(rainOn)toast("Radar: dove sta piovendo adesso")}
+  else if(k==="legend")showLegend();
   else if(k!==mapStyle){mapStyle=k;store.set("alldogs-mapstyle",k);styleOK=false;M.setStyle(STYLES[k],{diff:false})}
   syncLayersMenu();
 }
-function syncLayersMenu(){document.querySelectorAll("#layers button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.st==="3d"?map3d:b.dataset.st===mapStyle))}
+function syncLayersMenu(){document.querySelectorAll("#layers button").forEach(b=>b.setAttribute("aria-pressed",({"3d":map3d,hill:hillOn,rain:rainOn,legend:false})[b.dataset.st]??b.dataset.st===mapStyle))}
 const fc=f=>({type:"FeatureCollection",features:f});
 const lineF=(ways,props)=>({type:"Feature",properties:props||{},geometry:{type:"MultiLineString",coordinates:ways.map(w=>w.map(ll))}});
 function setData(src,data){const s=M.getSource(src);if(s)s.setData(data)}
 function vis(id,on){if(M.getLayer(id))M.setLayoutProperty(id,"visibility",on?"visible":"none")}
 function vColor(v){return css(v<0?"--wait":["--ok","--warn","--no"][v])}
 function clearMarkers(){stopMarkers.forEach(m=>m.remove());stopMarkers=[]}
-function fitTo(bb,pad){if(!M)return;const full=curHost&&curHost.classList.contains("full");M.fitBounds(bb,{padding:pad??(full?60:30),maxZoom:15.5,duration:0,pitch:map3d?55:0})}
+function fitTo(bb,pad){if(!M)return;const full=curHost&&curHost.classList.contains("full");M.fitBounds(bb,{padding:pad??(full?60:30),maxZoom:15.5,duration:0,pitch:map3d||prev3d?55:0})}
 function boundsOf(paths){let a=90,b=-90,c=180,e=-180;for(const w of paths)for(const p of w){a=Math.min(a,p[0]);b=Math.max(b,p[0]);c=Math.min(c,p[1]);e=Math.max(e,p[1])}return [[c,a],[e,b]]}
 function applyScene(){
   if(!M||!styleOK)return;
@@ -838,7 +908,7 @@ function applyScene(){
   clearMarkers();
   if(pinM&&sc.mode!=="crea"){pinM.remove();pinM=null}
   if(sc.mode!=="nav")setData("track",fc([]));
-  syncClear();
+  syncClear();syncSurf();
   if(ex){
     const rows=S.rows||[];
     setData("trails",fc(rows.map(r=>lineF(r.tr.ways,{id:r.tr.id,col:vColor(r.res.v)}))));
@@ -849,17 +919,25 @@ function applyScene(){
       if(S.near)M.jumpTo({center:ll(S.near.c),zoom:12});
       else if(rows.length){fitTo(boundsOf(rows.map(r=>[r.tr.start])),40)}}
   } else if(sc.mode==="trail"){
-    setData("sel",fc([lineF(sc.ways)]));
+    setData("sel",fc(selFeatures(sc.ways,sc.sf)));
     setData("water",fc((sc.water||[]).map(p=>({type:"Feature",properties:{},geometry:{type:"Point",coordinates:ll(p)}}))));
     const el=document.createElement("div");el.className="mk-stop";el.style.borderColor="#1f8a4c";el.textContent="▶";
     stopMarkers.push(new mapboxgl.Marker({element:el}).setLngLat(ll(sc.start)).addTo(M));
     if(fitPending){fitPending=false;fitTo(boundsOf(sc.ways))}
   } else if(sc.mode==="crea"){
     setData("water",fc([]));
-    const r=S.gen&&S.gen[S.genIdx];
-    setData("sel",r?fc([lineF([r.path])]):fc([]));
+    const r=S.gen&&S.gen[S.genIdx],dr=drawing();
+    setData("sel",fc(r?selFeatures([r.path],null,r.segs):dr&&S.draw.route?[lineF([S.draw.route.path])]:[]));
     if(r)(r.stops||[]).forEach((s,i)=>{const el=document.createElement("div");el.className="mk-stop";el.textContent=i+1;stopMarkers.push(new mapboxgl.Marker({element:el}).setLngLat(ll(s.p)).addTo(M))});
-    if(!pinM){const el=document.createElement("div");el.className="mk-pin";pinM=new mapboxgl.Marker({element:el,draggable:true,anchor:"bottom"}).setLngLat(ll(S.start)).addTo(M);
+    if(dr){
+      // segnaposti del percorso disegnato a mano: numerati, si possono trascinare
+      if(pinM){pinM.remove();pinM=null}
+      S.draw.pts.forEach((p,i)=>{const el=document.createElement("div");el.className="mk-stop";el.style.cursor="grab";if(!i)el.style.borderColor="#1f8a4c";el.textContent=i?i+1:"▶";
+        const m=new mapboxgl.Marker({element:el,draggable:true}).setLngLat(ll(p)).addTo(M);
+        m.on("dragend",()=>{const q=m.getLngLat();S.draw.pts[i]=r5([q.lat,q.lng]);drawRoute(false)});stopMarkers.push(m)});
+      if(fitPending){fitPending=false;if(S.draw.pts.length>1)fitTo(boundsOf([S.draw.pts]));else M.jumpTo({center:ll(S.draw.pts[0]||S.start),zoom:14,pitch:map3d?55:0})}
+    }
+    else if(!pinM){const el=document.createElement("div");el.className="mk-pin";pinM=new mapboxgl.Marker({element:el,draggable:true,anchor:"bottom"}).setLngLat(ll(S.start)).addTo(M);
       pinM.on("dragend",()=>{const p=pinM.getLngLat();setStart([p.lat,p.lng],true)})}
     else pinM.setLngLat(ll(S.start));
     if(fitPending){fitPending=false;if(r)fitTo(boundsOf([r.path]));else M.jumpTo({center:ll(S.start),zoom:14,pitch:map3d?55:0})}
@@ -874,12 +952,74 @@ function applyScene(){
     if(fitPending){fitPending=false;if(nav.pos)M.jumpTo({center:ll(nav.pos),zoom:16});else fitTo(boundsOf(o.ways),50)}
   }
 }
+// Fondo colorato: ogni tratto del percorso prende il colore del suo tipo di fondo
+function selFeatures(ways,sf,segs){
+  if(surfOn&&segs&&segs.length)return segs.map(g=>lineF([g.pts],{sf:g.c}));
+  if(surfOn&&sf)return ways.map((w,i)=>lineF([w],{sf:sf[i]||"u"}));
+  return [lineF(ways)];
+}
+function syncSurf(){
+  const r=S.gen&&S.gen[S.genIdx],has=scene.mode==="trail"?!!scene.sf:scene.mode==="crea"?!!(r&&r.segs&&r.segs.length):false,on=surfOn&&has;
+  $("m-surf").hidden=!has;$("m-surf").classList.toggle("on",on);$("surfleg").hidden=!on;
+  if(on)$("surfleg").innerHTML=SFK.map(k=>`<span><i style="background:${SFC[k]}"></i>${SFL[k]}</span>`).join("");
+  if(M&&M.getLayer("ad-sel-casing"))M.setPaintProperty("ad-sel-casing","line-color",on?"#131a2a":"#ffffff");
+}
+function setSurf(on){surfOn=on;store.set("alldogs-surf",on);applyScene()}
+$("m-surf").onclick=()=>setSurf(!surfOn);
+// Anteprima 3D: mappa a tutto schermo con il rilievo, inclinata, che gira piano intorno al percorso
+function stopSpin(){if(spin){cancelAnimationFrame(spin);spin=null}}
+function end3d(){if(!prev3d)return;prev3d=false;stopSpin();if(!map3d)terrain(false)}
+function preview3D(){
+  if(!M||!styleOK){toast("La mappa non è ancora pronta");return}
+  const bb=scene.mode==="trail"?boundsOf(scene.ways):scene.mode==="crea"&&S.gen?boundsOf([S.gen[S.genIdx].path]):null;if(!bb)return;
+  if(!curHost.classList.contains("full"))setFull(true);
+  prev3d=true;
+  setTimeout(()=>{if(!prev3d)return;
+    M.setTerrain({source:"dem",exaggeration:1.4});try{M.setFog({})}catch(e){}
+    M.fitBounds(bb,{padding:70,maxZoom:15.5,pitch:62,bearing:M.getBearing(),duration:1200});
+    let last=0;const t0=performance.now()+1600;
+    const go=t=>{if(!prev3d){spin=null;return}if(t>t0){if(last)M.setBearing(M.getBearing()+(t-last)*.012);last=t}spin=requestAnimationFrame(go)};
+    stopSpin();spin=requestAnimationFrame(go)},400);
+  toast("Anteprima 3D: tocca la mappa per fermare la rotazione");
+}
+function bindTools(root){
+  root.querySelectorAll("[data-3d]").forEach(b=>b.onclick=preview3D);
+  root.querySelectorAll("[data-surf]").forEach(b=>b.onclick=()=>{setSurf(true);if(curHost)curHost.scrollIntoView({behavior:"smooth",block:"start"});toast("Fondo colorato sulla mappa")});
+}
+// finestra a comparsa generica (legenda)
+function openSheet(html){$("sheet-box").innerHTML=html+`<button class="btn wide" id="sheet-x" style="margin-top:18px">Chiudi</button>`;$("sheet").hidden=false;$("sheet-x").onclick=()=>$("sheet").hidden=true}
+$("sheet").onclick=e=>{if(e.target===$("sheet"))$("sheet").hidden=true};
+function showLegend(){
+  const ln=(c,dash,w)=>`<svg viewBox="0 0 46 18"><rect width="46" height="18" rx="4" fill="#eef0e8"/><line x1="4" x2="42" y1="9" y2="9" stroke="${c}" stroke-width="${w||2.5}" stroke-linecap="round"${dash?` stroke-dasharray="${dash}"`:""}/></svg>`;
+  const bx=(c,b)=>`<svg viewBox="0 0 46 18"><rect x=".75" y=".75" width="44.5" height="16.5" rx="4" fill="${c}" stroke="${b||"rgba(0,0,0,.15)"}" stroke-width="1.5"/></svg>`;
+  const dot=(c,t)=>`<svg viewBox="0 0 46 18"><circle cx="23" cy="9" r="6.5" fill="${c}" stroke="#fff" stroke-width="2"/>${t?`<text x="23" y="12.5" text-anchor="middle" font-size="9" font-weight="700" fill="#131a2a">${t}</text>`:""}</svg>`;
+  const row=(sw,t,sub)=>`${sw}<div>${t}${sub?`<small>${sub}</small>`:""}</div>`;
+  openSheet(`<h2>Legenda della mappa</h2><p class="small muted" style="margin-top:6px">I colori dello sfondo valgono per la mappa Outdoor; nelle altre mappe possono cambiare un po'.</p>
+  <h3>I segni di AllDogs</h3><div class="lg">
+    ${row(dot(css("--ok")),"Sentiero fattibile per "+dn(),"Il colore del sentiero è il verdetto per il tuo cane")}
+    ${row(dot(css("--warn")),"Con prudenza")}${row(dot(css("--no")),"Sconsigliato")}${row(dot(css("--wait")),"Lo sto ancora valutando")}
+    ${row(ln("#ff5d2a",null,4),"Percorso scelto")}${row(ln("#2f7bff",null,4),"Strada già fatta","Durante Avvia percorso")}
+    ${row(dot("#1e88e5"),"Fontanella","Acqua lungo il percorso, da verificare sul posto")}${row(dot("#fff","2"),"Tappa o segnaposto")}
+    ${SFK.map(k=>row(ln(SFC[k],null,5),"Fondo: "+SFL[k].toLowerCase(),k==="a"?"D'estate può scottare le zampe":k==="g"?"Faticosi per le articolazioni":k==="u"?"Nei dati non c'è scritto":"Il migliore per le zampe")).join("")}
+  </div>
+  <h3>Sentieri e strade</h3><div class="lg">
+    ${row(ln("#8a6a4a","4 3"),"Sentiero a piedi")}${row(ln("#8a6a4a","8 4",3),"Strada sterrata o carrareccia")}${row(ln("#8a6a4a","1.5 2.5",5),"Gradini")}
+    ${row(ln("#f0a23c",null,5),"Strada principale")}${row(ln("#ffffff",null,5),"Strada secondaria o via")}${row(ln("#b9bcc4","3 2",2),"Passaggio pedonale")}${row(ln("#6f7480","1 4",2),"Funivia o seggiovia")}
+  </div>
+  <h3>Terreno</h3><div class="lg">
+    ${row(bx("#b9dca4"),"Bosco","Ombra: bene quando fa caldo")}${row(bx("#dcebc8"),"Prato o erba")}${row(bx("#f1e7c6"),"Sabbia o spiaggia")}${row(bx("#d9d6cf"),"Roccia o terreno nudo")}
+    ${row(bx("#a6d4f0"),"Acqua: mare, laghi")}${row(ln("#6fb6e6",null,2.5),"Fiume o torrente")}${row(ln("#b89b7a",null,1),"Curve di livello","Più sono vicine, più il terreno è ripido. I numeri sono la quota in metri")}
+  </div>
+  <h3>Aree</h3><div class="lg">
+    ${row(bx("#c9e6b3","#5fa04a"),"Parco nazionale o riserva","Controlla le regole per i cani: spesso serve il guinzaglio")}${row(bx("#dff0cf","#9cc487"),"Parco cittadino o giardino")}${row(bx("#f3d9d6","#d9483b"),"Zona militare o vietata")}${row(bx("#ecebe6"),"Zona abitata")}
+  </div>`);
+}
 // "Rimuovi percorso": toglie il sentiero evidenziato (Esplora) o il giro creato (Crea giro) e torna alla mappa libera
 function syncClear(){$("m-clear").hidden=!((scene.mode==="explore"&&S.peek)||(scene.mode==="crea"&&S.gen))}
 $("m-clear").onclick=()=>{if(scene.mode==="explore"){hidePeek();fitPending=true;applyScene()}else if(scene.mode==="crea")clearGen()};
 function setScene(s,fit){scene=s;if(fit)fitPending=true;applyScene()}
 function setFull(on){
-  if(!curHost)return;curHost.classList.toggle("full",on);syncFullBtn();setInteractive(on||interactive);$("layers").hidden=true;
+  if(!curHost)return;if(!on)end3d();curHost.classList.toggle("full",on);syncFullBtn();setInteractive(on||interactive);$("layers").hidden=true;
   requestAnimationFrame(()=>{if(!M)return;M.resize();if(scene.mode==="trail"){fitTo(boundsOf(scene.ways))}else if(scene.mode==="crea"&&S.gen){fitTo(boundsOf([S.gen[S.genIdx].path]))}});
 }
 function syncFullBtn(){const on=curHost&&curHost.classList.contains("full");$("m-full").innerHTML=icon(on?"shrink":"expand");$("m-full").setAttribute("aria-label",on?"Riduci la mappa":"Mappa a tutto schermo")}
@@ -907,7 +1047,7 @@ function route(){
   document.querySelectorAll("#tabs a").forEach(a=>a.classList.toggle("on",a.dataset.t===(scr==="sentiero"?"esplora":scr)));
   $("tabs").classList.toggle("hide",!S.dog);
   document.querySelectorAll(".maphost.full").forEach(h=>h.classList.remove("full"));
-  $("layers").hidden=true;
+  end3d();$("layers").hidden=true;
   if(scr==="esplora"){
     // tornando da un sentiero o da un giro la mappa deve mostrare di nuovo tutti i sentieri, non solo l'ultimo percorso aperto
     if(scene.mode!=="explore"){scene={mode:"explore"};if(!S.peek)fitPending=true}
@@ -1033,6 +1173,8 @@ function detailHTML(o){
   return `<h1>${esc(o.title)}</h1><p class="muted" style="margin-top:6px">${o.sub}</p>${vb}
     <div class="stats"><div><b>${km(o.it.len)} km</b><span>Lunghezza</span></div><div><b>${o.it.up!=null?o.it.up+" m":"…"}</b><span>Dislivello</span></div><div><b>${fmtH(res.hours)}</b><span>Col cane</span></div><div><b class="${res.v>=0?"c"+res.effort:""}">${res.v>=0?EFFORT[res.effort]:"…"}</b><span>Per ${dn()}</span></div></div>
     <p class="small muted">${o.it.loop===false?"Percorso lineare (andata e ritorno raddoppia la distanza)":"Percorso ad anello"}. Tutte le valutazioni sono fatte sui limiti di ${dn()}, non su quelli di una persona.</p>
+    ${o.tools||""}
+    ${o.prof?`<div class="block"><h2>Dislivello lungo il percorso</h2>${elevChart(o.prof,o.it.len,d)}</div>`:""}
     <div class="block"><h2>Per ${dn()}</h2>
       ${res.v>=0?`<p style="margin-bottom:10px">Impegno per ${dn()}: <b class="c${res.effort}">${EFFORT[res.effort]}</b> · ${dayName(S.day,res.w&&res.w.daily).toLowerCase()}</p>`:""}
       <ul class="why">${res.why.map(x=>`<li><i class="dot ${x.lvl<0?"bw":"b"+x.lvl}"></i><span>${x.txt}</span></li>`).join("")}</ul>
@@ -1043,6 +1185,41 @@ function detailHTML(o){
     <div class="block"><h2>Cosa portare</h2><ul class="plain">${bringList(o.it,d,res,o.ft).map(x=>`<li>${x}</li>`).join("")}</ul></div>
     <p class="small muted block">Il verdetto è un consiglio prudente, non una garanzia. ${paceInfo()?`Tempo stimato con l'andatura reale di ${dn()}: circa ${Math.round(pace())} minuti al km, misurata nelle passeggiate salvate in Attività.`:"Tempo stimato al passo medio di un cane, pause comprese: dopo la prima passeggiata fatta con Avvia percorso uso l'andatura reale di "+dn()+"."}</p>`;
 }
+// Grafico del dislivello. p = quote a distanze uguali lungo il percorso. In arancione i tratti ripidi PER IL CANE.
+function elevChart(p,len,d){
+  if(!p||p.length<3)return "";
+  const W=340,H=124,L=4,R=46,T=12,B=22,n=p.length,mn=Math.min(...p),mx=Math.max(...p),rg=Math.max(20,mx-mn),step=len/(n-1);
+  const x=i=>L+(W-L-R)*i/(n-1),y=v=>T+(H-T-B)*(1-(v-mn)/rg),lim=capacity(d).agil==="bassa"?12:18;
+  let steep="",sl=0;
+  for(let i=1;i<n;i++)if(Math.abs(p[i]-p[i-1])/step*100>=lim){sl+=step;steep+=`<path d="M${x(i-1).toFixed(1)},${H-B}L${x(i-1).toFixed(1)},${y(p[i-1]).toFixed(1)}L${x(i).toFixed(1)},${y(p[i]).toFixed(1)}L${x(i).toFixed(1)},${H-B}Z"/>`}
+  const line=p.map((v,i)=>(i?"L":"M")+x(i).toFixed(1)+","+y(v).toFixed(1)).join("");
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Grafico del dislivello: da ${mn} a ${mx} metri"><path d="${line}L${x(n-1)},${H-B}L${L},${H-B}Z" fill="var(--accent-soft)"/><g fill="var(--warn)" opacity=".8">${steep}</g>
+    <path d="${line}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/><line x1="${L}" x2="${W-R}" y1="${H-B}" y2="${H-B}" stroke="var(--line)"/>
+    <text x="${W-R+5}" y="${y(mx)+4}">${mx} m</text>${mx-mn>=rg*.3?`<text x="${W-R+5}" y="${y(mn)+2}">${mn} m</text>`:""}
+    <text x="${L}" y="${H-6}">0 km</text><text x="${(L+W-R)/2}" y="${H-6}" text-anchor="middle">${km(len/2)} km</text><text x="${W-R}" y="${H-6}" text-anchor="end">${km(len)} km</text></svg>
+    <p class="small muted" style="margin-top:4px">${sl>=step?`In arancione i tratti ripidi per ${dn()} (pendenza oltre il ${lim}%): circa ${fmtM(sl)} in tutto.`:`Nessun tratto molto ripido per ${dn()}.`}</p>`;
+}
+function surfShare(tr){
+  if(!tr.sf)return null;if(tr._sh)return tr._sh;
+  const o={a:0,n:0,g:0,u:0};let tot=0;
+  tr.ways.forEach((w,i)=>{let l=0;for(let j=1;j<w.length;j++)l+=hav(w[j-1],w[j]);o[tr.sf[i]||"u"]+=l;tot+=l});
+  if(!tot)return null;SFK.forEach(k=>o[k]/=tot);return tr._sh=o;
+}
+function segShare(segs){
+  if(!segs||!segs.length)return null;const o={a:0,n:0,g:0,u:0};let tot=0;
+  segs.forEach(g=>{let l=0;for(let j=1;j<g.pts.length;j++)l+=hav(g.pts[j-1],g.pts[j]);o[g.c]+=l;tot+=l});
+  if(!tot)return null;SFK.forEach(k=>o[k]/=tot);return o;
+}
+function surfBlock(sh,d){
+  const cap=capacity(d),notes=[];
+  if(sh.g>=.02)notes.push(cap.agil==="bassa"?`<b class="c1">Ci sono gradini: per ${dn()} sono faticosi, valuta se evitarli.</b>`:"Ci sono gradini: fateli con calma, pesano sulle articolazioni.");
+  if(sh.a>=.4)notes.push("Molto asfalto o pietra: quando fa caldo scotta le zampe, meglio mattina presto o sera.");
+  if(sh.u>=.5)notes.push("Per buona parte del percorso il fondo non è scritto nei dati: verificalo sul posto.");
+  return `<div class="surf">${SFK.map(k=>`<i style="width:${(sh[k]*100).toFixed(1)}%;background:${SFC[k]}"></i>`).join("")}</div>
+    <p class="small" style="margin-top:6px">${SFK.filter(k=>sh[k]>=.005).map(k=>`<span style="white-space:nowrap"><i class="sw" style="background:${SFC[k]}"></i>${SFL[k]} ${Math.round(sh[k]*100)}%</span>`).join(" &nbsp; ")}</p>
+    ${notes.length?`<ul class="plain small" style="margin-top:8px">${notes.map(x=>`<li>${x}</li>`).join("")}</ul>`:""}
+    <button class="btn sm" data-surf style="margin-top:10px">${icon("surf")}Colora il fondo sulla mappa</button>`;
+}
 function bindDays(root,again){root.querySelectorAll("[data-day]").forEach(b=>b.onclick=()=>{S.day=+b.dataset.day;$("f-day").value=S.day;again()})}
 async function showTrail(id){
   mountMap($("hostTrail"),false);
@@ -1050,18 +1227,20 @@ async function showTrail(id){
   if(!tr){$("det").innerHTML=`<p class="muted" style="padding:30px 0">${S.ready?"Sentiero non trovato.":"Sto caricando i sentieri…"}</p>`;return}
   cur={type:"trail",tr};S.sel=id;
   const ft=FT[id];
-  setScene({mode:"trail",ways:tr.ways,start:tr.start,water:ft?ft.w:[]},true);
+  setScene({mode:"trail",ways:tr.ways,sf:tr.sf,start:tr.start,water:ft?ft.w:[]},true);
   const paint=()=>{
     const f=FT[id];
     const tags=f?(f.f.length?`<div class="tags">${f.f.map(k=>`<span class="tag">${FEATL[k]}</span>`).join("")}</div>`:`<p class="muted">Nessuna particolarità trovata vicino al tracciato.</p>`):`<p class="muted">Sto ricavando le particolarità…</p>`;
     const water=!f?"…":f.w.length?`Sì: ${f.w.length===1?"1 fontanella":f.w.length+" fontanelle"}`:"Nessuna segnata";
     const shade=!f?"…":f.wood>=.6?"Tanta (bosco)":f.wood>=.3?"In parte":"Poca";
-    $("det").innerHTML=detailHTML({title:tr.name,ft:f,sub:`${esc(tr.zone)}${tr.ref?" · sentiero n. "+esc(tr.ref):""}${tr.cai?" · CAI":""}${tr.scale?" · difficoltà "+tr.scale:""}`,it:item(tr),
-      sections:`<div class="block"><h2>Particolarità</h2>${tags}<p class="small muted" style="margin-top:8px">Ricavate in automatico da OpenStreetMap: elementi segnati vicino al tracciato.</p></div>
-      <div class="block"><h2>Scheda per il cane</h2><div class="tiles"><div class="tile"><span>Acqua lungo il percorso</span><b>${water}</b></div><div class="tile"><span>Ombra (stima)</span><b>${shade}</b></div><div class="tile"><span>Fondo</span><b>Da verificare</b></div><div class="tile"><span>Punti critici</span><b>Da verificare</b></div></div>
+    const sh=surfShare(tr),dom=sh&&SFK.slice().sort((a,b)=>sh[b]-sh[a])[0];
+    $("det").innerHTML=detailHTML({title:tr.name,ft:f,prof:elev[id]&&elev[id].p,
+      tools:`<div class="row" style="margin-top:14px;flex-wrap:wrap"><button class="btn sm" data-3d>${icon("layers")}Anteprima 3D</button>${sh?`<button class="btn sm" data-surf>${icon("surf")}Colora il fondo</button>`:""}</div>`,sub:`${esc(tr.zone)}${tr.ref?" · sentiero n. "+esc(tr.ref):""}${tr.cai?" · CAI":""}${tr.scale?" · difficoltà "+tr.scale:""}`,it:item(tr),
+      sections:`${sh?`<div class="block"><h2>Fondo del percorso</h2>${surfBlock(sh,dog())}</div>`:""}<div class="block"><h2>Particolarità</h2>${tags}<p class="small muted" style="margin-top:8px">Ricavate in automatico da OpenStreetMap: elementi segnati vicino al tracciato.</p></div>
+      <div class="block"><h2>Scheda per il cane</h2><div class="tiles"><div class="tile"><span>Acqua lungo il percorso</span><b>${water}</b></div><div class="tile"><span>Ombra (stima)</span><b>${shade}</b></div><div class="tile"><span>Fondo prevalente</span><b>${sh?SFL[dom]:"Da verificare"}</b></div><div class="tile"><span>Punti critici</span><b>Da verificare</b></div></div>
       <p class="small muted" style="margin-top:8px">${f&&f.w.length?"Le fontanelle sono i punti blu sulla mappa. ":""}Acqua e ombra sono stime dai dati di OpenStreetMap: verificale sul posto. Il sentiero non è ancora stato provato con un cane.</p></div>`})+
       `<p class="small block"><a href="https://www.openstreetmap.org/relation/${tr.id}" target="_blank" rel="noopener">Vedi i dati del sentiero su OpenStreetMap</a></p>`;
-    bindDays($("det"),paint);syncSave();
+    bindDays($("det"),paint);syncSave();bindTools($("det"));
   };
   paint();
   $("bar-go").href=`https://www.google.com/maps/dir/?api=1&destination=${tr.start[0]},${tr.start[1]}`;
@@ -1078,7 +1257,8 @@ $("det-save").onclick=$("bar-save").onclick=()=>{if(cur&&cur.type==="trail"){tog
 
 // ================= Crea un giro =================
 const SURF_HARD=[1,3,4,5,14];
-const SUB={chat:"Scrivi all'assistente che giro vuoi fare: capisce la durata e cosa preferisci, poi l'app disegna l'anello.",auto:"Un tocco: uso la tua posizione, il profilo del cane e il meteo di adesso.",man:"Scegli la partenza sulla mappa e quanto vuoi camminare."};
+const SUB={chat:"Scrivi all'assistente che giro vuoi fare: capisce la durata e cosa preferisci, poi l'app disegna l'anello.",auto:"Un tocco: uso la tua posizione, il profilo del cane e il meteo di adesso.",man:"Fai creare un anello all'app, oppure disegna tu il percorso mettendo i segnaposti sulla mappa."};
+const drawing=()=>S.mode==="man"&&S.manKind==="draw"&&!S.gen;
 function setStart(p,fromDrag){S.start=p;store.set("alldogs-start",p);if(pinM&&!fromDrag)pinM.setLngLat(ll(p));if(M&&!fromDrag)M.easeTo({center:ll(p),zoom:Math.max(M.getZoom(),14)});
   loadWeather([p]).then(()=>{rules();autoWhy()}).catch(()=>{})}
 function showCrea(){
@@ -1086,15 +1266,60 @@ function showCrea(){
   setScene({mode:"crea"},true);
   document.querySelectorAll("#crea-mode button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.mode===S.mode));
   $("crea-sub").textContent=SUB[S.mode];
+  $("start-hint").textContent=S.mode==="man"&&S.manKind==="draw"?"oppure tocca la mappa per aggiungere i punti, uno dopo l'altro":"oppure tocca la mappa per spostare la partenza";
   ["chat","auto","man"].forEach(m=>$("p-"+m).hidden=S.mode!==m);
   loadWeather([S.start]).then(()=>{rules();autoWhy()}).catch(()=>{});
   if(S.mode==="man")showMan();if(S.mode==="chat")showChat();if(S.mode==="auto")autoWhy();
 }
 document.querySelectorAll("#crea-mode button").forEach(b=>b.onclick=()=>{S.mode=b.dataset.mode;store.set("alldogs-creamode",S.mode);showCrea()});
-$("new-loc").onclick=async()=>{try{const p=await getPos();showMe(p);setStart(p)}catch(e){toast("Non riesco a leggere la posizione: tocca la mappa")}};
+$("new-loc").onclick=async()=>{try{const p=await getPos();showMe(p);if(drawing()){M&&M.easeTo({center:ll(p),zoom:Math.max(M.getZoom(),15)});addPt(p)}else setStart(p)}catch(e){toast("Non riesco a leggere la posizione: tocca la mappa")}};
 function targetKm(mins){const cap=capacity(dog()),want=mins/pace();return {want,k:Math.min(want,cap.km),cap}}
-function clearGen(){S.gen=null;S.genIdx=0;$("gen-out").innerHTML="";setScene({mode:"crea"},true);toast("Percorso rimosso")}
+function clearGen(){S.gen=null;S.genIdx=0;$("gen-out").innerHTML="";setScene({mode:"crea"},true);paintDraw();toast("Percorso rimosso")}
+// ---- Percorso disegnato a mano: l'utente mette i segnaposti, l'app li unisce seguendo strade e sentieri (OpenRouteService) ----
+function addPt(p){if(S.draw.pts.length>=40){toast("Puoi mettere al massimo 40 punti");return}S.draw.pts.push(r5(p));drawRoute(true)}
+async function drawRoute(added){
+  const D=S.draw,pts=D.pts,loop=$("draw-loop").checked&&pts.length>=2,follow=$("draw-follow").checked,key=store.get("alldogs-ors");
+  const all=loop?pts.concat([pts[0]]):pts.slice(),my=++D.req;
+  D.route=null;D.msg="";D.busy=false;
+  if(all.length>=2){
+    if(follow&&key){
+      D.busy=true;paintDraw();if(scene.mode==="crea")applyScene();
+      try{
+        const r=await getJSON("https://api.openrouteservice.org/v2/directions/foot-walking/geojson",{method:"POST",headers:{"Authorization":key,"Content-Type":"application/json"},body:JSON.stringify({coordinates:all.map(ll),elevation:true,extra_info:["surface","green","waytype"],options:{avoid_features:["ferries"]}})});
+        if(my!==D.req)return;D.route=parseRoute(r.features[0]);
+      }catch(e){
+        if(my!==D.req)return;
+        if(added&&(e.status===404||e.status===400)){pts.pop();toast("Quel punto è troppo lontano da strade e sentieri: l'ho tolto");return drawRoute(false)}
+        D.msg=e.status===401||e.status===403?"La chiave di OpenRouteService non è valida: per ora unisco i punti con linee dritte.":e.status===429?"Limite gratuito di OpenRouteService raggiunto: per ora unisco i punti con linee dritte.":"Non riesco a seguire strade e sentieri in questo momento: unisco i punti con linee dritte.";
+      }
+      D.busy=false;
+    }
+    if(!D.route){let len=0;for(let i=1;i<all.length;i++)len+=hav(all[i-1],all[i]);
+      D.route={path:all,len:Math.round(len),up:0,hard:null,soft:null,green:null,segs:null,prof:null,straight:true};
+      if(follow&&!key)D.msg="Per seguire strade e sentieri serve la chiave di OpenRouteService (sezione Il mio cane): per ora unisco i punti con linee dritte."}
+  }
+  paintDraw();if(scene.mode==="crea")applyScene();
+}
+function paintDraw(){
+  if(S.mode!=="man"||S.manKind!=="draw")return;
+  const D=S.draw,r=D.route,n=D.pts.length,cap=capacity(dog());
+  $("draw-info").innerHTML=D.busy?"Calcolo il percorso…":!n?"<b>Tocca la mappa</b> per mettere il primo segnaposto: sarà la partenza. Poi aggiungi gli altri punti nell'ordine in cui vuoi passarci. Se sbagli, puoi trascinarli.":n===1||!r?"Partenza messa. Tocca la mappa per aggiungere il punto successivo.":
+    `<b>${km(r.len)} km</b>${r.straight?"":" · ↑ "+r.up+" m"} · circa ${fmtH(r.len/1000*pace()/60+(r.up||0)/400)} con ${dn()} · ${n} punti`+
+    (r.len/1000>cap.km?`<br><b class="c1">Oltre il limite consigliato per ${dn()} (circa ${kmN(cap.km)} km).</b>`:"")+(D.msg?`<br><span class="small">${D.msg}</span>`:"");
+  $("draw-undo").disabled=!n;$("draw-reset").disabled=!n;$("draw-use").disabled=!r||D.busy;
+}
+$("draw-undo").onclick=()=>{S.draw.pts.pop();drawRoute(false)};
+$("draw-reset").onclick=()=>{S.draw.pts=[];drawRoute(false)};
+$("draw-loop").onchange=$("draw-follow").onchange=()=>drawRoute(false);
+$("draw-use").onclick=()=>{
+  const r0=S.draw.route;if(!r0)return;
+  const loop=hav(r0.path[0],r0.path[r0.path.length-1])<300;
+  S.start=r0.path[0];S.gen=[Object.assign({},r0,{name:"Il mio percorso di "+km(r0.len)+" km",source:"draw",loop})];S.genIdx=0;showGen();
+};
+document.querySelectorAll("#man-kind button").forEach(b=>b.onclick=()=>{S.manKind=b.dataset.k;store.set("alldogs-mankind",S.manKind);showCrea()});
 function showMan(){
+  document.querySelectorAll("#man-kind button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.k===S.manKind));
+  $("man-auto").hidden=S.manKind!=="auto";$("man-draw").hidden=S.manKind!=="draw";paintDraw();
   const d=dog(),opts=[20,40,60,90];
   $("seg").innerHTML=opts.map(m=>`<button data-m="${m}" aria-pressed="${m===S.mins}">${m<60?m+" min":m===60?"1 ora":"1 h 30"}</button>`).join("");
   $("seg").querySelectorAll("button").forEach(b=>b.onclick=()=>{S.mins=+b.dataset.m;showMan()});
@@ -1139,10 +1364,20 @@ $("auto-go").onclick=async()=>{
 };
 $("gen").onclick=()=>generate({mins:S.mins,prefs:{green:true,avoidSteps:capacity(dog()).agil==="bassa"},source:"man"});
 function parseRoute(f){
-  const c=f.geometry.coordinates.map(p=>[p[1],p[0]]),pr=f.properties,ex=pr.extras||{};
+  const co=f.geometry.coordinates,c=co.map(p=>[p[1],p[0]]),pr=f.properties,ex=pr.extras||{};
+  // tipo di fondo tratto per tratto (per colorare la mappa): superficie + gradini
+  const cat=new Array(Math.max(0,c.length-1)).fill("u");
+  ((ex.surface||{}).values||[]).forEach(([a,b,v])=>{const k=SURF_HARD.includes(v)||v===6?"a":v===0?"u":"n";for(let i=a;i<b&&i<cat.length;i++)cat[i]=k});
+  ((ex.waytypes||{}).values||[]).forEach(([a,b,v])=>{if(v===8)for(let i=a;i<b&&i<cat.length;i++)cat[i]="g"});
+  const segs=[];for(let i=0;i<cat.length;i++){const l=segs[segs.length-1];if(l&&l.c===cat[i])l.pts.push(c[i+1]);else segs.push({c:cat[i],pts:[c[i],c[i+1]]})}
+  // profilo del dislivello: quote a distanze uguali
+  let prof=null;
+  if(co.length>2&&co[0].length>2){const cum=[0];for(let i=1;i<c.length;i++)cum.push(cum[i-1]+hav(c[i-1],c[i]));
+    const tot=cum[cum.length-1],n=Math.max(20,Math.min(80,Math.round(tot/60)));prof=[];let j=0;
+    for(let k=0;k<n;k++){const dd=tot*k/(n-1);while(j<cum.length-2&&cum[j+1]<dd)j++;const g=cum[j+1]>cum[j]?Math.min(1,Math.max(0,(dd-cum[j])/(cum[j+1]-cum[j]))):0;prof.push(Math.round(co[j][2]+(co[j+1][2]-co[j][2])*g))}}
   let hard=0,unknown=0,tot=0;((ex.surface||{}).summary||[]).forEach(s=>{tot+=s.amount;if(SURF_HARD.includes(s.value))hard+=s.amount;else if(s.value===0)unknown+=s.amount});
   let green=null;const gs=(ex.green||{}).summary||[];if(gs.length)green=gs.reduce((a,s)=>a+s.value*s.amount,0)/100;
-  return {path:c,len:Math.round(pr.summary.distance),up:Math.round(pr.ascent||0),hard:tot?hard/tot:null,soft:tot?(tot-hard-unknown)/tot:null,green};
+  return {path:c,len:Math.round(pr.summary.distance),up:Math.round(pr.ascent||0),hard:tot?hard/tot:null,soft:tot?(tot-hard-unknown)/tot:null,green,segs,prof};
 }
 function stopsFor(r,d,ai){
   const at=f=>r.path[Math.min(r.path.length-1,Math.round(f*(r.path.length-1)))],n=esc(d.name||"il cane");
@@ -1158,8 +1393,8 @@ async function generate(o){
     $("ors-inline-save").onclick=()=>{const v=$("ors-inline").value.trim();if(!v){toast("Incolla la chiave");return}store.set("alldogs-ors",v);generate(o)};return}
   const d=dog(),cap=capacity(d),{k}=targetKm(o.mins),target=k*1000;
   out.innerHTML=`<div class="note">Sto disegnando il giro (circa ${k.toFixed(1).replace(".",",")} km)…</div>`;$("gen").disabled=true;
-  const body=seed=>{const b={coordinates:[[S.start[1],S.start[0]]],options:{round_trip:{length:Math.round(target),points:4,seed}},elevation:true,extra_info:["surface","green"]};
-    if(o.prefs&&o.prefs.avoidSteps)b.options.avoid_features=["steps"];
+  const body=seed=>{const b={coordinates:[[S.start[1],S.start[0]]],options:{round_trip:{length:Math.round(target),points:4,seed}},elevation:true,extra_info:["surface","green","waytype"]};
+    b.options.avoid_features=o.prefs&&o.prefs.avoidSteps?["ferries","steps"]:["ferries"]; // mai traghetti: vicino al porto uscivano "giri" di centinaia di km
     if(o.prefs&&(o.prefs.green||o.prefs.quiet))b.options.profile_params={weightings:{green:o.prefs.green?.8:0,quiet:o.prefs.quiet?.6:0}};
     return b};
   const base=Math.floor(Math.random()*1000);
@@ -1172,16 +1407,18 @@ async function generate(o){
   const ok=rs.filter(r=>r.status==="fulfilled"&&r.value.features&&r.value.features.length).map(r=>parseRoute(r.value.features[0]));
   if(!ok.length){const e=(rs.find(r=>r.status==="rejected")||{}).reason||{};
     out.innerHTML=`<div class="err">${e.status===401||e.status===403?"La chiave di OpenRouteService non è valida. Controllala nella sezione Il mio cane.":e.status===429?"Hai raggiunto il limite gratuito di oggi di OpenRouteService. Riprova domani.":e.status===404||e.status===400?"Da questo punto non riesco a creare un giro. Sposta il segnaposto su una strada o un sentiero.":"Non riesco a creare il giro. Controlla la connessione e che la chiave di OpenRouteService sia giusta (sezione Il mio cane)."}</div>`;return}
+  const sane=ok.filter(r=>r.len<=target*1.8+300);if(sane.length)ok.splice(0,ok.length,...sane); // scarta i giri assurdamente lunghi
   const n=nowWx(),hot=n&&n.t>=25;
   ok.forEach(r=>r.score=(r.hard??.5)*(hot?2:1)-(r.green??5)/10*(o.prefs&&o.prefs.green?1:.5)+Math.abs(r.len-target)/target*.5);
   ok.sort((a,b)=>a.score-b.score);
   ok.forEach(r=>{r.stops=stopsFor(r,d,o.aiStops);r.cmds=o.aiCmds||null;r.note=o.note||"";r.source=o.source});
   S.gen=ok;S.genIdx=0;showGen();
 }
-function genItem(r){return {len:r.len,up:r.up,scale:"CITY",start:r.path[0],loop:true}}
+function genItem(r){return {len:r.len,up:r.up,scale:"CITY",start:r.path[0],loop:r.loop!==false}}
 function showGen(){
   const r=S.gen[S.genIdx],d=dog(),res=verdict(genItem(r),d,0),sp=steps(r.len,d);
   if(!r.stops)r.stops=stopsFor(r,d);
+  const gsh=segShare(r.segs);
   setScene({mode:"crea"},true);
   const surf=r.hard==null?"":`<div class="block"><h2>Fondo</h2><div class="surf"><i style="width:${Math.round(r.soft*100)}%;background:var(--ok)"></i><i style="width:${Math.round(r.hard*100)}%;background:var(--wait)"></i></div>
     <p class="small muted">${Math.round(r.soft*100)}% terra, erba o sterrato · ${Math.round(r.hard*100)}% asfalto o pietra${r.green!=null?" · verde intorno: "+(r.green>=6?"tanto":r.green>=3?"medio":"poco"):""}</p></div>`;
@@ -1191,14 +1428,17 @@ function showGen(){
     <div class="stats"><div><b>${km(r.len)} km</b><span>Lunghezza</span></div><div><b>${r.up} m</b><span>Dislivello</span></div><div><b>${fmtH(res.hours)}</b><span>Col cane</span></div><div><b class="c${res.effort}">${EFFORT[res.effort]}</b><span>Per ${dn()}</span></div></div>
     <ul class="why" style="margin-top:12px">${res.why.map(x=>`<li><i class="dot ${x.lvl<0?"bw":"b"+x.lvl}"></i><span>${x.txt}</span></li>`).join("")}</ul>
     <p class="small muted" style="margin-top:10px">Passi stimati: ${dn()} circa ${sp.dog.toLocaleString("it-IT")}, tu circa ${sp.me.toLocaleString("it-IT")}.</p>
-    ${surf}
+    ${r.straight?`<p class="small muted" style="margin-top:10px">Percorso unito con linee dritte: distanza approssimativa, dislivello non calcolato.</p>`:""}
+    ${r.prof?`<div class="block"><h2>Dislivello lungo il percorso</h2>${elevChart(r.prof,r.len,d)}</div>`:""}
+    ${surf}${gsh&&gsh.g>=.01?`<p class="small" style="margin-top:6px"><i class="sw" style="background:${SFC.g}"></i>Gradini: circa ${Math.max(1,Math.round(gsh.g*100))}% del percorso.</p>`:""}
     <div class="block"><h2>Tappe e giochi</h2><ol class="stops">${r.stops.map(s=>`<li><div><b>${s.t}</b> <span class="muted small">· km ${km(s.km)}</span><br>${s.d}</div></li>`).join("")}</ol>
       <p class="small muted" style="margin-top:10px">${r.source==="chat"?"Tappe proposte dall'assistente AI, distribuite lungo il giro.":"Tappe proposte con regole fisse."} I numeri corrispondono a quelli sulla mappa.</p></div>
     ${cmds}
-    <div class="row" style="margin-top:16px;flex-wrap:wrap"><button class="btn pri" id="gen-start">${icon("play")}Avvia percorso</button><button class="btn" id="gen-save">${icon("heart")}Salva il giro</button>${S.gen.length>1?`<button class="btn" id="gen-next">Prova un altro giro</button>`:""}<a class="btn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${r.path[0][0]},${r.path[0][1]}">${icon("nav")}Portami alla partenza</a><button class="btn" id="gen-clear">✕ Rimuovi percorso</button></div></div>`;
-  $("gen-start").onclick=()=>startNav({name:r.name||"Giro di "+km(r.len)+" km",kind:"giro",ways:[r.path],path:r.path,len:r.len,up:r.up,stops:r.stops.map(s=>({p:s.p,km:s.km,t:s.t,d:s.d})),water:[],scale:"CITY",loop:true});
+    <div class="row" style="margin-top:16px;flex-wrap:wrap"><button class="btn pri" id="gen-start">${icon("play")}Avvia percorso</button><button class="btn" id="gen-save">${icon("heart")}Salva il giro</button>${S.gen.length>1?`<button class="btn" id="gen-next">Prova un altro giro</button>`:""}<a class="btn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${r.path[0][0]},${r.path[0][1]}">${icon("nav")}Portami alla partenza</a><button class="btn" data-3d>${icon("layers")}Anteprima 3D</button>${gsh?`<button class="btn" data-surf>${icon("surf")}Colora il fondo</button>`:""}<button class="btn" id="gen-clear">✕ Rimuovi percorso</button></div></div>`;
+  bindTools($("gen-out"));
+  $("gen-start").onclick=()=>startNav({name:r.name||"Giro di "+km(r.len)+" km",kind:"giro",ways:[r.path],path:r.path,len:r.len,up:r.up,stops:r.stops.map(s=>({p:s.p,km:s.km,t:s.t,d:s.d})),water:[],scale:"CITY",loop:r.loop!==false});
   $("gen-clear").onclick=clearGen;
-  $("gen-save").onclick=()=>{S.routes.unshift({t:Date.now(),name:`Giro di ${km(r.len)} km`,len:r.len,up:r.up,hard:r.hard,soft:r.soft,green:r.green,path:thin(r.path,15),stops:r.stops.map(s=>({p:s.p,km:s.km,t:s.t,d:s.d})),cmds:r.cmds||null,source:r.source});S.routes=S.routes.slice(0,20);store.set("alldogs-routes",S.routes);toast("Giro salvato")};
+  $("gen-save").onclick=()=>{S.routes.unshift({t:Date.now(),name:`Giro di ${km(r.len)} km`,len:r.len,up:r.up,hard:r.hard,soft:r.soft,green:r.green,path:thin(r.path,15),stops:r.stops.map(s=>({p:s.p,km:s.km,t:s.t,d:s.d})),cmds:r.cmds||null,source:r.source,loop:r.loop!==false,prof:r.prof||null,segs:r.segs?r.segs.map(g=>({c:g.c,pts:g.pts.length>2?thin(g.pts,15):g.pts})):null});S.routes=S.routes.slice(0,20);store.set("alldogs-routes",S.routes);toast("Giro salvato")};
   const nx=$("gen-next");if(nx)nx.onclick=()=>{S.genIdx=(S.genIdx+1)%S.gen.length;showGen();$("hostCrea").scrollIntoView({behavior:"smooth"})};
   $("gen-out").scrollIntoView({behavior:"smooth",block:"start"});
 }
@@ -1468,7 +1708,21 @@ function healthAlerts(d){
   (h.vax||[]).filter(v=>v.d).forEach(v=>out.push(v.d<today?`<span class="c1">Richiamo ${esc(v.n||"vaccino")}: data passata (${fmtD(v.d)}).</span>`:`Richiamo ${esc(v.n||"vaccino")}: ${fmtD(v.d)}.`));
   return out.join("<br>");
 }
+// Foto profilo del cane: ritagliata quadrata e rimpicciolita, salvata solo su questo telefono
+function syncPhoto(){const ph=store.get("alldogs-photo"),a=$("avatar");a.style.backgroundImage=ph?`url(${ph})`:"";a.style.color=ph?"transparent":"";$("photo-btn").textContent=ph?"Cambia foto":"Aggiungi una foto";$("photo-del").hidden=!ph}
+$("photo-btn").onclick=$("avatar").onclick=()=>$("photo-in").click();
+$("photo-in").onchange=e=>{
+  const fl=e.target.files[0];e.target.value="";if(!fl)return;
+  const img=new Image(),u=URL.createObjectURL(fl);
+  img.onload=()=>{const q=Math.min(img.width,img.height),c=document.createElement("canvas");c.width=c.height=320;
+    c.getContext("2d").drawImage(img,(img.width-q)/2,(img.height-q)/2,q,q,0,0,320,320);URL.revokeObjectURL(u);
+    if(store.set("alldogs-photo",c.toDataURL("image/jpeg",.82))){syncPhoto();toast("Foto salvata")}else toast("Non c'è abbastanza spazio per salvare la foto")};
+  img.onerror=()=>{URL.revokeObjectURL(u);toast("Non riesco a leggere questa immagine")};
+  img.src=u;
+};
+$("photo-del").onclick=()=>{store.del("alldogs-photo");syncPhoto();toast("Foto tolta")};
 function showDog(){
+  syncPhoto();
   const first=!S.dog,d=dog();
   $("onb").hidden=!first;$("dog-head").style.display=first?"none":"flex";$("settings").style.display=first?"none":"block";
   $("dog-save").textContent=first?"Inizia":"Salva";

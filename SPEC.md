@@ -50,3 +50,11 @@ che mappa, miniature, filtri, scheda, meteo funzionino a larghezza telefono (390
 
 ## Idee per dopo
 - Limitare il token Mapbox al dominio del sito. Contapassi vero e GPS a schermo spento richiedono un'app installata dallo store.
+
+## Aggiunte del 14 novembre 2026 (richieste da Giuseppe)
+- **Manuale → "Lo disegno io"**: segnaposti sulla mappa (trascinabili), uniti seguendo strade e sentieri con OpenRouteService (directions), anello opzionale.
+- **Grafico del dislivello** per sentieri (profilo in `data/trails.json`, campo `elev[id].p`) e giri creati (quote di OpenRouteService). In arancione i tratti ripidi per il cane.
+- **Fondo colorato** sulla mappa: asfalto o pietra, terra o erba, gradini, non indicato (campo `sf` per i sentieri, extra `surface`/`waytype` di ORS per i giri).
+- **Anteprima 3D** del percorso (rilievo + rotazione lenta). **Mappe**: Outdoor, Satellite, Strade, Topografica (OpenTopoMap), Notte; in più ombre del rilievo, radar pioggia (RainViewer), legenda.
+- **Foto profilo del cane** (salvata solo sul dispositivo, `alldogs-photo`).
+- Grafica e simboli propri: gli screenshot di AllTrails sono stati usati solo come riferimento per le funzioni, senza copiarne mappe, dati o stile.

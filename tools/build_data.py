@@ -4,7 +4,7 @@ così l'app non deve scaricarli e calcolarli ogni volta sul telefono.
 Uso:  python tools/build_data.py
 Fonti: OpenStreetMap (Overpass API, ODbL) e Terrain Tiles (Mapzen, AWS Open Data).
 """
-import json, math, os, re, time, urllib.parse, urllib.request
+import json, math, os, re, subprocess, time, urllib.request
 from PIL import Image
 
 AREA = dict(s=40.52, w=13.85, n=41.02, e=14.85)
@@ -104,9 +104,11 @@ def overpass(q, name):
         for tries in range(2):
             try:
                 print("  Overpass:", u, flush=True)
-                req = urllib.request.Request(u, data=("data=" + urllib.parse.quote(q)).encode(), headers=UA)
-                data = json.load(urllib.request.urlopen(req, timeout=300))
-                json.dump(data, open(f, "w", encoding="utf-8"))
+                # curl: su alcuni PC Python non riesce a verificare il certificato del server
+                tmp = f + ".tmp"
+                subprocess.run(["curl", "-s", "-m", "280", "-A", UA["User-Agent"], "-o", tmp, "--data-urlencode", "data=" + q, u], check=True)
+                data = json.load(open(tmp, encoding="utf-8"))
+                os.replace(tmp, f)
                 return data
             except Exception as e:  # noqa
                 err = e
@@ -169,18 +171,46 @@ def elevation(path):
         elif ref - v >= TH:
             down += ref - v
             ref = v
-    return {"up": round(max(up, down)), "max": round(max(z)), "min": round(min(z))}
+    # profilo per il grafico: quote a distanze uguali lungo il percorso
+    n = max(20, min(80, round(len(pts) / 2)))
+    prof = [round(sm[min(len(sm) - 1, round(i * (len(sm) - 1) / (n - 1)))]) for i in range(n)]
+    return {"up": round(max(up, down)), "max": round(max(z)), "min": round(min(z)), "p": prof}
+
+
+HARD = {"asphalt", "concrete", "concrete:plates", "concrete:lanes", "paved", "paving_stones", "sett", "cobblestone", "unhewn_cobblestone", "metal", "bricks", "brick"}
+SOFT = {"unpaved", "ground", "dirt", "earth", "grass", "gravel", "fine_gravel", "compacted", "sand", "rock", "pebblestone", "mud", "woodchips", "wood", "grass_paver", "soil", "stone"}
+ROADS = {"residential", "tertiary", "secondary", "primary", "unclassified", "service", "living_street", "trunk", "tertiary_link", "secondary_link", "primary_link"}
+
+
+def surface(t):
+    """a = asfalto o pietra, n = terra o erba, g = gradini, u = non indicato"""
+    if not t:
+        return "u"
+    if t.get("highway") == "steps":
+        return "g"
+    s = t.get("surface", "")
+    if s in HARD:
+        return "a"
+    if s in SOFT:
+        return "n"
+    if t.get("highway") in ROADS:
+        return "a"
+    return "u"
 
 
 def main():
     B = f"{AREA['s']},{AREA['w']},{AREA['n']},{AREA['e']}"
     print("Scarico i sentieri…", flush=True)
     data = overpass(f'[out:json][timeout:180];relation["route"~"^(hiking|foot)$"]["network"!~"^(iwn|nwn)$"]({B});out body geom;', "trails")
+    print("Scarico il tipo di fondo…", flush=True)
+    wt = overpass(f'[out:json][timeout:180];relation["route"~"^(hiking|foot)$"]["network"!~"^(iwn|nwn)$"]({B});way(r);out tags;', "waytags")
+    wtags = {w["id"]: w.get("tags", {}) for w in wt["elements"] if w["type"] == "way"}
     trails = []
     for el in data["elements"]:
         t = el.get("tags", {})
-        ways = [[[round(p["lat"], 5), round(p["lon"], 5)] for p in m["geometry"]] for m in el.get("members", [])
-                if m["type"] == "way" and m.get("geometry") and len(m["geometry"]) > 1]
+        mem = [m for m in el.get("members", []) if m["type"] == "way" and m.get("geometry") and len(m["geometry"]) > 1]
+        ways = [[[round(p["lat"], 5), round(p["lon"], 5)] for p in m["geometry"]] for m in mem]
+        sf = "".join(surface(wtags.get(m["ref"])) for m in mem)
         if not ways:
             continue
         ln = sum(hav(w[i - 1], w[i]) for w in ways for i in range(1, len(w)))
@@ -193,7 +223,7 @@ def main():
             continue
         trails.append({"id": el["id"], "name": name, "type": t.get("route"), "ref": t.get("ref", ""), "from": t.get("from", ""), "to": t.get("to", ""),
                        "cai": cai, "scale": t.get("cai_scale", "").upper(), "operator": t.get("operator", ""), "dogs": t.get("dog", ""),
-                       "len": round(ln), "ways": ways})
+                       "len": round(ln), "ways": ways, "sf": sf})
     print(len(trails), "sentieri", flush=True)
 
     print("Calcolo i dislivelli…", flush=True)
