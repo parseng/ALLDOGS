@@ -271,10 +271,11 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
     <select id="f-fit" aria-label="Verdetto"><option value="all">Tutti i verdetti</option><option value="0">Solo fattibili</option><option value="01">Fattibili e con prudenza</option></select>
     <select id="f-len" aria-label="Lunghezza"><option value="all">Lunghezza</option><option value="0-5">Fino a 5 km</option><option value="5-10">Da 5 a 10 km</option><option value="10-99">Più di 10 km</option></select>
     <select id="f-up" aria-label="Dislivello"><option value="all">Dislivello</option><option value="0-150">Fino a 150 m</option><option value="150-400">Da 150 a 400 m</option><option value="400-800">Da 400 a 800 m</option><option value="800-99999">Oltre 800 m</option></select>
-    <select id="f-dif" aria-label="Difficoltà CAI"><option value="all">Difficoltà CAI</option><option value="T">T · turistico</option><option value="E">E · escursionistico</option><option value="EE">EE · esperti</option></select>
+    <select id="f-eff" aria-label="Impegno per il cane"><option value="all">Impegno per il cane</option><option value="0">Facile per lui</option><option value="1">Media per lui</option><option value="2">Difficile per lui</option></select>
+    <select id="f-dif" aria-label="Difficoltà CAI (per persone)"><option value="all">Difficoltà CAI (persone)</option><option value="T">T · turistico</option><option value="E">E · escursionistico</option><option value="EE">EE · esperti</option></select>
     <select id="f-zone" aria-label="Zona"><option value="all">Tutte le zone</option></select>
   </div>
-  <p class="flabel">Attività</p>
+  <p class="flabel">Attività adatte al cane</p>
   <div class="hscroll" id="f-act" style="margin-top:6px"></div>
   <p class="flabel">Particolarità</p>
   <div class="hscroll" id="f-feat" style="margin-top:6px"></div>
@@ -526,7 +527,9 @@ function verdict(it,d,day){
   if(cap.health)add(0,`Limiti ridotti per la salute di ${nm}: in caso di dubbio chiedi al veterinario.`);
   const known=why.filter(x=>x.lvl>=0);
   const v=why.some(x=>x.lvl<0)&&!known.some(x=>x.lvl===2)?-1:Math.max(...known.map(x=>x.lvl));
-  const r=Math.max(k/cap.km,up!=null?up/cap.up:0),effort=r<.5?0:r<.85?1:2;
+  // impegno PER IL CANE: rispetto ai suoi limiti, non a quelli di una persona
+  const r=Math.max(k/cap.km,up!=null?up/cap.up:0);let effort=r<.5?0:r<.85?1:2;
+  if(s==="EE"||s==="EEA"||v===2)effort=2;else if(s==="E"&&cap.agil==="bassa")effort=Math.max(effort,1);
   return {v,why,hours,best,cap,w,up,effort};
 }
 function bringList(it,d,res,ft){
@@ -644,12 +647,13 @@ async function loadFeatures(){
   }
   FT=m;store.set(FEAT_KEY,{t:Date.now(),m});
 }
-function acts(tr){
-  const up=elev[tr.id]?elev[tr.id].up:null,k=tr.len/1000,f=FT[tr.id]?FT[tr.id].f:[],hard=tr.scale==="EE"||tr.scale==="EEA",o=new Set();
-  if(k<=5&&!hard&&tr.scale!=="E"&&(up==null?tr.scale==="T":up<=150))o.add("facile");
-  if(!hard&&(tr.scale==="E"||(k>5&&k<=15)||(up!=null&&up>150&&up<=800)))o.add("escursione");
-  if(hard||k>15||(up!=null&&up>800))o.add("trekking");
-  if(k>=3&&k<=12&&!hard&&up!=null&&up/k<=40)o.add("corsa");
+// attività giudicate per IL CANE (in base al suo impegno), non per la persona
+function acts(tr,res){
+  const up=elev[tr.id]?elev[tr.id].up:null,k=tr.len/1000,f=FT[tr.id]?FT[tr.id].f:[],o=new Set(),e=res.effort,known=res.v>=0;
+  if(known&&e===0&&k<=6)o.add("facile");
+  if(known&&res.v<2&&(e===1||(e===0&&k>6)))o.add("escursione");
+  if(known&&e===2)o.add("trekking");
+  if(known&&res.v===0&&e<=1&&k>=3&&up!=null&&up/k<=40&&!res.cap.sensitive&&!res.cap.health)o.add("corsa");
   if(f.includes("spiaggia")||f.includes("laghi")||f.includes("fiumi"))o.add("bagno");
   if(f.includes("citta"))o.add("citta");
   return o;
@@ -842,7 +846,7 @@ function cardHTML(tr,res,title){
   return `<article class="tcard" data-id="${tr.id}"><div class="img">${svgThumb(tr.path)}<img loading="lazy" alt="" src="${staticImg(tr.path)}" onerror="this.remove()">${badge}
     <button class="round ${sv?"saved":""}" data-save="${tr.id}" aria-label="${sv?"Togli dai salvati":"Salva"}">${icon("heart")}</button></div>
     <h3>${esc(title||tr.name)}</h3><p class="sub">${title?esc(tr.name)+" · ":""}${esc(tr.zone)}${tr.ref?" · n. "+esc(tr.ref):""}${tr.scale?" · "+tr.scale:""}</p>
-    <p class="meta">${km(tr.len)} km${e?" · ↑ "+e.up+" m":""} · ${fmtH(res.hours)} col cane</p>${featLine(tr)}</article>`;
+    <p class="meta">${res.v>=0?`Per ${dn()}: <b class="c${res.effort}">${EFFORT[res.effort].toLowerCase()}</b> · `:""}${km(tr.len)} km${e?" · ↑ "+e.up+" m":""} · ${fmtH(res.hours)} col cane</p>${featLine(tr)}</article>`;
 }
 function placeCard(f,i){
   return `<article class="tcard" data-place="${i}"><div class="img"><img loading="lazy" alt="" src="${staticPlace(f.c)}" onerror="this.remove()"><span class="badge vw">Sentieri vicini</span></div>
@@ -867,9 +871,9 @@ function famousMatch(){
     return {f,i,tr:best};
   });
 }
-function activeFilters(){return $("q").value.trim()||S.act||S.feat.length||S.near||["f-fit","f-len","f-up","f-dif","f-zone"].some(id=>$(id).value!=="all")}
+function activeFilters(){return $("q").value.trim()||S.act||S.feat.length||S.near||["f-fit","f-eff","f-len","f-up","f-dif","f-zone"].some(id=>$(id).value!=="all")}
 function filtered(){
-  const d=dog(),q=$("q").value.trim().toLowerCase(),fit=$("f-fit").value,len=$("f-len").value,upf=$("f-up").value,dif=$("f-dif").value,zone=$("f-zone").value;
+  const d=dog(),q=$("q").value.trim().toLowerCase(),fit=$("f-fit").value,len=$("f-len").value,upf=$("f-up").value,dif=$("f-dif").value,zone=$("f-zone").value,eff=$("f-eff").value;
   const rows=[];
   for(const tr of S.trails){
     if(q&&!(tr.name+" "+tr.ref+" "+tr.zone+" "+tr.from+" "+tr.to).toLowerCase().includes(q))continue;
@@ -877,15 +881,16 @@ function filtered(){
     if(upf!=="all"){const e=elev[tr.id];if(!e)continue;const [a,b]=upf.split("-").map(Number);if(e.up<a||e.up>=b)continue}
     if(dif!=="all"&&tr.scale!==dif)continue;
     if(zone!=="all"&&tr.zone!==zone)continue;
-    if(S.act&&!acts(tr).has(S.act))continue;
     if(S.feat.length){const f=FT[tr.id];if(!f||!S.feat.every(k=>f.f.includes(k)))continue}
     let dist=0;if(S.near){dist=Math.min(...sample(tr.path,20).map(p=>hav(p,S.near.c)));if(dist>6000)continue}
     const res=verdict(item(tr),d,S.day);
     if(fit!=="all"&&!fit.includes(String(res.v)))continue;
+    if(eff!=="all"&&(res.v<0||String(res.effort)!==eff))continue;
+    if(S.act&&!acts(tr,res).has(S.act))continue;
     rows.push({tr,res,dist});
   }
   if(S.near)rows.sort((a,b)=>a.dist-b.dist);
-  else rows.sort((a,b)=>((a.res.v<0?.5:a.res.v)-(b.res.v<0?.5:b.res.v))||(b.tr.cai-a.tr.cai)||a.tr.len-b.tr.len);
+  else rows.sort((a,b)=>((a.res.v<0?.5:a.res.v)-(b.res.v<0?.5:b.res.v))||(a.res.effort-b.res.effort)||(b.tr.cai-a.tr.cai)||a.tr.len-b.tr.len);
   return rows;
 }
 function renderPills(){
@@ -898,7 +903,7 @@ function renderList(){
   $("hello").textContent=`Dove andiamo con ${dog().name||"il tuo cane"}?`;
   renderPills();
   if(!S.ready)return;
-  ["f-fit","f-len","f-up","f-dif","f-zone"].forEach(id=>$(id).classList.toggle("act",$(id).value!=="all"));
+  ["f-fit","f-eff","f-len","f-up","f-dif","f-zone"].forEach(id=>$(id).classList.toggle("act",$(id).value!=="all"));
   $("f-day").classList.toggle("act",S.day>0);
   $("near-row").hidden=!S.near;
   if(S.near){$("near-row").innerHTML=`<button class="pill x" id="near-x">Vicino a ${esc(S.near.n)} ✕</button>`;$("near-x").onclick=()=>setNear(null)}
@@ -920,7 +925,7 @@ function toggleSave(id){const i=S.saved.indexOf(id);if(i>=0)S.saved.splice(i,1);
 function peek(id){
   const tr=S.trails.find(t=>t.id===id);if(!tr)return;S.peek=id;
   const res=verdict(item(tr),dog(),S.day),p=$("peek");
-  p.innerHTML=`<img alt="" src="${staticImg(tr.path,200,150)}"><div><h3>${esc(tr.name)}</h3><p class="sub"><span class="c${Math.max(0,res.v)}"><i class="dot b${res.v<0?"w":res.v}"></i>${res.v<0?"Sto valutando…":VLABEL[res.v]}</span> · ${km(tr.len)} km · ${fmtH(res.hours)}</p></div><span>›</span>`;
+  p.innerHTML=`<img alt="" src="${staticImg(tr.path,200,150)}"><div><h3>${esc(tr.name)}</h3><p class="sub"><span class="c${Math.max(0,res.v)}"><i class="dot b${res.v<0?"w":res.v}"></i>${res.v<0?"Sto valutando…":VLABEL[res.v]+" · "+EFFORT[res.effort].toLowerCase()+" per lui"}</span> · ${km(tr.len)} km · ${fmtH(res.hours)}</p></div><span>›</span>`;
   p.classList.add("on");p.onclick=()=>{lastList=window.scrollY;location.hash="s-"+id};
   applyScene();
   if(M)M.fitBounds(tr.bb,{padding:{top:50,bottom:120,left:40,right:60},maxZoom:15,duration:500});
@@ -942,12 +947,13 @@ function detailHTML(o){
   const d=dog(),res=verdict(o.it,d,S.day),st=steps(o.it.len,d);
   const vb=res.v<0?`<span class="verdict vw">Sto valutando…</span>`:`<span class="verdict v${res.v}">${VLABEL[res.v]} per ${dn()}</span>`;
   return `<h1>${esc(o.title)}</h1><p class="muted" style="margin-top:6px">${o.sub}</p>${vb}
-    <div class="stats"><div><b>${km(o.it.len)} km</b><span>Lunghezza</span></div><div><b>${o.it.up!=null?o.it.up+" m":"…"}</b><span>Dislivello</span></div><div><b>${fmtH(res.hours)}</b><span>Col cane</span></div><div><b>${o.it.loop===false?"Lineare":"Anello"}</b><span>Tipo</span></div></div>
+    <div class="stats"><div><b>${km(o.it.len)} km</b><span>Lunghezza</span></div><div><b>${o.it.up!=null?o.it.up+" m":"…"}</b><span>Dislivello</span></div><div><b>${fmtH(res.hours)}</b><span>Col cane</span></div><div><b class="${res.v>=0?"c"+res.effort:""}">${res.v>=0?EFFORT[res.effort]:"…"}</b><span>Per ${dn()}</span></div></div>
+    <p class="small muted">${o.it.loop===false?"Percorso lineare (andata e ritorno raddoppia la distanza)":"Percorso ad anello"}. Tutte le valutazioni sono fatte sui limiti di ${dn()}, non su quelli di una persona.</p>
     <div class="block"><h2>Per ${dn()}</h2>
-      ${res.v>=0?`<p style="margin-bottom:10px">Impegno: <b class="c${res.effort}">${EFFORT[res.effort]}</b> · ${dayName(S.day,res.w&&res.w.daily).toLowerCase()}</p>`:""}
+      ${res.v>=0?`<p style="margin-bottom:10px">Impegno per ${dn()}: <b class="c${res.effort}">${EFFORT[res.effort]}</b> · ${dayName(S.day,res.w&&res.w.daily).toLowerCase()}</p>`:""}
       <ul class="why">${res.why.map(x=>`<li><i class="dot ${x.lvl<0?"bw":"b"+x.lvl}"></i><span>${x.txt}</span></li>`).join("")}</ul>
       ${res.cap.notes.length?`<p class="small muted" style="margin-top:10px">Limiti più prudenti perché ${dn()} ${res.cap.notes.join(", ")}.</p>`:""}
-      <p class="small muted" style="margin-top:10px">Passi stimati: tu circa ${st.me.toLocaleString("it-IT")}, ${dn()} circa ${st.dog.toLocaleString("it-IT")} (stima da distanza e taglia).</p></div>
+      <p class="small muted" style="margin-top:10px">Passi stimati: ${dn()} circa ${st.dog.toLocaleString("it-IT")}, tu circa ${st.me.toLocaleString("it-IT")} (stima da distanza e taglia).</p></div>
     ${o.sections||""}
     <div class="block"><h2>Meteo</h2>${weatherHTML(res)}</div>
     <div class="block"><h2>Cosa portare</h2><ul class="plain">${bringList(o.it,d,res,o.ft).map(x=>`<li>${x}</li>`).join("")}</ul></div>
@@ -1095,9 +1101,9 @@ function showGen(){
   const cmds=r.cmds&&r.cmds.length?`<div class="block"><h2>Comandi da provare</h2><ul class="plain">${r.cmds.map(c=>`<li><b>${esc(c.command)}</b>${c.how?": "+esc(c.how):""}</li>`).join("")}</ul></div>`:"";
   $("gen-out").innerHTML=`<div class="box"><h2>${esc(r.name||"Giro di "+km(r.len)+" km")}</h2>
     <span class="verdict v${Math.max(0,res.v)}">${VLABEL[Math.max(0,res.v)]} per ${dn()}</span>
-    <div class="stats"><div><b>${km(r.len)} km</b><span>Lunghezza</span></div><div><b>${r.up} m</b><span>Dislivello</span></div><div><b>${fmtH(res.hours)}</b><span>Col cane</span></div><div><b>Anello</b><span>Tipo</span></div></div>
+    <div class="stats"><div><b>${km(r.len)} km</b><span>Lunghezza</span></div><div><b>${r.up} m</b><span>Dislivello</span></div><div><b>${fmtH(res.hours)}</b><span>Col cane</span></div><div><b class="c${res.effort}">${EFFORT[res.effort]}</b><span>Per ${dn()}</span></div></div>
     <ul class="why" style="margin-top:12px">${res.why.map(x=>`<li><i class="dot ${x.lvl<0?"bw":"b"+x.lvl}"></i><span>${x.txt}</span></li>`).join("")}</ul>
-    <p class="small muted" style="margin-top:10px">Passi stimati: tu circa ${sp.me.toLocaleString("it-IT")}, ${dn()} circa ${sp.dog.toLocaleString("it-IT")}.</p>
+    <p class="small muted" style="margin-top:10px">Passi stimati: ${dn()} circa ${sp.dog.toLocaleString("it-IT")}, tu circa ${sp.me.toLocaleString("it-IT")}.</p>
     ${surf}
     <div class="block"><h2>Tappe e giochi</h2><ol class="stops">${r.stops.map(s=>`<li><div><b>${s.t}</b> <span class="muted small">· km ${km(s.km)}</span><br>${s.d}</div></li>`).join("")}</ol>
       <p class="small muted" style="margin-top:10px">${r.source==="chat"?"Tappe proposte dall'assistente AI, distribuite lungo il giro.":"Tappe proposte con regole fisse."} I numeri corrispondono a quelli sulla mappa.</p></div>
@@ -1129,6 +1135,7 @@ Limite consigliato dall'app: circa ${kmN(cap.km)} km e ${cap.up} m di salita; ol
 Meteo alla partenza adesso: ${n?Math.round(n.f)+"° percepiti, pioggia "+n.rain+"%":"non disponibile"}. Prossime ore: ${next}. Ora attuale: ${hr}:00.
 La partenza è il segnaposto sulla mappa (l'utente può spostarlo o usare la sua posizione).
 Regole:
+- L'app è pensata per il cane: difficoltà, durata, tappe e comandi vanno scelti sulle capacità e sul benessere del cane, non su quelli della persona.
 - Fai al massimo una domanda alla volta e solo se serve davvero; se l'utente ha già detto abbastanza, crea il giro subito (create=true).
 - La durata deve rispettare i limiti del cane (a passo di cane circa 3,5 km/h). Se il caldo o la salute lo richiedono, accorcia e spiegalo.
 - Con create=true indica minutes, le preferenze, 3-5 tappe (title breve + text con cosa fare: pause, acqua, giochi di fiuto, ombra) e 3-5 comandi semplici adatti al cane e alla sua salute (command + how: come insegnarlo o usarlo, con premio).
@@ -1248,11 +1255,11 @@ $("keys-save").onclick=()=>{
 
 // ================= Avvio =================
 $("q").addEventListener("input",()=>{S.limit=20;fitPending=true;renderList()});
-["f-fit","f-len","f-up","f-dif","f-zone"].forEach(id=>$(id).addEventListener("change",()=>{S.limit=20;fitPending=true;renderList()}));
+["f-fit","f-eff","f-len","f-up","f-dif","f-zone"].forEach(id=>$(id).addEventListener("change",()=>{S.limit=20;fitPending=true;renderList()}));
 $("f-day").innerHTML=[0,1,2,3,4,5,6].map(i=>`<option value="${i}">${dayName(i)}</option>`).join("");
 $("f-day").addEventListener("change",e=>{S.day=+e.target.value;renderList()});
 $("more").onclick=()=>{S.limit+=20;renderList()};
-$("reset").onclick=()=>{$("q").value="";["f-fit","f-len","f-up","f-dif","f-zone"].forEach(id=>$(id).value="all");S.act=null;S.feat=[];S.near=null;S.limit=20;fitPending=true;renderList()};
+$("reset").onclick=()=>{$("q").value="";["f-fit","f-eff","f-len","f-up","f-dif","f-zone"].forEach(id=>$(id).value="all");S.act=null;S.feat=[];S.near=null;S.limit=20;fitPending=true;renderList()};
 syncLayersMenu();
 
 const onList=()=>(location.hash.slice(1)||"esplora")==="esplora";
