@@ -2,398 +2,779 @@
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AllDogs – Sentieri per il tuo cane</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AllDogs</title>
+<meta name="description" content="Sentieri e passeggiate adatti al tuo cane, a Napoli e in Campania.">
+<meta name="theme-color" content="#f6f7fb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e1220" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="AllDogs">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;700&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
-/* Layout: pannello a sinistra (cane, giorno, elenco sentieri) e mappa a destra; su telefono mappa sopra e pannello sotto. */
+/* App a schermate: contenuto che scorre, barra di navigazione fissa in basso, mappe a tutto schermo quando servono. */
 :root{
-  --bg:#f3f5f0; --panel:#ffffff; --fg:#1f2a22; --muted:#5d6b61; --line:#d9e0d6;
-  --accent:#2f5d46; --accent-soft:#e2ece5;
-  --ok:#2e7d4f; --ok-bg:#e0f1e6; --warn:#a86400; --warn-bg:#fcefd9; --no:#b3261e; --no-bg:#fbe3e1; --wait:#6b7280; --wait-bg:#eceef1;
-  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
-  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --bg:#f6f7fb; --surface:#ffffff; --ink:#131a2a; --muted:#636b7d; --line:#e3e6ee;
+  --accent:#2456f5; --accent-ink:#ffffff; --accent-soft:#e6ecff;
+  --ok:#1f8a4c; --ok-bg:#dff3e6; --warn:#a85f00; --warn-bg:#fdeed3; --no:#c0271d; --no-bg:#fbe2df; --wait:#6b7280; --wait-bg:#eceef2;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"Figtree","Segoe UI",system-ui,sans-serif;
+  --tab:64px; --r:16px;
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){:root{
-  --bg:#121815; --panel:#1a221e; --fg:#e6ece7; --muted:#9eaba2; --line:#2c3732;
-  --accent:#8cc5a5; --accent-soft:#22332a;
-  --ok:#7fd3a0; --ok-bg:#1d3326; --warn:#f2b55a; --warn-bg:#3a2c14; --no:#f28b82; --no-bg:#3d1d1b; --wait:#a3a9b3; --wait-bg:#262b30;
+  --bg:#0e1220; --surface:#181d2e; --ink:#eef0f7; --muted:#9aa3b8; --line:#2a3146;
+  --accent:#8aa5ff; --accent-ink:#0e1220; --accent-soft:#1f2a4d;
+  --ok:#74d69b; --ok-bg:#173324; --warn:#f3b65c; --warn-bg:#3b2c12; --no:#f59088; --no-bg:#401d1a; --wait:#a3a9b6; --wait-bg:#252a36;
   color-scheme:dark;
 }}
 *{box-sizing:border-box}
-html,body{height:100%;margin:0}
-body{background:var(--bg);color:var(--fg);font:15px/1.5 var(--body);display:flex;flex-direction:column}
-header{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--panel)}
-header h1{font:800 22px/1 var(--display);margin:0;color:var(--accent);letter-spacing:-.01em}
-header p{margin:0;color:var(--muted);font-size:13px}
-main{flex:1;display:grid;grid-template-columns:minmax(320px,400px) 1fr;min-height:0}
-#side{min-width:0;overflow-y:auto;border-right:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column}
-#map{min-height:300px}
-section{padding:14px 16px;border-bottom:1px solid var(--line)}
-h2{font:700 16px/1.2 var(--display);margin:0 0 10px}
-.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px 10px}
-label{min-width:0;display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.02em}
-label.check{flex-direction:row;align-items:center;gap:8px;grid-column:1/-1;font-weight:400;font-size:14px;color:var(--fg);letter-spacing:0}
-input,select{width:100%;font:inherit;font-size:15px;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg);min-width:0}
-input[type=checkbox]{flex:none;width:18px;height:18px}
-input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
-.days{display:flex;gap:6px;flex-wrap:wrap}
-.days button{font:inherit;font-size:14px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--bg);color:var(--fg);cursor:pointer}
-.days button[aria-pressed=true]{background:var(--accent);color:var(--panel);border-color:var(--accent)}
-#status{font-size:13px;color:var(--muted);margin-top:8px}
-.filters{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
-.filters input{flex:1 1 180px}.filters select{width:auto}
-#list{list-style:none;margin:0;padding:0}
-#list li{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;padding:9px 6px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:6px}
-#list li:hover,#list li.sel{background:var(--accent-soft)}
-#list .nm{font-weight:700;min-width:0;overflow-wrap:anywhere}
-#list .meta{grid-column:2;color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
-.pill{grid-row:span 2;align-self:start;font-size:12px;font-weight:700;padding:3px 8px;border-radius:999px;white-space:nowrap;margin-top:2px}
-.v0{background:var(--ok-bg);color:var(--ok)} .v1{background:var(--warn-bg);color:var(--warn)} .v2{background:var(--no-bg);color:var(--no)} .vw{background:var(--wait-bg);color:var(--wait)}
-#detail{display:none}
-#detail.on{display:block}
-#detail h3{font:800 19px/1.2 var(--display);margin:6px 0 4px}
-.big{display:inline-block;font:800 16px/1 var(--display);padding:7px 12px;border-radius:8px;margin-top:4px}
-.facts{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin:12px 0;font-variant-numeric:tabular-nums}
-.facts div{background:var(--bg);border-radius:6px;padding:6px 8px}
-.facts b{display:block;font-size:16px}
-.facts span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
-.why{list-style:none;padding:0;margin:8px 0}
-.why li{display:flex;gap:8px;margin:5px 0}
-.dot{flex:none;width:10px;height:10px;border-radius:50%;margin-top:6px}
-.d0{background:var(--ok)} .d1{background:var(--warn)} .d2{background:var(--no)} .dw{background:var(--wait)}
-.hours{display:flex;gap:2px;overflow-x:auto;padding-bottom:4px;margin:6px 0 2px}
-.hours div{flex:none;width:30px;text-align:center;font-size:11px;font-variant-numeric:tabular-nums;border-radius:4px;padding:3px 0}
-.hours .h{color:var(--muted)}
-ul.bring{margin:6px 0;padding-left:20px}
-.note{font-size:13px;color:var(--muted)}
-.back{font:inherit;font-size:14px;background:none;border:none;color:var(--accent);cursor:pointer;padding:0;text-decoration:underline}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 var(--body);-webkit-tap-highlight-color:transparent}
+h1,h2,h3{font-family:var(--display);margin:0;letter-spacing:-.01em;text-wrap:balance}
+h1{font-size:28px;font-weight:800;line-height:1.1}
+h2{font-size:19px;font-weight:600}
+h3{font-size:17px;font-weight:600;line-height:1.2}
+p{margin:0}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
 a{color:var(--accent)}
-footer{padding:12px 16px;font-size:12px;color:var(--muted)}
-@media (max-width:760px){
-  main{grid-template-columns:minmax(0,1fr);grid-template-rows:45vh auto}
-  #map{grid-row:1}
-  #side{grid-row:2;border-right:none;overflow:visible}
-  body{height:auto}
-  .facts{grid-template-columns:repeat(2,1fr)}
-}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.screen{display:none;max-width:640px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 16px) max(16px,env(safe-area-inset-left,0px)) calc(var(--tab) + env(safe-area-inset-bottom,0px) + 28px) max(16px,env(safe-area-inset-right,0px))}
+.screen.on{display:block}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;gap:10px;align-items:center}
+.sp{flex:1}
+
+/* barra in basso */
+#tabs{position:fixed;left:0;right:0;bottom:0;z-index:900;background:var(--surface);border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom,0px)}
+#tabs.hide{display:none}
+#tabs div{display:flex;width:100%;max-width:640px}
+#tabs a{flex:1;height:var(--tab);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none;color:var(--muted);font-size:11px;font-weight:500}
+#tabs a svg{width:24px;height:24px}
+#tabs a.on{color:var(--accent);font-weight:700}
+#tabs a.main span{background:var(--accent);color:var(--accent-ink);width:44px;height:44px;border-radius:50%;display:grid;place-items:center;margin-top:-18px;box-shadow:0 4px 12px rgba(20,40,120,.3)}
+#tabs a.main{color:var(--ink)}
+
+/* controlli */
+.search{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:0 16px;height:50px}
+.search input{flex:1;border:0;background:none;outline:none;min-width:0;font-size:16px}
+.chips{display:flex;gap:8px;overflow-x:auto;margin:12px -16px 0;padding:0 16px 4px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chips select{flex:none;appearance:none;-webkit-appearance:none;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:9px 30px 9px 14px;font-size:15px;font-weight:500;
+  background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);background-position:calc(100% - 16px) 55%,calc(100% - 11px) 55%;background-size:5px 5px;background-repeat:no-repeat}
+.chips select.act{border-color:var(--accent);background-color:var(--accent-soft)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:12px 18px;font-weight:700;font-size:15px;text-decoration:none;color:var(--ink)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.wide{width:100%}
+.btn:disabled{opacity:.6}
+.btn svg{width:18px;height:18px}
+.round{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;flex:none;padding:0}
+.round svg{width:20px;height:20px}
+.round.saved{color:var(--no)}
+.round.saved svg{fill:currentColor}
+.fab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--tab) + env(safe-area-inset-bottom,0px) + 14px);z-index:800;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+
+/* elenco sentieri */
+.count{display:flex;align-items:baseline;justify-content:space-between;margin:18px 0 6px}
+.card{display:grid;grid-template-columns:92px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.thumb{width:92px;height:92px;border-radius:14px;background:var(--accent-soft);display:grid;place-items:center;overflow:hidden}
+.thumb svg{width:76px;height:76px}
+.thumb polyline{fill:none;stroke:var(--accent);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.card h3{overflow-wrap:anywhere}
+.card .sub{color:var(--muted);font-size:14px;margin-top:2px}
+.card .meta{font-size:14px;margin-top:5px;font-variant-numeric:tabular-nums}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:baseline}
+.c0{color:var(--ok)} .c1{color:var(--warn)} .c2{color:var(--no)} .cw{color:var(--wait)}
+.b0{background:var(--ok)} .b1{background:var(--warn)} .b2{background:var(--no)} .bw{background:var(--wait)}
+.v0{background:var(--ok-bg);color:var(--ok)} .v1{background:var(--warn-bg);color:var(--warn)} .v2{background:var(--no-bg);color:var(--no)} .vw{background:var(--wait-bg);color:var(--wait)}
+.skel{height:92px;border-radius:14px;background:linear-gradient(90deg,var(--line),var(--surface),var(--line));background-size:200% 100%;animation:sk 1.4s infinite linear;margin:10px 0}
+@keyframes sk{to{background-position:-200% 0}}
+@media (prefers-reduced-motion:reduce){.skel{animation:none}}
+
+/* mappe */
+.mapfull{position:fixed;inset:0 0 calc(var(--tab) + env(safe-area-inset-bottom,0px)) 0;z-index:860;display:none;background:var(--bg)}
+.mapfull.on{display:block}
+.mapfull .leaflet-container,.hero .leaflet-container,#mapNew{width:100%;height:100%;background:var(--bg);font-family:var(--body)}
+.overlay-top{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);left:12px;right:12px;z-index:1000;display:flex;gap:8px;pointer-events:none}
+.overlay-top > :not(.sp){pointer-events:auto;box-shadow:0 2px 10px rgba(0,0,0,.18)}
+.peek{position:absolute;left:12px;right:12px;bottom:34px;z-index:1000;background:var(--surface);border-radius:var(--r);padding:4px 12px;box-shadow:0 8px 24px rgba(0,0,0,.25);display:none}
+.peek.on{display:block}
+.peek .card{border:0}
+.pin{width:26px;height:26px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--accent);border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4)}
+.stop{width:24px;height:24px;border-radius:50%;background:#fff;color:#131a2a;border:2px solid #2456f5;font:700 12px/20px var(--body);text-align:center}
+.me{width:16px;height:16px;border-radius:50%;background:#2f7bff;border:3px solid #fff;box-shadow:0 0 0 6px rgba(47,123,255,.25)}
+
+/* scheda sentiero */
+#s-sentiero,#s-giro{padding-top:0;padding-left:0;padding-right:0}
+.hero{position:relative;height:300px;background:var(--accent-soft)}
+.hero.full{position:fixed;inset:0;height:auto;z-index:950}
+.hero .overlay-top{justify-content:space-between}
+.hero .expand{position:absolute;right:12px;bottom:28px;z-index:1000}
+.sheet{position:relative;z-index:2;margin-top:-18px;background:var(--bg);border-radius:22px 22px 0 0;padding:22px max(16px,env(safe-area-inset-left,0px)) 0 max(16px,env(safe-area-inset-right,0px))}
+.verdict{display:inline-flex;align-items:center;gap:8px;font:800 16px/1 var(--display);padding:9px 14px;border-radius:10px;margin-top:12px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:18px 0 6px;font-variant-numeric:tabular-nums}
+.stats div{padding:0 10px;border-left:1px solid var(--line)}
+.stats div:first-child{padding-left:0;border-left:0}
+.stats b{display:block;font:600 17px/1.2 var(--display);white-space:nowrap}
+.stats span{font-size:12.5px;color:var(--muted)}
+.block{margin-top:26px}
+.block h2{margin-bottom:10px}
+.why{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}
+.why li{display:flex;gap:10px}
+.why .dot{flex:none;margin-top:7px}
+.days{display:flex;gap:6px;overflow-x:auto;margin:0 -16px;padding:0 16px 4px;scrollbar-width:none}
+.days button{flex:none;width:56px;padding:8px 0;border-radius:14px;border:1px solid transparent;background:none;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:13px;color:var(--muted)}
+.days button[aria-pressed=true]{border-color:var(--ink);color:var(--ink);font-weight:700}
+.days svg{width:26px;height:26px}
+.now{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:10px 0}
+.now > b{font:800 44px/1 var(--display)}
+.hours{display:flex;gap:3px;overflow-x:auto;margin:0 -16px;padding:0 16px 4px;scrollbar-width:none}
+.hours div{flex:none;width:36px;text-align:center;font-size:12px;border-radius:8px;padding:5px 0;font-variant-numeric:tabular-nums}
+.hours small{display:block;opacity:.75}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px}
+.tile span{font-size:12.5px;color:var(--muted);display:block}
+.tile b{font-weight:700}
+ul.plain{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:5px}
+.bar{position:fixed;left:0;right:0;bottom:calc(var(--tab) + env(safe-area-inset-bottom,0px));z-index:850;padding:10px max(16px,env(safe-area-inset-left,0px));background:linear-gradient(transparent,var(--bg) 35%);display:flex;gap:8px;justify-content:center}
+.bar .btn{flex:1;max-width:200px;padding:12px 8px;font-size:14px;gap:6px;white-space:nowrap}
+.pad-bar{height:70px}
+
+/* crea percorso */
+#mapNewWrap{height:42vh;min-height:240px;border-radius:var(--r);overflow:hidden;position:relative;margin-top:14px;border:1px solid var(--line)}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.seg button{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 0;font-weight:700;font-size:15px}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.note{background:var(--accent-soft);border-radius:14px;padding:12px 14px;font-size:14.5px}
+.err{background:var(--no-bg);color:var(--no);border-radius:14px;padding:12px 14px;font-size:14.5px}
+.surf{display:flex;height:10px;border-radius:5px;overflow:hidden;margin:8px 0 4px;background:var(--line)}
+ol.stops{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px;counter-reset:s}
+ol.stops li{display:grid;grid-template-columns:28px 1fr;gap:10px;counter-increment:s}
+ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;border:2px solid var(--accent);display:grid;place-items:center;font-weight:700;font-size:13px}
+
+/* cane */
+.avatar{width:64px;height:64px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font:800 28px/1 var(--display);flex:none}
+.form{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.form label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:500;min-width:0}
+.form label.w{grid-column:1/-1}
+.form input,.form select,.field{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:12px;font-size:16px;color:var(--ink)}
+.form label.check{flex-direction:row;align-items:center;gap:10px;color:var(--ink);font-size:15px;grid-column:1/-1}
+.form label.check input{width:22px;height:22px;flex:none}
+.empty{text-align:center;padding:40px 10px;color:var(--muted)}
+.empty svg{width:48px;height:48px;margin-bottom:10px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--tab) + env(safe-area-inset-bottom,0px) + 80px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:14px;z-index:2000;display:none;white-space:nowrap}
+.toast.on{display:block}
 </style>
 </head>
 <body>
-<header>
-  <h1>AllDogs</h1>
-  <p>Prototipo 1 · sentieri della zona di Napoli, meteo e verdetto per il tuo cane</p>
-</header>
-<main>
-  <div id="side">
-    <section>
-      <h2>Il tuo cane</h2>
-      <div class="grid">
-        <label>Nome<input id="d-name" value="Luna"></label>
-        <label>Età (anni)<input id="d-age" type="number" min="0" max="25" step="0.5" value="4"></label>
-        <label>Peso (kg)<input id="d-weight" type="number" min="1" max="100" value="22"></label>
-        <label>Razza<input id="d-breed" value="Meticcio"></label>
-        <label>Allenamento<select id="d-train"><option value="poco">Poco (passeggiate in città)</option><option value="medio" selected>Medio (escursioni ogni tanto)</option><option value="molto">Molto (escursioni frequenti)</option></select></label>
-        <label>Agilità<select id="d-agil"><option value="bassa">Bassa (evita salti e rocce)</option><option value="media" selected>Media</option><option value="alta">Alta (si arrampica volentieri)</option></select></label>
-        <label>Pelo<select id="d-coat"><option value="corto" selected>Corto</option><option value="lungo">Lungo o folto (soffre di più il caldo)</option></select></label>
-        <label class="check"><input id="d-brachy" type="checkbox"> Muso schiacciato (carlino, bulldog, boxer…)</label>
-      </div>
-    </section>
-    <section>
-      <h2>Quando?</h2>
-      <div class="days" id="days"></div>
-      <div id="status">Avvio…</div>
-    </section>
-    <section id="listsec">
-      <h2>Sentieri</h2>
-      <div class="filters">
-        <input id="q" placeholder="Cerca per nome o numero (es. Vesuvio, 300)" aria-label="Cerca sentiero">
-        <select id="vf" aria-label="Filtra per verdetto"><option value="all">Tutti</option><option value="0">Solo fattibili</option><option value="01">Fattibili e con prudenza</option></select>
-      </div>
-      <ul id="list"></ul>
-    </section>
-    <section id="detail"></section>
-    <footer>
-      Il verdetto è un <b>consiglio prudente, non una garanzia</b>: osserva sempre il tuo cane, fermati ai primi segni di stanchezza o affanno e, se ha problemi di salute, chiedi al veterinario.
-      Il fondo (roccia, terra, asfalto) e l'ombra non sono ancora valutati: arriveranno con le schede dei sentieri testati.<br><br>
-      Sentieri © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> (ODbL) · Meteo e quote: <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> · Mappa: <a href="https://opentopomap.org" target="_blank" rel="noopener">OpenTopoMap</a>
-    </footer>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.600-7.5 10.200-7.5 10.200Z"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-act" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 3 8-8"/><path d="M15 7h5v5"/></symbol>
+    <symbol id="i-paw" viewBox="0 0 24 24" fill="currentColor"><ellipse cx="6" cy="10.500" rx="2" ry="2.600"/><ellipse cx="10" cy="6.500" rx="2" ry="2.700"/><ellipse cx="14.500" cy="6.500" rx="2" ry="2.700"/><ellipse cx="18.500" cy="10.500" rx="2" ry="2.600"/><path d="M12.200 11.500c-3 0-5.700 3.300-5.700 5.700 0 1.700 1.400 2.600 3 2.300 1-.2 1.700-.6 2.700-.6s1.700.4 2.700.6c1.600.3 3-.6 3-2.300 0-2.400-2.700-5.700-5.700-5.700Z"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.200" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></symbol>
+    <symbol id="i-map" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M9 4 3 6.500v13.500l6-2.500 6 2.500 6-2.500V4l-6 2.500L9 4ZM9 4v13.500M15 6.500V20"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.200" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12M3.500 6h.01M3.500 12h.01M3.500 18h.01"/></symbol>
+    <symbol id="i-expand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.200" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/></symbol>
+    <symbol id="i-nav" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M20.500 3.500 3.500 10.500l7 2.500 2.500 7 7.500-16.500Z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.500v2M12 19.500v2M2.500 12h2M19.500 12h2M5.300 5.300l1.400 1.400M17.300 17.300l1.400 1.400M5.300 18.700l1.400-1.400M17.300 6.700l1.400-1.400"/></symbol>
+    <symbol id="i-cloud" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M7 18.500a4 4 0 0 1-.5-8 5.500 5.500 0 0 1 10.600 1.200A3.400 3.400 0 0 1 17 18.500H7Z"/></symbol>
+    <symbol id="i-rain" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15.500a4 4 0 0 1-.5-8 5.500 5.500 0 0 1 10.600 1.200A3.400 3.400 0 0 1 17 15.500H7Z"/><path d="M9 18.500l-1 2.500M13 18.500l-1 2.500M17 18.500l-1 2.500"/></symbol>
+  </defs>
+</svg>
+
+<!-- ESPLORA -->
+<section class="screen" id="s-esplora">
+  <p class="muted small" id="hello-sub">Napoli e Campania</p>
+  <h1 id="hello">Dove andiamo oggi?</h1>
+  <div class="search" style="margin-top:14px"><svg width="22" height="22"><use href="#i-search"/></svg><input id="q" type="search" placeholder="Cerca un sentiero o una zona" aria-label="Cerca un sentiero o una zona"></div>
+  <div class="chips">
+    <select id="f-day" aria-label="Giorno"></select>
+    <select id="f-fit" aria-label="Adatto al cane"><option value="all">Tutti i verdetti</option><option value="0">Solo fattibili</option><option value="01">Fattibili e con prudenza</option></select>
+    <select id="f-len" aria-label="Lunghezza"><option value="all">Lunghezza</option><option value="0-5">Fino a 5 km</option><option value="5-10">Da 5 a 10 km</option><option value="10-99">Più di 10 km</option></select>
+    <select id="f-dif" aria-label="Difficoltà CAI"><option value="all">Difficoltà CAI</option><option value="T">T · turistico</option><option value="E">E · escursionistico</option><option value="EE">EE · esperti</option></select>
+    <select id="f-zone" aria-label="Zona"><option value="all">Tutte le zone</option></select>
   </div>
-  <div id="map"></div>
-</main>
+  <div class="count"><h2 id="count">Sentieri</h2><span class="muted small" id="status"></span></div>
+  <div id="list"><div class="skel"></div><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
+  <button class="btn wide" id="more" hidden style="margin-top:14px">Mostra altri sentieri</button>
+  <button class="btn pri fab" id="to-map"><svg><use href="#i-map"/></svg>Mappa</button>
+</section>
+<div class="mapfull" id="mapAllWrap">
+  <div id="mapAll"></div>
+  <div class="peek" id="peek"></div>
+  <div class="overlay-top"><button class="btn" id="to-list"><svg><use href="#i-list"/></svg>Elenco</button></div>
+</div>
+
+<!-- SCHEDA SENTIERO -->
+<section class="screen" id="s-sentiero">
+  <div class="hero" id="hero">
+    <div id="mapDet"></div>
+    <div class="overlay-top"><button class="round" id="det-back" aria-label="Indietro"><svg><use href="#i-back"/></svg></button><span class="sp"></span><button class="round" id="det-loc" aria-label="Mostra dove sono" hidden><svg><use href="#i-nav"/></svg></button><button class="round" id="det-save" aria-label="Salva"><svg><use href="#i-heart"/></svg></button></div>
+    <button class="round expand" id="det-expand" aria-label="Apri la mappa a tutto schermo"><svg><use href="#i-expand"/></svg></button>
+  </div>
+  <div class="sheet" id="det"></div>
+  <div class="pad-bar"></div>
+  <div class="bar"><button class="btn pri" id="bar-save"><svg><use href="#i-heart"/></svg><span>Salva</span></button><a class="btn" id="bar-go" target="_blank" rel="noopener"><svg><use href="#i-nav"/></svg>Portami lì</a><button class="btn" id="bar-map"><svg><use href="#i-map"/></svg>Mappa</button></div>
+</section>
+
+<!-- CREA PERCORSO -->
+<section class="screen" id="s-crea">
+  <h1>Crea un giro</h1>
+  <p class="muted" id="crea-sub" style="margin-top:6px">Scegli da dove parti: disegno un anello adatto al tuo cane e al meteo di oggi.</p>
+  <div id="mapNewWrap"><div id="mapNew"></div></div>
+  <div class="row" style="margin-top:10px"><button class="btn" id="new-loc"><svg><use href="#i-nav"/></svg>Parto da dove sono</button><span class="muted small">oppure tocca la mappa</span></div>
+  <div class="block" style="margin-top:20px"><h2>Quanto vuoi camminare?</h2><div class="seg" id="seg"></div><p class="muted small" id="seg-hint" style="margin-top:8px"></p></div>
+  <div class="block" id="rules" style="margin-top:20px"></div>
+  <button class="btn pri wide" id="gen" style="margin-top:16px">Crea il percorso</button>
+  <div id="gen-out" class="stack" style="margin-top:16px"></div>
+</section>
+
+<!-- SALVATI -->
+<section class="screen" id="s-salvati">
+  <h1>Salvati</h1>
+  <div class="block"><h2>I miei giri</h2><div id="saved-routes"></div></div>
+  <div class="block"><h2>Sentieri</h2><div id="saved-trails"></div></div>
+</section>
+
+<!-- ATTIVITÀ -->
+<section class="screen" id="s-attivita">
+  <h1>Attività</h1>
+  <div class="empty"><svg><use href="#i-act"/></svg><h2>In arrivo</h2><p style="margin-top:8px">Qui vedrai le passeggiate fatte, i chilometri, i tuoi passi e quelli stimati del tuo cane.</p><p class="small" style="margin-top:8px">Il contapassi ha bisogno dell'app installata dallo store: arriverà più avanti.</p></div>
+  <div class="box" id="steps-box"></div>
+</section>
+
+<!-- CANE -->
+<section class="screen" id="s-cane">
+  <div id="onb" hidden><h1>Parlami del tuo cane</h1><p class="muted" style="margin:8px 0 18px">Mi serve per dirti quali sentieri sono adatti a lui e quali no.</p></div>
+  <div class="row" id="dog-head"><div class="avatar" id="avatar">L</div><div><h1 id="dog-title">Il mio cane</h1><p class="muted" id="dog-cap"></p></div></div>
+  <div class="form" style="margin-top:20px">
+    <label>Nome<input id="d-name" autocomplete="off"></label>
+    <label>Razza<input id="d-breed" autocomplete="off" placeholder="Es. Labrador, meticcio"></label>
+    <label>Età (anni)<input id="d-age" type="number" inputmode="decimal" min="0" max="25" step="0.5"></label>
+    <label>Peso (kg)<input id="d-weight" type="number" inputmode="decimal" min="1" max="100"></label>
+    <label class="w">Allenamento<select id="d-train"><option value="poco">Poco: passeggiate in città</option><option value="medio">Medio: qualche escursione</option><option value="molto">Molto: escursioni frequenti</option></select></label>
+    <label class="w">Agilità<select id="d-agil"><option value="bassa">Bassa: evita salti e rocce</option><option value="media">Media</option><option value="alta">Alta: si arrampica volentieri</option></select></label>
+    <label class="w">Pelo<select id="d-coat"><option value="corto">Corto</option><option value="lungo">Lungo o folto: soffre di più il caldo</option></select></label>
+    <label class="check"><input id="d-brachy" type="checkbox">Muso schiacciato (carlino, bulldog, boxer…)</label>
+  </div>
+  <button class="btn pri wide" id="dog-save" style="margin-top:18px">Salva</button>
+  <div id="settings">
+    <div class="block"><h2>Creazione dei percorsi</h2>
+      <p class="muted small" style="margin-bottom:10px">Per disegnare i giri ad anello l'app usa OpenRouteService, un servizio gratuito. Registrati su <a href="https://openrouteservice.org/dev/#/signup" target="_blank" rel="noopener">openrouteservice.org</a>, copia la tua chiave e incollala qui. Resta salvata solo su questo telefono.</p>
+      <input class="field" id="ors-key" placeholder="Incolla qui la chiave" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <button class="btn wide" id="ors-save" style="margin-top:10px">Salva la chiave</button>
+    </div>
+    <div class="block small muted">
+      <p>Il verdetto è un <b>consiglio prudente, non una garanzia</b>. Osserva sempre il tuo cane, fermati ai primi segni di stanchezza o affanno e, se ha problemi di salute, chiedi al veterinario.</p>
+      <p style="margin-top:10px">Sentieri © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> (ODbL) · Meteo e quote <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> · Percorsi <a href="https://openrouteservice.org" target="_blank" rel="noopener">OpenRouteService</a> · Mappe © CARTO</p>
+    </div>
+  </div>
+</section>
+
+<nav id="tabs" aria-label="Sezioni"><div>
+  <a href="#esplora" data-t="esplora"><svg><use href="#i-search"/></svg>Esplora</a>
+  <a href="#salvati" data-t="salvati"><svg><use href="#i-heart"/></svg>Salvati</a>
+  <a href="#crea" data-t="crea" class="main"><span><svg><use href="#i-plus"/></svg></span>Crea giro</a>
+  <a href="#attivita" data-t="attivita"><svg><use href="#i-act"/></svg>Attività</a>
+  <a href="#cane" data-t="cane"><svg><use href="#i-paw"/></svg>Il mio cane</a>
+</div></nav>
+<div class="toast" id="toast" role="status"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
 "use strict";
-// ---------- Impostazioni ----------
-const AREA = {s:40.52, w:13.85, n:41.02, e:14.85}; // Napoli, Campi Flegrei, Vesuvio, Lattari, isole
-const OVERPASS = ["https://overpass-api.de/api/interpreter","https://overpass.kumi.systems/api/interpreter"];
-const VLABEL = ["Fattibile","Con prudenza","Sconsigliato"];
-const store = {
-  get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},
-  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
-};
+// ================= Impostazioni =================
+const AREA={s:40.52,w:13.85,n:41.02,e:14.85};
+const OVERPASS=["https://overpass-api.de/api/interpreter","https://overpass.kumi.systems/api/interpreter"];
+const ZONES=[["Ischia",40.69,13.85,40.77,13.97],["Procida",40.74,13.99,40.77,14.04],["Capri",40.53,14.19,40.57,14.27],["Campi Flegrei",40.78,14.02,40.90,14.18],
+  ["Napoli",40.80,14.18,40.90,14.30],["Vesuvio",40.77,14.35,40.87,14.50],["Penisola Sorrentina",40.56,14.30,40.66,14.46],["Monti Lattari e Costiera",40.60,14.46,40.74,14.72],["Partenio e Monti di Sarno",40.80,14.50,41.02,14.85]];
+const VLABEL=["Fattibile","Con prudenza","Sconsigliato"];
+const EFFORT=["Facile","Media","Difficile"];
+const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}}};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const km=m=>(m/1000).toFixed(1).replace(".",",");
+function hav(a,b){const R=6371000,r=Math.PI/180,dl=(b[0]-a[0])*r,dn=(b[1]-a[1])*r,x=Math.sin(dl/2)**2+Math.cos(a[0]*r)*Math.cos(b[0]*r)*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
+function fmtH(h){const m=Math.max(.25,Math.round(h*4)/4),hh=Math.floor(m),mm=Math.round((m-hh)*60);return hh?(hh+" h"+(mm?" "+mm+" min":"")):mm+" min"}
+async function getJSON(u,o){const r=await fetch(u,o);if(!r.ok){const e=new Error("HTTP "+r.status);e.status=r.status;try{e.body=await r.json()}catch(x){}throw e}return r.json()}
+function toast(t){const el=$("toast");el.textContent=t;el.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove("on"),2200)}
+const icon=(n,s)=>`<svg${s?` width="${s}" height="${s}"`:""}><use href="#i-${n}"/></svg>`;
+const dark=()=>matchMedia("(prefers-color-scheme: dark)").matches;
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 
-// ---------- Utilità ----------
-const $ = id => document.getElementById(id);
-function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
-function hav(a,b){const R=6371000,r=Math.PI/180;const dl=(b[0]-a[0])*r,dn=(b[1]-a[1])*r;
-  const x=Math.sin(dl/2)**2+Math.cos(a[0]*r)*Math.cos(b[0]*r)*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
-function fmtH(h){const m=Math.round(h*2)/2;const hh=Math.floor(m);return (hh?hh+" h":"")+(m%1?" 30 min":"")||"30 min"}
-async function getJSON(url,opt){const r=await fetch(url,opt);if(!r.ok)throw new Error("HTTP "+r.status);return r.json()}
+// ================= Stato =================
+const S={dog:store.get("alldogs-dog"),saved:store.get("alldogs-saved")||[],routes:store.get("alldogs-routes")||[],trails:[],day:0,limit:30,sel:null,wxFail:false,mins:40,start:null,gen:null,genIdx:0,ready:false};
+const DEF_DOG={name:"Luna",breed:"Meticcio",age:4,weight:22,train:"medio",agil:"media",coat:"corto",brachy:false};
+const dog=()=>S.dog||DEF_DOG;
+const dn=()=>esc(dog().name||"il tuo cane");
 
-// ---------- Profilo cane ----------
-const DOG_FIELDS=["name","age","weight","breed","train","agil","coat","brachy"];
-function readDog(){const d={};for(const f of DOG_FIELDS){const el=$("d-"+f);d[f]=el.type==="checkbox"?el.checked:el.value}
-  d.age=parseFloat(d.age)||0;d.weight=parseFloat(d.weight)||10;return d}
-function loadDog(){const d=store.get("alldogs-dog");if(!d)return;for(const f of DOG_FIELDS){const el=$("d-"+f);if(!el||d[f]==null)continue;if(el.type==="checkbox")el.checked=d[f];else el.value=d[f]}}
-
+// ================= Regole per il cane =================
 function capacity(d){
-  const base={poco:{km:6,up:300},medio:{km:12,up:700},molto:{km:20,up:1200}}[d.train];
-  let km=base.km,up=base.up,f=1;const notes=[];
-  const seniorAge=d.weight>=25?7:9;
-  if(d.age<1){km=Math.min(km,4);up=Math.min(up,200);notes.push("è un cucciolo: le articolazioni sono ancora in crescita")}
-  else if(d.age>=seniorAge){f*=0.6;notes.push("è un cane anziano per la sua taglia")}
-  if(d.weight<8){f*=0.7;notes.push("è di taglia piccola")}
-  if(d.weight>40){f*=0.8;notes.push("è di taglia gigante")}
-  if(d.brachy){f*=0.6;notes.push("ha il muso schiacciato e respira con più fatica")}
-  const sensitive=d.brachy||d.coat==="lungo"||d.age<1||d.age>=seniorAge||d.weight>35;
-  return {km:Math.round(km*f*10)/10,up:Math.round(up*f/10)*10,notes,heatLimit:sensitive?21:24,sensitive}
+  const base={poco:{km:6,up:300},medio:{km:12,up:700},molto:{km:20,up:1200}}[d.train]||{km:12,up:700};
+  let k=base.km,up=base.up,f=1;const notes=[],senior=d.weight>=25?7:9;
+  if(d.age<1){k=Math.min(k,4);up=Math.min(up,200);notes.push("è un cucciolo, con le articolazioni ancora in crescita")}
+  else if(d.age>=senior){f*=.6;notes.push("è anziano per la sua taglia")}
+  if(d.weight<8){f*=.7;notes.push("è di taglia piccola")}
+  if(d.weight>40){f*=.8;notes.push("è di taglia gigante")}
+  if(d.brachy){f*=.6;notes.push("ha il muso schiacciato e respira con più fatica")}
+  const sensitive=d.brachy||d.coat==="lungo"||d.age<1||d.age>=senior||d.weight>35;
+  return {km:Math.round(k*f*10)/10,up:Math.round(up*f/10)*10,notes,heat:sensitive?21:24,sensitive};
+}
+const dogStep=w=>w<10?.3:w<25?.45:w<40?.6:.7;
+function steps(m,d){return {me:Math.round(m/.75/100)*100,dog:Math.round(m/dogStep(d.weight)/100)*100}}
+
+// giudizio su distanza, salita, difficoltà, caldo. item = {len (m), up (m o null), scale, start [lat,lon], loop, dogs}
+function verdict(it,d,day){
+  const cap=capacity(d),why=[],add=(lvl,txt)=>why.push({lvl,txt}),k=it.len/1000,nm=esc(d.name||"il tuo cane");
+  if(k<=cap.km)add(0,`${km(it.len)} km: dentro le possibilità di ${nm} (fino a circa ${cap.km} km).`);
+  else if(k<=cap.km*1.3)add(1,`${km(it.len)} km: un po' oltre il limite consigliato di circa ${cap.km} km. Prevedi pause lunghe.`);
+  else add(2,`${km(it.len)} km: troppo lungo, il limite consigliato per ${nm} è circa ${cap.km} km.`);
+  if(it.loop===false)why[why.length-1].txt+=" Non è un anello: se torni a piedi la distanza raddoppia.";
+  const up=it.up;
+  if(up!=null){
+    if(up<=cap.up)add(0,`${up} m di salita: va bene (fino a circa ${cap.up} m).`);
+    else if(up<=cap.up*1.3)add(1,`${up} m di salita: impegnativo (limite consigliato circa ${cap.up} m).`);
+    else add(2,`${up} m di salita: troppo (limite consigliato circa ${cap.up} m).`);
+  } else add(-1,"Sto calcolando il dislivello…");
+  const s=it.scale;
+  if(s==="EEA")add(2,"Difficoltà EEA: tratti attrezzati con cavi o scalette, i cani non possono farli.");
+  else if(s==="EE"){if(d.agil==="alta"&&d.train==="molto")add(1,"Difficoltà EE (escursionisti esperti): passaggi su roccia ed esposti. Solo con guinzaglio corto e molta attenzione.");
+    else add(2,"Difficoltà EE (escursionisti esperti): passaggi su roccia ed esposti, non adatti alla sua agilità o al suo allenamento.")}
+  else if(s==="E"){if(d.agil==="bassa")add(1,"Difficoltà E (escursionistica): pietre e gradini, faticoso per un cane poco agile.");else add(0,"Difficoltà E (escursionistica): un normale sentiero di montagna.")}
+  else if(s==="T")add(0,"Difficoltà T (turistica): sentiero facile.");
+  else if(s==="CITY"){}
+  else add(0,"Difficoltà non indicata nei dati: informati prima di partire.");
+  const hours=k/3+(up||0)/400;
+  const w=dayWx(it.start,day);let best=null;
+  if(w){
+    const need=Math.max(1,Math.ceil(hours)),lim=cap.heat;
+    const win=t=>{for(let h=Math.max(5,w.sr);h+need<=Math.min(22,w.ss+1);h++){let g=true;for(let i=0;i<need;i++)if(!(w.H[h+i]&&w.H[h+i].f<=t))g=false;if(g)return h}return null};
+    const maxF=Math.max(...w.H.slice(w.sr,w.ss+1).map(x=>x.f));
+    const sens=cap.sensitive?` (${nm} soffre di più il caldo, quindi sono più severo)`:"";
+    let h=win(lim);
+    if(h!=null){best=h;add(0,maxF>lim?`Caldo: nelle ore centrali si arriva a ${Math.round(maxF)}° percepiti. Parti verso le ${h}:00, quando sono ${Math.round(w.H[h].f)}°.`:`Temperatura buona tutto il giorno (massimo ${Math.round(maxF)}° percepiti).`)}
+    else if((h=win(lim+4))!=null){best=h;add(1,`Caldo: anche nelle ore migliori si superano i ${lim}° percepiti${sens}. Se vai, parti verso le ${h}:00 e porta tanta acqua.`)}
+    else add(2,`Troppo caldo per ${fmtH(hours)} di cammino: non c'è una finestra abbastanza fresca${sens}.`);
+    const b=best??Math.max(8,w.sr),rain=Math.max(0,...w.H.slice(b,b+need).map(x=>x.rain));
+    if(rain>=60)add(1,`Pioggia probabile (${rain}%): il fondo può diventare scivoloso.`);
+    const minT=Math.min(...w.H.slice(w.sr,w.ss+1).map(x=>x.t));
+    if(minT<3&&(d.weight<10||d.coat==="corto"))add(1,`Freddo: si scende a ${Math.round(minT)}°. Un cappottino può servire.`);
+  } else if(S.wxFail)add(0,"Meteo non disponibile in questo momento: controlla la temperatura prima di partire.");
+  else add(-1,"Sto caricando il meteo…");
+  if(it.dogs==="no")add(2,"Secondo i dati di OpenStreetMap i cani non sono ammessi su questo sentiero.");
+  const known=why.filter(x=>x.lvl>=0);
+  const v=why.some(x=>x.lvl<0)&&!known.some(x=>x.lvl===2)?-1:Math.max(...known.map(x=>x.lvl));
+  const r=Math.max(k/cap.km,up!=null?up/cap.up:0),effort=r<.5?0:r<.85?1:2;
+  return {v,why,hours,best,cap,w,up,effort};
+}
+function bringList(it,d,res){
+  const b=res.best??10,hot=res.w?Math.max(...res.w.H.slice(b,b+Math.max(1,Math.ceil(res.hours))).map(x=>x.f))>20:true;
+  let L=Math.max(.5,d.weight*.025*res.hours*(hot?1.5:1));L=Math.ceil(L*4)/4;
+  const out=[`Acqua per ${esc(d.name||"il cane")}: almeno ${String(L).replace(".",",")} litri, più la tua. Con fontanelle lungo il percorso puoi portarne meno.`,"Ciotola pieghevole e sacchetti.","Pettorina e guinzaglio."];
+  if(res.hours>=2)out.push("Uno snack o un pasto leggero per lui.");
+  if(it.scale==="E"||it.scale==="EE")out.push("Scarpette protettive se ha le zampe delicate: il fondo può essere roccioso.");
+  if(hot)out.push("Un asciugamano da bagnare per rinfrescarlo nelle pause.");
+  if(it.scale!=="CITY")out.push("Kit di primo soccorso: garze, pinzetta per le zecche, disinfettante.");
+  return out;
 }
 
-// ---------- Sentieri da OpenStreetMap ----------
+// ================= Dati: sentieri =================
+function zoneOf(p){for(const z of ZONES)if(p[0]>=z[1]&&p[0]<=z[3]&&p[1]>=z[2]&&p[1]<=z[4])return z[0];return "Campania"}
+function thin(w,min){const o=[w[0]];for(let i=1;i<w.length-1;i++)if(hav(o[o.length-1],w[i])>=min)o.push(w[i]);o.push(w[w.length-1]);return o}
+function chain(ways){const rest=ways.slice(1);let path=ways[0].slice();
+  while(rest.length){const end=path[path.length-1];let bi=0,bd=Infinity,rev=false;
+    rest.forEach((w,i)=>{const a=hav(end,w[0]),b=hav(end,w[w.length-1]);if(a<bd){bd=a;bi=i;rev=false}if(b<bd){bd=b;bi=i;rev=true}});
+    let w=rest.splice(bi,1)[0];if(rev)w=w.slice().reverse();path=path.concat(w)}
+  return path}
+function sample(path,n){const cum=[0];for(let i=1;i<path.length;i++)cum.push(cum[i-1]+hav(path[i-1],path[i]));
+  const tot=cum[cum.length-1],out=[];let j=0;for(let k=0;k<n;k++){const d=tot*k/(n-1);while(j<cum.length-2&&cum[j+1]<d)j++;out.push(path[j])}return out}
+function hydrate(t){t.path=chain(t.ways);t.start=t.path[0];t.loop=hav(t.path[0],t.path[t.path.length-1])<500;t.zone=zoneOf(t.path[Math.floor(t.path.length/2)]);return t}
 async function loadTrails(){
-  const cached=store.get("alldogs-trails-v1");
-  if(cached&&Date.now()-cached.t<7*864e5)return cached.trails;
+  const c=store.get("alldogs-trails-v2");
+  if(c&&Date.now()-c.t<14*864e5&&c.trails.length)return c.trails.map(hydrate);
   const q=`[out:json][timeout:90];relation["route"="hiking"]["network"!~"^(iwn|nwn)$"](${AREA.s},${AREA.w},${AREA.n},${AREA.e});out tags geom;`;
   let data,err;
   for(const u of OVERPASS){try{data=await getJSON(u,{method:"POST",body:"data="+encodeURIComponent(q),headers:{"Content-Type":"application/x-www-form-urlencoded"}});break}catch(e){err=e}}
   if(!data)throw err;
-  const trails=[];
+  const out=[];
   for(const el of data.elements){
     const t=el.tags||{};
-    const ways=(el.members||[]).filter(m=>m.type==="way"&&m.geometry&&m.geometry.length>1).map(m=>m.geometry.map(p=>[+p.lat.toFixed(5),+p.lon.toFixed(5)]));
+    let ways=(el.members||[]).filter(m=>m.type==="way"&&m.geometry&&m.geometry.length>1).map(m=>m.geometry.map(p=>[+p.lat.toFixed(5),+p.lon.toFixed(5)]));
     if(!ways.length)continue;
     let len=0;for(const w of ways)for(let i=1;i<w.length;i++)len+=hav(w[i-1],w[i]);
-    if(len<300||len>40000)continue;
-    const path=chain(ways);
+    if(len<500||len>40000)continue;
+    ways=ways.map(w=>thin(w,20));
     const cai=/cai/i.test((t.operator||"")+(t.network||"")+(t["osmc:symbol"]||""))||!!t.cai_scale;
-    const name=t.name||(t.ref?"Sentiero "+t.ref:(t.from&&t.to?t.from+" – "+t.to:"Sentiero senza nome"));
-    trails.push({id:el.id,name,ref:t.ref||"",from:t.from||"",to:t.to||"",cai,scale:(t.cai_scale||"").toUpperCase(),
-      operator:t.operator||"",dogs:t.dog||"",len,ways,path,start:path[0],
-      loop:hav(path[0],path[path.length-1])<500});
+    const name=t.name||(t.from&&t.to?t.from+" – "+t.to:(t.ref?"Sentiero "+t.ref:""));
+    if(!name)continue;
+    out.push({id:el.id,name,ref:t.ref||"",from:t.from||"",to:t.to||"",cai,scale:(t.cai_scale||"").toUpperCase(),operator:t.operator||"",dogs:t.dog||"",len:Math.round(len),ways});
   }
-  store.set("alldogs-trails-v1",{t:Date.now(),trails});
-  return trails;
+  store.set("alldogs-trails-v2",{t:Date.now(),trails:out});
+  return out.map(hydrate);
 }
-// unisce i tratti nell'ordine giusto, per poter calcolare salite e discese
-function chain(ways){
-  const rest=ways.slice(1);let path=ways[0].slice();
-  while(rest.length){
-    const end=path[path.length-1];let best=0,bd=Infinity,rev=false;
-    rest.forEach((w,i)=>{const a=hav(end,w[0]),b=hav(end,w[w.length-1]);if(a<bd){bd=a;best=i;rev=false}if(b<bd){bd=b;best=i;rev=true}});
-    let w=rest.splice(best,1)[0];if(rev)w=w.slice().reverse();path=path.concat(w);
-  }
-  return path;
-}
-function sample(path,n){
-  const cum=[0];for(let i=1;i<path.length;i++)cum.push(cum[i-1]+hav(path[i-1],path[i]));
-  const tot=cum[cum.length-1],out=[];let j=0;
-  for(let k=0;k<n;k++){const d=tot*k/(n-1);while(j<cum.length-2&&cum[j+1]<d)j++;out.push(path[j])}
-  return out;
-}
-
-// ---------- Quote (dislivello) ----------
-const elevCache=store.get("alldogs-elev-v1")||{};
+const elev=store.get("alldogs-elev-v1")||{};
 async function elevation(tr){
-  if(elevCache[tr.id])return elevCache[tr.id];
+  if(elev[tr.id])return elev[tr.id];
   const pts=sample(tr.path,100);
-  const u=`https://api.open-meteo.com/v1/elevation?latitude=${pts.map(p=>p[0]).join(",")}&longitude=${pts.map(p=>p[1]).join(",")}`;
-  const r=await getJSON(u);const z=r.elevation;
+  const r=await getJSON(`https://api.open-meteo.com/v1/elevation?latitude=${pts.map(p=>p[0]).join(",")}&longitude=${pts.map(p=>p[1]).join(",")}`),z=r.elevation;
   let up=0,down=0;for(let i=1;i<z.length;i++){const dz=z[i]-z[i-1];if(dz>0)up+=dz;else down-=dz}
-  const e={up:Math.round(up),down:Math.round(down),min:Math.round(Math.min(...z)),max:Math.round(Math.max(...z)),start:Math.round(z[0])};
-  elevCache[tr.id]=e;store.set("alldogs-elev-v1",elevCache);return e;
+  elev[tr.id]={up:Math.round(Math.max(up,down)),max:Math.round(Math.max(...z)),min:Math.round(Math.min(...z))};
+  store.set("alldogs-elev-v1",elev);return elev[tr.id];
 }
+const item=tr=>({len:tr.len,up:elev[tr.id]?elev[tr.id].up:null,scale:tr.scale,start:tr.start,loop:tr.loop,dogs:tr.dogs});
 
-// ---------- Meteo ----------
-const wxCache={};
-function wxKey(p){return (Math.round(p[0]*20)/20).toFixed(2)+","+(Math.round(p[1]*20)/20).toFixed(2)}
+// ================= Dati: meteo =================
+const wx={};
+const wxKey=p=>(Math.round(p[0]*10)/10).toFixed(1)+","+(Math.round(p[1]*10)/10).toFixed(1);
 async function loadWeather(points){
-  const keys=[...new Set(points.map(wxKey))].filter(k=>!wxCache[k]);
-  for(let i=0;i<keys.length;i+=80){
-    const part=keys.slice(i,i+80);
-    const u=`https://api.open-meteo.com/v1/forecast?latitude=${part.map(k=>k.split(",")[0]).join(",")}&longitude=${part.map(k=>k.split(",")[1]).join(",")}`+
-      `&hourly=temperature_2m,apparent_temperature,precipitation_probability&daily=sunrise,sunset&timezone=Europe%2FRome&forecast_days=3`;
-    let r=await getJSON(u);if(!Array.isArray(r))r=[r];
-    r.forEach((w,j)=>wxCache[part[j]]=w);
+  const keys=[...new Set(points.map(wxKey))].filter(k=>!wx[k]);
+  for(let i=0;i<keys.length;i+=50){
+    const part=keys.slice(i,i+50);
+    let r=await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${part.map(k=>k.split(",")[0]).join(",")}&longitude=${part.map(k=>k.split(",")[1]).join(",")}`+
+      `&hourly=temperature_2m,apparent_temperature,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset&timezone=Europe%2FRome&forecast_days=7`);
+    if(!Array.isArray(r))r=[r];
+    r.forEach((w,j)=>wx[part[j]]=w);
   }
 }
 function dayWx(p,day){
-  const w=wxCache[wxKey(p)];if(!w)return null;
-  const o=day*24,H=[];
-  for(let h=0;h<24;h++)H.push({h,t:w.hourly.temperature_2m[o+h],f:w.hourly.apparent_temperature[o+h],rain:w.hourly.precipitation_probability[o+h]??0});
-  const sr=parseInt(w.daily.sunrise[day].slice(11,13))+(w.daily.sunrise[day].slice(14,16)!=="00"?1:0),ss=parseInt(w.daily.sunset[day].slice(11,13));
-  return {H,sr,ss};
+  const w=p&&wx[wxKey(p)];if(!w)return null;
+  const o=day*24,H=[];for(let h=0;h<24;h++)H.push({h,t:w.hourly.temperature_2m[o+h],f:w.hourly.apparent_temperature[o+h],rain:w.hourly.precipitation_probability[o+h]??0});
+  const sr=w.daily.sunrise[day],ss=w.daily.sunset[day];
+  return {H,sr:parseInt(sr.slice(11,13))+(sr.slice(14,16)!=="00"?1:0),ss:parseInt(ss.slice(11,13)),srT:sr.slice(11,16),ssT:ss.slice(11,16),daily:w.daily};
+}
+const wxIcon=c=>c<=1?"sun":c<=48?"cloud":"rain";
+const wxText=c=>c===0?"Sereno":c<=2?"Poco nuvoloso":c===3?"Nuvoloso":c<=48?"Nebbia":c<=57?"Pioviggine":c<=67?"Pioggia":c<=77?"Neve":c<=82?"Rovesci":c<=86?"Neve":"Temporale";
+function dayName(i,daily){if(i===0)return "Oggi";if(i===1)return "Domani";const d=daily?new Date(daily.time[i]+"T12:00"):new Date(Date.now()+i*864e5);return d.toLocaleDateString("it-IT",{weekday:"long"}).replace(/^./,c=>c.toUpperCase())}
+
+// ================= Navigazione =================
+const SCREENS=["esplora","sentiero","crea","salvati","attivita","cane","giro"];
+let lastList=0;
+function route(){
+  let h=location.hash.slice(1)||"esplora";
+  if(!S.dog&&h!=="cane"){location.replace("#cane");return}
+  let scr=h,arg=null;
+  if(h.startsWith("s-")){scr="sentiero";arg=+h.slice(2)}
+  if(!SCREENS.includes(scr))scr="esplora";
+  document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on",s.id==="s-"+scr));
+  document.querySelectorAll("#tabs a").forEach(a=>a.classList.toggle("on",a.dataset.t===(scr==="sentiero"?"esplora":scr)));
+  $("tabs").classList.toggle("hide",!S.dog);
+  if(scr!=="esplora")$("mapAllWrap").classList.remove("on");
+  $("hero").classList.remove("full");
+  if(scr==="esplora"){renderList();window.scrollTo(0,lastList)}
+  else window.scrollTo(0,0);
+  if(scr==="sentiero")showTrail(arg);
+  if(scr==="crea")showCrea();
+  if(scr==="salvati")showSaved();
+  if(scr==="cane")showDog();
+  if(scr==="attivita")showAct();
+}
+addEventListener("hashchange",route);
+
+// ================= Esplora =================
+function thumb(tr){
+  const pts=sample(tr.path,40),lat0=pts[0][0]*Math.PI/180;let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+  const xy=pts.map(p=>{const x=p[1]*Math.cos(lat0),y=-p[0];x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y);return [x,y]});
+  const sc=64/Math.max(x1-x0,y1-y0,1e-6),ox=(76-(x1-x0)*sc)/2,oy=(76-(y1-y0)*sc)/2;
+  return `<svg viewBox="0 0 76 76" aria-hidden="true"><polyline points="${xy.map(p=>((p[0]-x0)*sc+ox).toFixed(1)+","+((p[1]-y0)*sc+oy).toFixed(1)).join(" ")}"/></svg>`;
+}
+function cardHTML(tr,res){
+  const sv=S.saved.includes(tr.id),e=elev[tr.id];
+  const fit=res.v<0?`<span class="cw"><i class="dot bw"></i>Sto valutando…</span>`:`<span class="c${res.v}"><i class="dot b${res.v}"></i><b>${VLABEL[res.v]}</b></span>`;
+  return `<article class="card" data-id="${tr.id}"><div class="thumb">${tr.th||(tr.th=thumb(tr))}</div>
+    <div><h3>${esc(tr.name)}</h3><p class="sub">${esc(tr.zone)}${tr.ref?" · n. "+esc(tr.ref):""}${tr.cai?" · CAI":""}</p>
+    <p class="meta">${fit} · ${km(tr.len)} km${e?" · ↑ "+e.up+" m":""} · ${fmtH(res.hours)}</p></div>
+    <button class="round ${sv?"saved":""}" data-save="${tr.id}" aria-label="${sv?"Togli dai salvati":"Salva"}">${icon("heart")}</button></article>`;
+}
+function bindCards(root){
+  root.querySelectorAll(".card").forEach(c=>c.onclick=ev=>{
+    const b=ev.target.closest("[data-save]");
+    if(b){ev.stopPropagation();toggleSave(+b.dataset.save);b.classList.toggle("saved",S.saved.includes(+b.dataset.save));return}
+    lastList=window.scrollY;location.hash="s-"+c.dataset.id});
+}
+function filtered(){
+  const d=dog(),q=$("q").value.trim().toLowerCase(),fit=$("f-fit").value,len=$("f-len").value,dif=$("f-dif").value,zone=$("f-zone").value;
+  const rows=[];
+  for(const tr of S.trails){
+    if(q&&!(tr.name+" "+tr.ref+" "+tr.zone+" "+tr.from+" "+tr.to).toLowerCase().includes(q))continue;
+    if(len!=="all"){const [a,b]=len.split("-").map(Number);if(tr.len<a*1000||tr.len>=b*1000)continue}
+    if(dif!=="all"&&tr.scale!==dif)continue;
+    if(zone!=="all"&&tr.zone!==zone)continue;
+    const res=verdict(item(tr),d,S.day);
+    if(fit!=="all"&&!fit.includes(String(res.v)))continue;
+    rows.push({tr,res});
+  }
+  rows.sort((a,b)=>((a.res.v<0?.5:a.res.v)-(b.res.v<0?.5:b.res.v))||(b.tr.cai-a.tr.cai)||a.tr.len-b.tr.len);
+  return rows;
+}
+function renderList(){
+  if(!S.ready)return;
+  $("hello").textContent=`Dove andiamo con ${dog().name||"il tuo cane"}?`;
+  ["f-fit","f-len","f-dif","f-zone"].forEach(id=>$(id).classList.toggle("act",$(id).value!=="all"));
+  $("f-day").classList.toggle("act",S.day>0);
+  const rows=filtered();S.rows=rows;
+  $("count").textContent=rows.length===1?"1 sentiero":rows.length+" sentieri";
+  $("list").innerHTML=rows.slice(0,S.limit).map(r=>cardHTML(r.tr,r.res)).join("")||`<div class="empty"><p>Nessun sentiero con questi filtri.</p></div>`;
+  $("more").hidden=rows.length<=S.limit;
+  bindCards($("list"));
+  if($("mapAllWrap").classList.contains("on"))paintMap();
+}
+function toggleSave(id){const i=S.saved.indexOf(id);if(i>=0)S.saved.splice(i,1);else S.saved.push(id);store.set("alldogs-saved",S.saved);toast(i>=0?"Tolto dai salvati":"Salvato")}
+
+// mappa di tutti i sentieri
+let mapAll,layAll={},tiles=[];
+function baseLayer(m){const t=L.tileLayer(`https://{s}.basemaps.cartocdn.com/${dark()?"dark_all":"rastertiles/voyager"}/{z}/{x}/{y}{r}.png`,{maxZoom:19,attribution:"© OpenStreetMap · © CARTO"}).addTo(m);tiles.push(t);return t}
+function vColor(v){return css(v<0?"--wait":["--ok","--warn","--no"][v])}
+function openMap(){
+  $("mapAllWrap").classList.add("on");
+  if(!mapAll){mapAll=L.map("mapAll",{zoomControl:false,preferCanvas:true}).setView([40.75,14.35],10);baseLayer(mapAll);mapAll.on("click",()=>$("peek").classList.remove("on"))}
+  setTimeout(()=>{mapAll.invalidateSize();paintMap(true)},50);
+}
+function paintMap(fit){
+  const show=new Map((S.rows||[]).map(r=>[r.tr.id,r.res]));
+  for(const id in layAll){if(!show.has(+id)){mapAll.removeLayer(layAll[id]);delete layAll[id]}}
+  const b=[];
+  show.forEach((res,id)=>{const tr=S.trails.find(t=>t.id===id),col=vColor(res.v);
+    if(!layAll[id]){const g=L.featureGroup([L.polyline(tr.ways,{weight:4,opacity:.85}),L.circleMarker(tr.start,{radius:7,weight:2,color:"#fff",fillOpacity:1})]).addTo(mapAll);
+      g.on("click",e=>{L.DomEvent.stopPropagation(e);peek(id)});layAll[id]=g}
+    const [line,dotm]=layAll[id].getLayers();line.setStyle({color:col});dotm.setStyle({fillColor:col});b.push(tr.start)});
+  if(fit&&b.length)mapAll.fitBounds(b,{padding:[40,40]});
+}
+function peek(id){const tr=S.trails.find(t=>t.id===id),p=$("peek");p.innerHTML=cardHTML(tr,verdict(item(tr),dog(),S.day));p.classList.add("on");bindCards(p);mapAll.fitBounds(L.polyline(tr.ways).getBounds(),{padding:[50,120]})}
+
+// ================= Scheda sentiero =================
+let mapDet,detLine,meMarker,cur=null;
+function setInteractive(m,on){["dragging","touchZoom","doubleClickZoom","scrollWheelZoom","boxZoom","keyboard"].forEach(h=>m[h]&&(on?m[h].enable():m[h].disable()))}
+function ensureDetMap(){if(mapDet)return;mapDet=L.map("mapDet",{zoomControl:false,attributionControl:true});baseLayer(mapDet);setInteractive(mapDet,false);
+  mapDet.on("locationfound",e=>{if(!meMarker)meMarker=L.marker(e.latlng,{icon:L.divIcon({className:"",html:'<div class="me"></div>',iconSize:[16,16],iconAnchor:[8,8]})}).addTo(mapDet);else meMarker.setLatLng(e.latlng)});
+  mapDet.on("locationerror",()=>toast("Non riesco a leggere la posizione"))}
+function heroFull(on){$("hero").classList.toggle("full",on);$("det-loc").hidden=!on;$("det-expand").hidden=on;setInteractive(mapDet,on);
+  if(!on){mapDet.stopLocate();if(meMarker){mapDet.removeLayer(meMarker);meMarker=null}}
+  setTimeout(()=>{mapDet.invalidateSize();if(detLine)mapDet.fitBounds(detLine.getBounds(),{padding:on?[40,40]:[30,30]})},60)}
+function drawHero(latlngs,stops){
+  ensureDetMap();if(detLine)mapDet.removeLayer(detLine);
+  const g=[L.polyline(latlngs,{color:"#fff",weight:8,opacity:.9}),L.polyline(latlngs,{color:css("--accent"),weight:4.5})];
+  const flat=Array.isArray(latlngs[0][0])?latlngs[0]:latlngs;
+  g.push(L.circleMarker(flat[0],{radius:7,color:"#fff",weight:3,fillColor:css("--ok"),fillOpacity:1}));
+  (stops||[]).forEach((p,i)=>g.push(L.marker(p,{icon:L.divIcon({className:"",html:`<div class="stop">${i+1}</div>`,iconSize:[24,24],iconAnchor:[12,12]})})));
+  detLine=L.featureGroup(g).addTo(mapDet);
+  setTimeout(()=>{mapDet.invalidateSize();mapDet.fitBounds(detLine.getBounds(),{padding:[30,30]})},60);
+}
+function weatherHTML(res,it){
+  const w=res.w;if(!w)return `<p class="muted">${S.wxFail?"Meteo non disponibile in questo momento.":"Sto caricando il meteo…"}</p>`;
+  const d=w.daily,lim=res.cap.heat,i=S.day;
+  return `<div class="days">${d.time.map((t,k)=>`<button data-day="${k}" aria-pressed="${k===i}">${k===0?"oggi":new Date(t+"T12:00").toLocaleDateString("it-IT",{weekday:"short"})}${icon(wxIcon(d.weather_code[k]))}<b>${Math.round(d.temperature_2m_max[k])}°</b></button>`).join("")}</div>
+    <div class="now"><b>${Math.round(d.temperature_2m_max[i])}°</b><div><div><b>${wxText(d.weather_code[i])}</b> · minima ${Math.round(d.temperature_2m_min[i])}°</div><div class="muted small">Pioggia ${d.precipitation_probability_max[i]??0}% · alba ${w.srT} · tramonto ${w.ssT}</div></div></div>
+    <p class="small muted" style="margin-bottom:6px">Temperatura percepita ora per ora, giudicata per ${dn()}</p>
+    <div class="hours">${w.H.slice(6,22).map(x=>`<div class="${x.f<=lim?"v0":x.f<=lim+4?"v1":"v2"}"><small>${x.h}</small>${Math.round(x.f)}°</div>`).join("")}</div>
+    <p class="small muted" style="margin-top:6px">Verde: fresco · arancione: caldo, con prudenza · rosso: troppo caldo.</p>`;
+}
+function detailHTML(o){
+  // o: {title, sub, it, extraStats, sections}
+  const d=dog(),res=verdict(o.it,d,S.day),st=steps(o.it.len,d);
+  const vb=res.v<0?`<span class="verdict vw">Sto valutando…</span>`:`<span class="verdict v${res.v}">${VLABEL[res.v]} per ${dn()}</span>`;
+  return `<h1>${esc(o.title)}</h1><p class="muted" style="margin-top:6px">${o.sub}</p>${vb}
+    <div class="stats"><div><b>${km(o.it.len)} km</b><span>Lunghezza</span></div><div><b>${o.it.up!=null?o.it.up+" m":"…"}</b><span>Dislivello</span></div><div><b>${fmtH(res.hours)}</b><span>Col cane</span></div><div><b>${o.it.loop===false?"Lineare":"Anello"}</b><span>Tipo</span></div></div>
+    <div class="block"><h2>Per ${dn()}</h2>
+      ${res.v>=0?`<p style="margin-bottom:10px">Impegno: <b class="c${res.effort}">${EFFORT[res.effort]}</b> · ${dayName(S.day,res.w&&res.w.daily).toLowerCase()}</p>`:""}
+      <ul class="why">${res.why.map(x=>`<li><i class="dot ${x.lvl<0?"bw":"b"+x.lvl}"></i><span>${x.txt}</span></li>`).join("")}</ul>
+      ${res.cap.notes.length?`<p class="small muted" style="margin-top:10px">Limiti più prudenti perché ${dn()} ${res.cap.notes.join(", ")}.</p>`:""}
+      <p class="small muted" style="margin-top:10px">Passi stimati: tu circa ${st.me.toLocaleString("it-IT")}, ${dn()} circa ${st.dog.toLocaleString("it-IT")} (stima da distanza e taglia).</p></div>
+    ${o.sections||""}
+    <div class="block"><h2>Meteo</h2>${weatherHTML(res,o.it)}</div>
+    <div class="block"><h2>Cosa portare</h2><ul class="plain">${bringList(o.it,d,res).map(x=>`<li>${x}</li>`).join("")}</ul></div>
+    <p class="small muted block">Il verdetto è un consiglio prudente, non una garanzia. Tempo stimato al passo di un cane, pause comprese.</p>`;
+}
+function bindDays(root,again){root.querySelectorAll("[data-day]").forEach(b=>b.onclick=()=>{S.day=+b.dataset.day;$("f-day").value=S.day;again()})}
+async function showTrail(id){
+  const tr=S.trails.find(t=>t.id===id);
+  if(!tr){$("det").innerHTML=`<p class="muted" style="padding:30px 0">${S.ready?"Sentiero non trovato.":"Sto caricando i sentieri…"}</p>`;return}
+  cur={type:"trail",tr};S.sel=id;
+  const paint=()=>{
+    $("det").innerHTML=detailHTML({title:tr.name,sub:`${esc(tr.zone)}${tr.ref?" · sentiero n. "+esc(tr.ref):""}${tr.cai?" · CAI":""}${tr.scale?" · difficoltà "+tr.scale:""}`,it:item(tr),
+      sections:`<div class="block"><h2>Scheda per il cane</h2><div class="tiles"><div class="tile"><span>Ombra</span><b>Da verificare</b></div><div class="tile"><span>Acqua lungo il percorso</span><b>Da verificare</b></div><div class="tile"><span>Fondo</span><b>Da verificare</b></div><div class="tile"><span>Punti critici</span><b>Da verificare</b></div></div>
+      <p class="small muted" style="margin-top:8px">Questo sentiero non è ancora stato testato con un cane. Le schede con ombra, acqua, fondo e foto arriveranno con i sentieri provati di persona.</p></div>`})+
+      `<p class="small block"><a href="https://www.openstreetmap.org/relation/${tr.id}" target="_blank" rel="noopener">Vedi i dati del sentiero su OpenStreetMap</a></p>`;
+    bindDays($("det"),paint);syncSave();
+  };
+  paint();drawHero(tr.ways);
+  $("bar-go").href=`https://www.google.com/maps/dir/?api=1&destination=${tr.start[0]},${tr.start[1]}`;
+  if(!elev[id]){try{await elevation(tr);if(S.sel===id)paint()}catch(e){}}
+}
+function syncSave(){
+  let on=false;if(cur&&cur.type==="trail")on=S.saved.includes(cur.tr.id);
+  $("det-save").classList.toggle("saved",on);$("bar-save").querySelector("span").textContent=on?"Salvato":"Salva";
+}
+$("det-back").onclick=()=>{if($("hero").classList.contains("full"))heroFull(false);else if(history.length>1)history.back();else location.hash="esplora"};
+$("det-expand").onclick=$("bar-map").onclick=()=>heroFull(true);
+$("det-loc").onclick=()=>mapDet.locate({watch:true,enableHighAccuracy:true});
+$("det-save").onclick=$("bar-save").onclick=()=>{if(cur&&cur.type==="trail"){toggleSave(cur.tr.id);syncSave()}};
+
+// ================= Crea un giro =================
+let mapNew,pin,newLine;
+const SURF_HARD=[1,3,4,5,14];
+function showCrea(){
+  const d=dog(),cap=capacity(d);
+  if(!mapNew){
+    mapNew=L.map("mapNew",{zoomControl:false}).setView(S.start||[40.8359,14.2488],14);baseLayer(mapNew);
+    pin=L.marker(mapNew.getCenter(),{draggable:true,icon:L.divIcon({className:"",html:'<div class="pin"></div>',iconSize:[26,26],iconAnchor:[13,26]})}).addTo(mapNew);
+    S.start=[pin.getLatLng().lat,pin.getLatLng().lng];
+    const moved=ll=>{S.start=[ll.lat,ll.lng];pin.setLatLng(ll);loadWeather([S.start]).then(rules).catch(()=>{})};
+    mapNew.on("click",e=>moved(e.latlng));pin.on("dragend",()=>moved(pin.getLatLng()));
+    mapNew.on("locationfound",e=>{moved(e.latlng);mapNew.setView(e.latlng,15)});mapNew.on("locationerror",()=>toast("Non riesco a leggere la posizione: tocca la mappa"));
+    loadWeather([S.start]).then(rules).catch(()=>{});
+  }
+  setTimeout(()=>mapNew.invalidateSize(),60);
+  const opts=[20,40,60,90];
+  $("seg").innerHTML=opts.map(m=>`<button data-m="${m}" aria-pressed="${m===S.mins}">${m<60?m+" min":m===60?"1 ora":"1 h 30"}</button>`).join("");
+  $("seg").querySelectorAll("button").forEach(b=>b.onclick=()=>{S.mins=+b.dataset.m;showCrea()});
+  const want=S.mins/60*3.5,k=Math.min(want,cap.km);
+  S.target=k*1000;
+  $("seg-hint").textContent=k<want?`Per ${d.name||"il tuo cane"} accorcio a circa ${k.toFixed(1).replace(".",",")} km: è il suo limite consigliato.`:`Circa ${k.toFixed(1).replace(".",",")} km al passo di un cane.`;
+  rules();
+}
+function rules(){
+  const d=dog(),cap=capacity(d),w=dayWx(S.start,0),hr=new Date().getHours();
+  const li=[`Lunghezza: circa ${km(S.target)} km (massimo consigliato ${cap.km} km).`,"Preferisco parchi, verde e strade non asfaltate."];
+  if(w){const f=w.H[hr].f,t=w.H[hr].t;
+    if(f>cap.heat+4)li.push(`<b class="c2">Adesso ci sono ${Math.round(f)}° percepiti: troppo caldo per ${dn()}. Meglio uscire più tardi.</b>`);
+    else if(f>cap.heat)li.push(`<b class="c1">Adesso ci sono ${Math.round(f)}° percepiti: fa caldo, giro breve e tanta acqua.</b>`);
+    else li.push(`Adesso ci sono ${Math.round(f)}° percepiti: va bene.`);
+    if(t>=25)li.push("Con questo sole l'asfalto può scottare le zampe: lo evito il più possibile.");
+    if(w.H[hr].rain>=60)li.push(`Pioggia probabile (${w.H[hr].rain}%).`)}
+  $("rules").innerHTML=`<h2>Regole di oggi per ${dn()}</h2><ul class="plain">${li.map(x=>`<li>${x}</li>`).join("")}</ul>`;
+}
+$("new-loc").onclick=()=>mapNew.locate({enableHighAccuracy:true});
+function parseRoute(f){
+  const c=f.geometry.coordinates.map(p=>[p[1],p[0]]),pr=f.properties,ex=pr.extras||{};
+  let hard=0,unknown=0,tot=0;((ex.surface||{}).summary||[]).forEach(s=>{tot+=s.amount;if(SURF_HARD.includes(s.value))hard+=s.amount;else if(s.value===0)unknown+=s.amount});
+  let green=null;const gs=(ex.green||{}).summary||[];if(gs.length)green=gs.reduce((a,s)=>a+s.value*s.amount,0)/100;
+  return {path:c,len:Math.round(pr.summary.distance),up:Math.round(pr.ascent||0),hard:tot?hard/tot:null,soft:tot?(tot-hard-unknown)/tot:null,green};
+}
+function stopsFor(r,d){
+  const at=f=>r.path[Math.min(r.path.length-1,Math.round(f*(r.path.length-1)))],n=esc(d.name||"il cane");
+  const acts=[["Partenza",`Cinque minuti al passo lento: lascia che ${n} annusi con calma.`],["Seduto e resta",`Fermatevi: "seduto", poi "resta" per venti secondi. Premialo.`],
+    ["Pausa acqua",`Cinque minuti all'ombra, acqua per tutti e due.`],["Cerca!",`Nascondi un premietto nell'erba e digli "cerca": annusare lo stanca e lo rilassa.`],["Cambio di ritmo",`Due minuti al passo svelto, poi "piano" e si torna tranquilli.`]];
+  const use=r.len<1500?[0,2,3]:r.len<3500?[0,1,2,3]:[0,1,2,3,4];
+  return use.map((a,i)=>({p:at(i/use.length),km:r.len*i/use.length,t:acts[a][0],d:acts[a][1]}));
+}
+async function generate(){
+  const key=store.get("alldogs-ors"),out=$("gen-out");
+  if(!key){out.innerHTML=`<div class="note"><b>Manca un passaggio.</b> Per disegnare i giri serve la chiave gratuita di OpenRouteService. La inserisci una volta sola nella sezione <a href="#cane">Il mio cane</a>, in fondo.</div>`;return}
+  $("gen").disabled=true;$("gen").textContent="Sto disegnando il giro…";out.innerHTML="";
+  const body=seed=>({coordinates:[[S.start[1],S.start[0]]],options:{round_trip:{length:Math.round(S.target),points:4,seed}},elevation:true,extra_info:["surface","green"]});
+  const base=Math.floor(Math.random()*1000);
+  const rs=await Promise.allSettled([1,2,3].map(i=>getJSON("https://api.openrouteservice.org/v2/directions/foot-walking/geojson",{method:"POST",headers:{"Authorization":key,"Content-Type":"application/json"},body:JSON.stringify(body(base+i))})));
+  $("gen").disabled=false;$("gen").textContent="Crea il percorso";
+  const ok=rs.filter(r=>r.status==="fulfilled"&&r.value.features&&r.value.features.length).map(r=>parseRoute(r.value.features[0]));
+  if(!ok.length){const e=(rs.find(r=>r.status==="rejected")||{}).reason||{};
+    out.innerHTML=`<div class="err">${e.status===401||e.status===403?"La chiave di OpenRouteService non è valida. Controllala nella sezione Il mio cane.":e.status===429?"Hai raggiunto il limite gratuito di oggi di OpenRouteService. Riprova domani.":e.status===404||e.status===400?"Da questo punto non riesco a creare un giro. Sposta il segnaposto su una strada o un sentiero.":"Non riesco a creare il giro. Controlla la connessione e riprova."}</div>`;return}
+  const w=dayWx(S.start,0),hot=w&&w.H[new Date().getHours()].t>=25;
+  ok.forEach(r=>r.score=(r.hard??.5)*(hot?2:1)-(r.green??5)/10*.5+Math.abs(r.len-S.target)/S.target*.5);
+  ok.sort((a,b)=>a.score-b.score);S.gen=ok;S.genIdx=0;showGen();
+}
+function genItem(r){return {len:r.len,up:r.up,scale:"CITY",start:r.path[0],loop:true}}
+function showGen(){
+  const r=S.gen[S.genIdx],d=dog(),res=verdict(genItem(r),d,0),st=stopsFor(r,d),sp=steps(r.len,d);
+  if(newLine)mapNew.removeLayer(newLine);
+  newLine=L.featureGroup([L.polyline(r.path,{color:"#fff",weight:8,opacity:.9}),L.polyline(r.path,{color:css("--accent"),weight:4.5}),
+    ...st.map((s,i)=>L.marker(s.p,{icon:L.divIcon({className:"",html:`<div class="stop">${i+1}</div>`,iconSize:[24,24],iconAnchor:[12,12]})}))]).addTo(mapNew);
+  mapNew.fitBounds(newLine.getBounds(),{padding:[30,30]});
+  const surf=r.hard==null?"":`<div class="block"><h2>Fondo</h2><div class="surf"><i style="width:${Math.round(r.soft*100)}%;background:var(--ok)"></i><i style="width:${Math.round(r.hard*100)}%;background:var(--wait)"></i></div>
+    <p class="small muted">${Math.round(r.soft*100)}% terra, erba o sterrato · ${Math.round(r.hard*100)}% asfalto o pietra${r.green!=null?" · verde intorno: "+(r.green>=6?"tanto":r.green>=3?"medio":"poco"):""}</p></div>`;
+  $("gen-out").innerHTML=`<div class="box"><h2>Giro di ${km(r.len)} km</h2>
+    <span class="verdict v${Math.max(0,res.v)}">${VLABEL[Math.max(0,res.v)]} per ${dn()}</span>
+    <div class="stats"><div><b>${km(r.len)} km</b><span>Lunghezza</span></div><div><b>${r.up} m</b><span>Dislivello</span></div><div><b>${fmtH(res.hours)}</b><span>Col cane</span></div><div><b>Anello</b><span>Tipo</span></div></div>
+    <ul class="why" style="margin-top:12px">${res.why.map(x=>`<li><i class="dot ${x.lvl<0?"bw":"b"+x.lvl}"></i><span>${x.txt}</span></li>`).join("")}</ul>
+    <p class="small muted" style="margin-top:10px">Passi stimati: tu circa ${sp.me.toLocaleString("it-IT")}, ${dn()} circa ${sp.dog.toLocaleString("it-IT")}.</p>
+    ${surf}
+    <div class="block"><h2>Tappe e giochi</h2><ol class="stops">${st.map(s=>`<li><div><b>${s.t}</b> <span class="muted small">· km ${km(s.km)}</span><br>${s.d}</div></li>`).join("")}</ol>
+      <p class="small muted" style="margin-top:10px">Tappe proposte con regole fisse. In futuro le sceglierà l'AI in base al percorso.</p></div>
+    <div class="row" style="margin-top:16px;flex-wrap:wrap"><button class="btn pri" id="gen-save">${icon("heart")}Salva il giro</button>${S.gen.length>1?`<button class="btn" id="gen-next">Prova un altro giro</button>`:""}</div></div>`;
+  $("gen-save").onclick=()=>{S.routes.unshift({t:Date.now(),name:`Giro di ${km(r.len)} km`,len:r.len,up:r.up,hard:r.hard,soft:r.soft,green:r.green,path:thin(r.path,15)});S.routes=S.routes.slice(0,20);store.set("alldogs-routes",S.routes);toast("Giro salvato")};
+  const nx=$("gen-next");if(nx)nx.onclick=()=>{S.genIdx=(S.genIdx+1)%S.gen.length;showGen();$("mapNewWrap").scrollIntoView({behavior:"smooth"})};
+  $("gen-out").scrollIntoView({behavior:"smooth",block:"start"});
+}
+$("gen").onclick=generate;
+
+// ================= Salvati =================
+function showSaved(){
+  const d=dog();
+  $("saved-routes").innerHTML=S.routes.length?S.routes.map((r,i)=>`<article class="card" data-r="${i}"><div class="thumb">${thumb({path:r.path})}</div><div><h3>${esc(r.name)}</h3><p class="sub">${new Date(r.t).toLocaleDateString("it-IT",{day:"numeric",month:"long"})}</p><p class="meta">${km(r.len)} km · ↑ ${r.up} m</p></div><button class="round" data-del="${i}" aria-label="Elimina">✕</button></article>`).join(""):`<p class="muted">Ancora nessun giro. Creane uno con il pulsante <b>+</b> qui sotto.</p>`;
+  $("saved-routes").querySelectorAll(".card").forEach(c=>c.onclick=ev=>{const del=ev.target.closest("[data-del]");
+    if(del){S.routes.splice(+del.dataset.del,1);store.set("alldogs-routes",S.routes);showSaved();return}
+    const r=S.routes[+c.dataset.r];S.gen=[r];S.genIdx=0;S.start=r.path[0];location.hash="crea";setTimeout(()=>{pin.setLatLng(r.path[0]);showGen()},150)});
+  const rows=S.trails.filter(t=>S.saved.includes(t.id));
+  $("saved-trails").innerHTML=rows.length?rows.map(tr=>cardHTML(tr,verdict(item(tr),d,S.day))).join(""):`<p class="muted">${S.saved.length&&!S.ready?"Sto caricando…":"Tocca il cuore su un sentiero per ritrovarlo qui."}</p>`;
+  bindCards($("saved-trails"));
 }
 
-// ---------- Verdetto ----------
-function verdict(tr,dog,day){
-  const cap=capacity(dog),why=[],e=elevCache[tr.id];
-  const km=tr.len/1000;
-  const add=(lvl,txt)=>why.push({lvl,txt});
-  // lunghezza
-  if(km<=cap.km)add(0,`${km.toFixed(1)} km: dentro le sue possibilità (fino a circa ${cap.km} km).`);
-  else if(km<=cap.km*1.3)add(1,`${km.toFixed(1)} km: un po' oltre il suo limite consigliato di circa ${cap.km} km. Prevedi pause lunghe.`);
-  else add(2,`${km.toFixed(1)} km: troppo lungo per lui, il limite consigliato è circa ${cap.km} km.`);
-  if(!tr.loop)why[why.length-1].txt+=" Il sentiero non è ad anello: se torni indietro a piedi la distanza raddoppia.";
-  // dislivello
-  let up=null;
-  if(e){up=Math.max(e.up,e.down);
-    if(up<=cap.up)add(0,`${up} m di salita: va bene (fino a circa ${cap.up} m).`);
-    else if(up<=cap.up*1.3)add(1,`${up} m di salita: impegnativo per lui (limite consigliato circa ${cap.up} m).`);
-    else add(2,`${up} m di salita: troppo per lui (limite consigliato circa ${cap.up} m).`);
-  } else add(-1,"Dislivello in calcolo…");
-  // difficoltà CAI
-  const s=tr.scale;
-  if(s==="EEA")add(2,"Difficoltà EEA (tratti attrezzati con cavi o scalette): i cani non possono farli.");
-  else if(s==="EE"){if(dog.agil==="alta"&&dog.train==="molto")add(1,"Difficoltà EE (escursionisti esperti): passaggi su roccia ed esposti. Solo con guinzaglio corto e molta attenzione.");
-    else add(2,"Difficoltà EE (escursionisti esperti): passaggi su roccia ed esposti, non adatti alla sua agilità o al suo allenamento.")}
-  else if(s==="E"){if(dog.agil==="bassa")add(1,"Difficoltà E (escursionistica): sentiero vero con pietre e gradini, faticoso per un cane poco agile.");else add(0,"Difficoltà E (escursionistica): sentiero di montagna normale.")}
-  else if(s==="T")add(0,"Difficoltà T (turistica): sentiero facile.");
-  else add(1,"Difficoltà non indicata nei dati: informati prima di partire.");
-  // durata
-  const hours=km/3+(up||0)/400;
-  // caldo e pioggia
-  const w=dayWx(tr.start,day);let best=null;
-  if(w){
-    const need=Math.max(1,Math.ceil(hours));
-    const limit=cap.heatLimit;
-    const ok=h=>h>=0&&h<24&&w.H[h].f<=limit,ok2=h=>h>=0&&h<24&&w.H[h].f<=limit+4;
-    const win=test=>{for(let h=Math.max(5,w.sr);h+need<=Math.min(21,w.ss+1);h++){let g=true;for(let k=0;k<need;k++)if(!test(h+k))g=false;if(g)return h}return null};
-    const maxF=Math.max(...w.H.slice(w.sr,w.ss+1).map(x=>x.f));
-    const sens=cap.sensitive?" (il tuo cane soffre di più il caldo, quindi siamo più severi)":"";
-    let h=win(ok);
-    if(h!=null){best=h;if(maxF>limit)add(0,`Caldo: nelle ore centrali si arriva a ${Math.round(maxF)}° percepiti. Parti verso le ${h}:00, quando sono ${Math.round(w.H[h].f)}°.`);
-      else add(0,`Temperature buone tutto il giorno (massimo ${Math.round(maxF)}° percepiti).`)}
-    else if((h=win(ok2))!=null){best=h;add(1,`Caldo: anche nelle ore migliori fa più di ${limit}° percepiti${sens}. Se vai, parti verso le ${h}:00 e porta tanta acqua.`)}
-    else add(2,`Troppo caldo per un'escursione di ${fmtH(hours)}: non c'è una finestra abbastanza fresca${sens}.`);
-    const rain=Math.max(...w.H.slice(best??8,(best??8)+need).map(x=>x.rain));
-    if(rain>=60)add(1,`Probabilità di pioggia ${rain}%: il fondo può diventare scivoloso.`);
-    const minT=Math.min(...w.H.slice(w.sr,w.ss+1).map(x=>x.t));
-    if(minT<3&&(dog.weight<10||dog.coat==="corto"))add(1,`Freddo: si scende a ${Math.round(minT)}°. Un cappottino può servire.`);
-  } else add(-1,"Meteo in caricamento…");
-  // altro
-  if(tr.dogs==="no")add(2,"Secondo i dati OSM i cani non sono ammessi su questo sentiero.");
-  const known=why.filter(x=>x.lvl>=0);
-  const v=why.some(x=>x.lvl<0)&&!known.some(x=>x.lvl===2)?-1:Math.max(...known.map(x=>x.lvl));
-  return {v,why,hours,best,cap,w,up};
-}
+// ================= Attività =================
+function showAct(){const d=dog(),s=steps(5000,d);$("steps-box").innerHTML=`<h2>Quanti passi fa ${dn()}?</h2><p style="margin-top:8px">In una passeggiata di 5 km tu fai circa <b>${s.me.toLocaleString("it-IT")}</b> passi, ${dn()} circa <b>${s.dog.toLocaleString("it-IT")}</b>.</p><p class="small muted" style="margin-top:6px">È una stima basata su distanza e taglia, non una misura.</p>`}
 
-function bringList(tr,dog,res){
-  const hot=res.w?Math.max(...res.w.H.slice(res.best??10,(res.best??10)+Math.ceil(res.hours)).map(x=>x.f))>20:true;
-  let L=Math.max(0.5,dog.weight*0.025*res.hours*(hot?1.5:1));L=Math.ceil(L*4)/4;
-  const items=[`Acqua per ${esc(dog.name||"il cane")}: almeno ${L.toString().replace(".",",")} litri, più la tua. Se lungo il percorso ci sono fontanelle puoi portarne meno.`,"Ciotola pieghevole e sacchetti.","Pettorina e guinzaglio (meglio non lungo sui sentieri stretti)."];
-  if(res.hours>=2)items.push("Qualche snack o un pasto leggero per lui.");
-  if(tr.scale==="E"||tr.scale==="EE")items.push("Scarpette protettive se ha zampe delicate: il fondo può essere roccioso.");
-  if(hot)items.push("Un asciugamano da bagnare per rinfrescarlo durante le pause.");
-  items.push("Kit di primo soccorso (garze, pinzetta per zecche, disinfettante).");
-  return items;
+// ================= Il mio cane =================
+const DF=["name","breed","age","weight","train","agil","coat","brachy"];
+function showDog(){
+  const first=!S.dog,d=dog();
+  $("onb").hidden=!first;$("dog-head").style.display=first?"none":"flex";$("settings").style.display=first?"none":"block";
+  $("dog-save").textContent=first?"Inizia":"Salva";
+  DF.forEach(f=>{const el=$("d-"+f);if(el.type==="checkbox")el.checked=!!d[f];else el.value=first&&["name","breed","age","weight"].includes(f)?"":d[f]});
+  if(!first){const c=capacity(d);$("avatar").textContent=(d.name||"?").trim().charAt(0).toUpperCase();$("dog-title").textContent=d.name||"Il mio cane";
+    $("dog-cap").textContent=`Fino a circa ${c.km} km e ${c.up} m di salita`}
+  $("ors-key").value=store.get("alldogs-ors")?"••••••••••••":"";
 }
+$("dog-save").onclick=()=>{
+  const d={};DF.forEach(f=>{const el=$("d-"+f);d[f]=el.type==="checkbox"?el.checked:el.value.trim()});
+  d.age=parseFloat(String(d.age).replace(",","."));d.weight=parseFloat(String(d.weight).replace(",","."));
+  if(!d.name){toast("Scrivi il nome del cane");$("d-name").focus();return}
+  if(!(d.age>=0)||!(d.weight>0)){toast("Inserisci età e peso");return}
+  const first=!S.dog;S.dog=d;store.set("alldogs-dog",d);toast("Profilo salvato");
+  if(first)location.hash="esplora";else showDog();
+};
+$("ors-save").onclick=()=>{const v=$("ors-key").value.trim();if(!v||v.startsWith("•")){toast("Incolla la chiave");return}store.set("alldogs-ors",v);$("ors-key").value="••••••••••••";toast("Chiave salvata")};
 
-// ---------- Interfaccia ----------
-let map,trails=[],layers={},day=0,selected=null;
-function initMap(){
-  map=L.map("map",{zoomControl:true}).setView([40.75,14.35],10);
-  const topo=L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",{maxZoom:17,attribution:"Mappa © OpenTopoMap, dati © OpenStreetMap"});
-  const carto=L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© CARTO, dati © OpenStreetMap"});
-  topo.addTo(map);L.control.layers({"Escursionistica":topo,"Stradale":carto}).addTo(map);
-}
-const COLORS=()=>{const cs=getComputedStyle(document.documentElement);return {"-1":cs.getPropertyValue("--wait"),"0":cs.getPropertyValue("--ok"),"1":cs.getPropertyValue("--warn"),"2":cs.getPropertyValue("--no")}};
-function renderDays(){
-  const names=["Oggi","Domani","Dopodomani"];
-  $("days").innerHTML=names.map((n,i)=>`<button type="button" data-d="${i}" aria-pressed="${i===day}">${n}</button>`).join("");
-  $("days").querySelectorAll("button").forEach(b=>b.onclick=()=>{day=+b.dataset.d;renderDays();refresh()});
-}
-function refresh(){
-  const dog=readDog();store.set("alldogs-dog",dog);
-  const col=COLORS(),q=$("q").value.trim().toLowerCase(),vf=$("vf").value;
-  const rows=trails.map(tr=>({tr,res:verdict(tr,dog,day)}));
-  rows.sort((a,b)=>((a.res.v<0?1.5:a.res.v)-(b.res.v<0?1.5:b.res.v))||a.tr.len-b.tr.len);
-  let shown=0;const html=[];
-  for(const {tr,res} of rows){
-    const match=(!q||(tr.name+" "+tr.ref+" "+tr.from+" "+tr.to).toLowerCase().includes(q))&&(vf==="all"||vf.includes(String(res.v)));
-    const lay=layers[tr.id];
-    if(lay){lay.setStyle({color:col[res.v],opacity:match?.9:.15,weight:tr.id===selected?6:3});}
-    if(!match)continue;shown++;
-    if(shown>200)continue;
-    const e=elevCache[tr.id];
-    html.push(`<li data-id="${tr.id}" class="${tr.id===selected?"sel":""}"><span class="pill ${res.v<0?"vw":"v"+res.v}">${res.v<0?"In calcolo":VLABEL[res.v]}</span><span class="nm">${esc(tr.name)}${tr.ref&&!tr.name.includes(tr.ref)?" · "+esc(tr.ref):""}</span>
-      <span class="meta">${(tr.len/1000).toFixed(1)} km · ${e?"↑ "+Math.max(e.up,e.down)+" m":"↑ …"} · ${tr.scale||"diff. n.d."}${tr.cai?" · CAI":""}</span></li>`);
+// ================= Avvio =================
+$("q").addEventListener("input",()=>{S.limit=30;renderList()});
+["f-fit","f-len","f-dif","f-zone"].forEach(id=>$(id).addEventListener("change",()=>{S.limit=30;renderList()}));
+$("f-day").innerHTML=[0,1,2,3,4,5,6].map(i=>`<option value="${i}">${dayName(i)}</option>`).join("");
+$("f-day").addEventListener("change",e=>{S.day=+e.target.value;renderList()});
+$("more").onclick=()=>{S.limit+=30;renderList()};
+$("to-map").onclick=openMap;$("to-list").onclick=()=>$("mapAllWrap").classList.remove("on");
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>tiles.forEach(t=>t.setUrl(`https://{s}.basemaps.cartocdn.com/${dark()?"dark_all":"rastertiles/voyager"}/{z}/{x}/{y}{r}.png`)));
+
+async function fillElev(){
+  const order=S.trails.filter(t=>!elev[t.id]).sort((a,b)=>(b.cai-a.cai)||a.len-b.len);let n=0;const onList=()=>(location.hash.slice(1)||"esplora")==="esplora";
+  for(const tr of order){
+    try{await elevation(tr)}catch(e){await new Promise(r=>setTimeout(r,4000))}
+    n++;$("status").textContent=`Calcolo i dislivelli: ${n} di ${order.length}`;
+    if(n%10===0&&onList()&&window.scrollY<200)renderList();
+    await new Promise(r=>setTimeout(r,120));
   }
-  $("list").innerHTML=html.join("")||`<li class="note">Nessun sentiero corrisponde alla ricerca.</li>`;
-  $("list").querySelectorAll("li[data-id]").forEach(li=>li.onclick=()=>select(+li.dataset.id,true));
-  if(selected)showDetail(trails.find(t=>t.id===selected),dog);
+  $("status").textContent="";if(onList())renderList();else if(location.hash==="#salvati")showSaved();
 }
-async function select(id,zoom){
-  selected=id;const tr=trails.find(t=>t.id===id);
-  if(zoom&&layers[id])map.fitBounds(layers[id].getBounds(),{padding:[30,30]});
-  try{await elevation(tr)}catch(e){}
-  refresh();
-  if(window.innerWidth>760)$("detail").scrollIntoView({behavior:"smooth",block:"start"});
+async function boot(){
+  route();
+  try{$("status").textContent="Scarico i sentieri…";S.trails=await loadTrails()}
+  catch(e){$("list").innerHTML=`<div class="err">Non riesco a scaricare i sentieri. Controlla la connessione e ricarica la pagina.</div>`;$("status").textContent="";return}
+  const zs=[...new Set(S.trails.map(t=>t.zone))].sort();$("f-zone").innerHTML=`<option value="all">Tutte le zone</option>`+zs.map(z=>`<option>${esc(z)}</option>`).join("");
+  S.ready=true;$("status").textContent="Scarico il meteo…";route();
+  try{await loadWeather(S.trails.map(t=>t.start))}catch(e){S.wxFail=true}
+  $("status").textContent="";route();
+  fillElev();
 }
-function showDetail(tr,dog){
-  const res=verdict(tr,dog,day),e=elevCache[tr.id];
-  const lvl=x=>x<0?"dw":"d"+x;
-  let hours="";
-  if(res.w){const lim=res.cap.heatLimit;
-    hours=`<h2 style="margin-top:14px">Temperatura percepita ora per ora</h2><div class="hours">`+
-      res.w.H.slice(6,22).map(x=>`<div class="${x.f<=lim?"v0":x.f<=lim+4?"v1":"v2"}"><div class="h">${x.h}</div>${Math.round(x.f)}°</div>`).join("")+
-      `</div><div class="note">Verde: fresco per lui · arancione: caldo, con prudenza · rosso: troppo caldo.</div>`}
-  const d=$("detail");d.className="on";
-  d.innerHTML=`<button class="back" type="button" id="close">← torna all'elenco</button>
-    <h3>${esc(tr.name)}</h3>
-    <div class="note">${[tr.ref&&"Sentiero n. "+esc(tr.ref),tr.from&&tr.to&&esc(tr.from)+" → "+esc(tr.to),tr.operator&&esc(tr.operator)].filter(Boolean).join(" · ")}</div>
-    <span class="big ${res.v<0?"vw":"v"+res.v}">${res.v<0?"Verdetto in calcolo":VLABEL[res.v]+" per "+esc(dog.name||"il tuo cane")}</span>
-    <div class="facts"><div><span>Lunghezza</span><b>${(tr.len/1000).toFixed(1)} km</b></div><div><span>Salita</span><b>${e?Math.max(e.up,e.down)+" m":"…"}</b></div>
-      <div><span>Quota max</span><b>${e?e.max+" m":"…"}</b></div><div><span>Tempo col cane</span><b>${fmtH(res.hours)}</b></div></div>
-    <h2>Perché</h2><ul class="why">${res.why.map(x=>`<li><span class="dot ${lvl(x.lvl)}"></span><span>${x.txt}</span></li>`).join("")}</ul>
-    ${res.cap.notes.length?`<div class="note">Limiti più prudenti perché ${esc(dog.name||"il cane")} ${res.cap.notes.join(", ")}.</div>`:""}
-    ${hours}
-    <h2 style="margin-top:14px">Cosa portare</h2><ul class="bring">${bringList(tr,dog,res).map(x=>`<li>${x}</li>`).join("")}</ul>
-    <div class="note">Tempo stimato al passo di un cane, con le pause. Il dislivello è calcolato dalle quote del terreno ed è approssimativo.
-    <a href="https://www.openstreetmap.org/relation/${tr.id}" target="_blank" rel="noopener">Vedi il sentiero su OpenStreetMap</a></div>`;
-  $("close").onclick=()=>{selected=null;d.className="";refresh();$("listsec").scrollIntoView({behavior:"smooth"})};
-}
-async function fillElevations(){
-  const todo=trails.filter(t=>!elevCache[t.id]);let n=0;
-  for(const tr of todo){
-    try{await elevation(tr)}catch(e){await new Promise(r=>setTimeout(r,3000))}
-    n++;if(n%8===0||n===todo.length){$("status").textContent=`Calcolo dei dislivelli: ${n} di ${todo.length}…`;refresh()}
-    await new Promise(r=>setTimeout(r,150));
-  }
-  $("status").textContent=`${trails.length} sentieri caricati. Tocca un sentiero per vedere il verdetto.`;
-}
-async function start(){
-  loadDog();renderDays();initMap();
-  DOG_FIELDS.forEach(f=>$("d-"+f).addEventListener("input",refresh));
-  $("q").addEventListener("input",refresh);$("vf").addEventListener("change",refresh);
-  try{
-    $("status").textContent="Scarico i sentieri da OpenStreetMap (può volerci un minuto la prima volta)…";
-    trails=await loadTrails();
-  }catch(e){$("status").textContent="Non riesco a scaricare i sentieri. Controlla la connessione e ricarica la pagina.";return}
-  for(const tr of trails){
-    const lay=L.polyline(tr.ways,{color:"#888",weight:3,opacity:.9}).addTo(map);
-    lay.bindTooltip(tr.name,{sticky:true});lay.on("click",()=>select(tr.id,false));layers[tr.id]=lay;
-  }
-  $("status").textContent="Scarico il meteo…";
-  try{await loadWeather(trails.map(t=>t.start))}catch(e){$("status").textContent="Meteo non disponibile al momento."}
-  refresh();
-  fillElevations();
-}
-start();
+boot();
 </script>
 </body>
 </html>

@@ -1,9 +1,14 @@
 # AllDogs
 
-Prototipo di un'app per escursioni e passeggiate pensata per il cane (zona Napoli/Campania).
+App per escursioni e passeggiate pensata per il cane (zona Napoli/Campania).
 
-La pagina `index.html` mostra i sentieri escursionistici da OpenStreetMap, il meteo da Open-Meteo e un verdetto prudente per il profilo del proprio cane.
+Si apre da https://parseng.github.io/ALLDOGS/ e si può aggiungere alla schermata Home del telefono.
+
+- **Esplora**: sentieri escursionistici da OpenStreetMap, con verdetto per il proprio cane.
+- **Scheda sentiero**: lunghezza, dislivello, tempo col cane, meteo, cosa portare.
+- **Crea giro**: anello dal punto di partenza con OpenRouteService (serve una chiave gratuita, inserita nell'app).
+- **Il mio cane**: profilo usato per tutti i verdetti.
 
 Il verdetto è un consiglio prudente, non una garanzia.
 
-Dati: © OpenStreetMap contributors (ODbL) · Meteo e quote: Open-Meteo · Mappa: OpenTopoMap.
+Dati: © OpenStreetMap contributors (ODbL) · Meteo e quote: Open-Meteo · Percorsi: OpenRouteService · Mappe: © CARTO.
