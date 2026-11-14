@@ -407,7 +407,7 @@ def describe(tr, path=None):
     L = tr.get("len", 0) / 1000
     up = e.get("up")
     path = path or bd.chain(tr.get("ways") or [])
-    loop = tr.get("loop") or (len(path) > 2 and bd.hav(path[0], path[-1]) < 200) or (tr.get("from") and tr.get("from") == tr.get("to"))
+    loop = tr.get("loop") or (len(path) > 2 and bd.hav(path[0], path[-1]) < 500) or (tr.get("from") and tr.get("from") == tr.get("to"))
     walk = tr.get("type") == "walk"
     S = []
     fr, to = place(tr.get("from")), place(tr.get("to"))
@@ -423,6 +423,8 @@ def describe(tr, path=None):
     if tr.get("zone"):
         s += f", nella zona di {tr['zone']}"
     S.append(s + ".")
+    if not walk and not loop:
+        S.append(f"Non è un anello: per tornare alla partenza si rifà la stessa strada, quindi in tutto sono {km(2 * L)} km.")
     # 2. fatica
     if up is not None and not walk:
         if up < 100:
@@ -454,11 +456,11 @@ def describe(tr, path=None):
             S.append(bits[0][0].upper() + join(bits)[1:] + ".")
     wood = f.get("wood", 0)
     if wood >= .7:
-        S.append("Quasi tutto nel bosco, all'ombra.")
-    elif wood >= .4:
-        S.append("In buona parte nel bosco, con tratti d'ombra.")
-    elif not walk and wood < .15 and "spiaggia" not in fl:
-        S.append("Poca ombra: meglio evitare le ore calde.")
+        S.append("Quasi tutto all'ombra degli alberi.")
+    elif wood >= .35:
+        S.append(f"Ombra a tratti: circa {round(wood * 10) * 10}% del percorso sotto gli alberi, il resto al sole.")
+    elif not walk and "spiaggia" not in fl:
+        S.append("Poca ombra: quasi tutto al sole, meglio evitare le ore calde.")
     # 4. cosa si incontra
     seen = []
     if "fiumi" in fl:
@@ -507,10 +509,15 @@ def describe(tr, path=None):
         S.append(f"Segnavia CAI {tr['ref']}.")
     elif tr.get("ref") and not walk:
         S.append(f"Segnavia {tr['ref']}.")
-    if tr.get("dogs") == "no":
-        S.append("Attenzione: sul percorso è segnato il divieto per i cani.")
-    elif tr.get("dogs") == "leashed":
+    dg = tr.get("dg")
+    if dg and dg[0] == "no":
+        S.append("Attenzione: qui i cani non sono ammessi.")
+    elif dg and dg[0] == "lim":
+        S.append("Cani ammessi solo su alcuni sentieri o in certi periodi: verifica prima di partire.")
+    elif (dg and dg[0] == "lea") or tr.get("dogs") == "leashed":
         S.append("Cani al guinzaglio.")
+    elif tr.get("dogs") == "no":
+        S.append("Attenzione: sul percorso è segnato il divieto per i cani.")
     return " ".join(S)
 
 

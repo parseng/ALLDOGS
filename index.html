@@ -175,7 +175,13 @@ body > #mapwrap{display:none}
 .carousel{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:16px;margin:0 -16px;padding:0 16px 4px;scrollbar-width:none}
 .carousel::-webkit-scrollbar{display:none}
 .carousel .tcard{flex:0 0 80%;max-width:360px;scroll-snap-align:start;margin-bottom:6px}
+/* primo avvio: solo nome, età, peso, allenamento e muso; il resto dopo («Completa il libretto») */
+.fold.onb .full{display:none}
+.qrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--line)}.qrow:last-child{border:0}.qbtn{display:flex;gap:6px;flex:none}
+.rphs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}.rphs:empty{display:none}.rph{position:relative}.rph img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;display:block}.rph .round{position:absolute;top:4px;right:4px;width:28px;height:28px}
+#rev-cam svg{width:18px;height:18px;margin-right:6px;vertical-align:-3px}
 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:baseline}
+.dogrule{border-left:4px solid currentColor;padding-left:12px}.dogrule h2{display:flex;align-items:center;gap:8px}.dogrule h2 svg{width:22px;height:22px}.dogrule p:not(.muted){color:var(--ink)}
 .c0{color:var(--ok)} .c1{color:var(--warn)} .c2{color:var(--no)} .cw{color:var(--wait)}
 .b0{background:var(--ok)} .b1{background:var(--warn)} .b2{background:var(--no)} .bw{background:var(--wait)}
 .v0{background:var(--ok-bg);color:var(--ok)} .v1{background:var(--warn-bg);color:var(--warn)} .v2{background:var(--no-bg);color:var(--no)} .vw{background:var(--wait-bg);color:var(--wait)}
@@ -791,7 +797,7 @@ body{font-size:17px;line-height:1.5}
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
-    <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+    <symbol id="i-cam" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></symbol><symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
     <symbol id="i-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2Z"/></symbol>
     <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
     <symbol id="i-act" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 3 8-8"/><path d="M15 7h5v5"/></symbol>
@@ -874,6 +880,7 @@ body{font-size:17px;line-height:1.5}
   <div class="hscroll frow">
     <button class="fall" id="f-all" type="button" aria-label="Tutti i filtri"></button>
     <select id="f-day" aria-label="Giorno"></select>
+    <select id="f-dog" aria-label="Cani ammessi"><option value="all">Cani ammessi</option><option value="free">Senza limiti per i cani</option><option value="show">Anche dove sono vietati</option></select>
     <select id="f-fit" aria-label="Adatti al cane"><option value="all">Per il cane: tutti</option><option value="0">Adatti al cane</option><option value="01">Adatti o con prudenza</option></select>
     <select id="f-len" aria-label="Lunghezza"><option value="all">Lunghezza</option><option value="0-5">Fino a 5 km</option><option value="5-10">Da 5 a 10 km</option><option value="10-99">Più di 10 km</option></select>
     <select id="f-up" aria-label="Dislivello"><option value="all">Dislivello</option><option value="0-150">Fino a 150 m</option><option value="150-400">Da 150 a 400 m</option><option value="400-800">Da 400 a 800 m</option><option value="800-99999">Oltre 800 m</option></select>
@@ -1030,7 +1037,7 @@ body{font-size:17px;line-height:1.5}
       <p class="muted" id="nav-info" style="margin-top:12px"></p>
       <p id="nav-wx" style="margin-top:6px"></p>
       <div class="nb-chart" id="nb-chart"></div>
-      <div class="nb-row"><button class="round" id="nav-sos" aria-label="Emergenza">SOS</button><button class="round" id="nav-set" aria-label="Impostazioni di navigazione"><svg><use href="#i-dots"/></svg></button><button class="round" id="nav-share" aria-label="Condividi la posizione in tempo reale"><svg><use href="#i-share"/></svg></button></div>
+      <div class="nb-row"><button class="round" id="nav-sos" aria-label="Emergenza">SOS</button><button class="round" id="nav-set" aria-label="Impostazioni di navigazione"><svg><use href="#i-dots"/></svg></button><button class="round" id="nav-share" aria-label="Condividi la posizione in tempo reale"><svg><use href="#i-share"/></svg></button><button class="round" id="nav-cam" aria-label="Scatta una foto del sentiero"><svg><use href="#i-cam"/></svg></button><input type="file" id="nav-cam-in" accept="image/*" capture="environment" hidden></div>
       <div class="nb-row"><button class="btn" id="nav-pause">Pausa</button><button class="btn pri" id="nav-end">Chiudi attività</button></div>
     </div>
   </div>
@@ -1057,20 +1064,20 @@ body{font-size:17px;line-height:1.5}
   <details class="fold" id="fold-dog"><summary><span><b id="fold-dog-t">I suoi dati</b><small>Età, peso, allenamento, salute e libretto</small></span><i>›</i></summary><div class="foldb">
   <div class="form" style="margin-top:6px">
     <label>Nome<input id="d-name" autocomplete="off"></label>
-    <label>Razza<input id="d-breed" autocomplete="off" placeholder="Es. Labrador, meticcio"></label>
+    <label class="full">Razza<input id="d-breed" autocomplete="off" placeholder="Es. Labrador, meticcio"></label>
     <label>Età (anni)<input id="d-age" type="number" inputmode="decimal" min="0" max="25" step="0.5"></label>
     <label>Peso (kg)<input id="d-weight" type="number" inputmode="decimal" min="1" max="100"></label>
     <label class="w">Allenamento<select id="d-train"><option value="poco">Poco: passeggiate in città</option><option value="medio">Medio: qualche escursione</option><option value="molto">Molto: escursioni frequenti</option></select></label>
-    <label class="w">Agilità<select id="d-agil"><option value="bassa">Bassa: evita salti e rocce</option><option value="media">Media</option><option value="alta">Alta: si arrampica volentieri</option></select></label>
-    <label class="w">Pelo<select id="d-coat"><option value="corto">Corto</option><option value="lungo">Lungo o folto: soffre di più il caldo</option></select></label>
+    <label class="w full">Agilità<select id="d-agil"><option value="bassa">Bassa: evita salti e rocce</option><option value="media">Media</option><option value="alta">Alta: si arrampica volentieri</option></select></label>
+    <label class="w full">Pelo<select id="d-coat"><option value="corto">Corto</option><option value="lungo">Lungo o folto: soffre di più il caldo</option></select></label>
     <label class="check"><input id="d-brachy" type="checkbox">Muso schiacciato (carlino, bulldog, boxer…)</label>
   </div>
-  <div class="block"><h2>Salute</h2>
+  <div class="block full" id="b-health"><h2>Salute</h2>
     <p class="muted small" style="margin-bottom:10px">Se segni un problema, l'app usa limiti più prudenti e ne tiene conto quando crea i giri. Non sostituisce il veterinario.</p>
     <div class="checks" id="pat"></div>
     <div class="form" style="margin-top:10px"><label class="w" id="pat-other-l" hidden>Altro: scrivi quale<input id="pat-other" autocomplete="off"></label></div>
   </div>
-  <div class="block"><h2>Libretto sanitario</h2>
+  <div class="block full" id="b-book"><h2>Libretto sanitario</h2>
     <p class="muted small" style="margin-bottom:10px">Resta salvato solo su questo telefono.</p>
     <div class="form">
       <label class="w">Microchip<input id="h-chip" autocomplete="off" inputmode="numeric"></label>
@@ -1373,7 +1380,9 @@ function verdict(it,d,day){
     if(minT<3&&(d.weight<10||d.coat==="corto"))add(1,`Freddo: si scende a ${Math.round(minT)}°. Un cappottino può servire.`);
   } else if(S.wxFail)add(0,"Meteo non disponibile in questo momento: controlla la temperatura prima di partire.");
   else add(-1,"Sto caricando il meteo…");
-  if(it.dogs==="no")add(2,"Secondo i dati di OpenStreetMap i cani non sono ammessi su questo sentiero.");
+  if(it.dg&&it.dg[0]==="no")add(2,"Cani non ammessi. "+esc(it.dg[1]));
+  else if(it.dg&&it.dg[0]==="lim")add(1,"Cani ammessi solo in parte. "+esc(it.dg[1]));
+  else if(it.dogs==="no")add(2,"Secondo i dati di OpenStreetMap i cani non sono ammessi su questo sentiero.");
   if(cap.health)add(0,`Limiti ridotti per la salute di ${nm}: in caso di dubbio chiedi al veterinario.`);
   const known=why.filter(x=>x.lvl>=0);
   const v=why.some(x=>x.lvl<0)&&!known.some(x=>x.lvl===2)?-1:Math.max(...known.map(x=>x.lvl));
@@ -1422,7 +1431,14 @@ const CELL=.5,TR=new Map(),cellState={},elev={};let FT={},IDX=null;
 function dnOf(tr){const e=elev[tr.id];if(!e)return null;if(!e.p||e.p.length<3)return e.up;let up=0,dw=0;for(let i=1;i<e.p.length;i++){const x=e.p[i]-e.p[i-1];if(x>0)up+=x;else dw-=x}return Math.round(dw*(up?e.up/up:1))}
 const totLen=tr=>tr.loop===false?tr.len*2:tr.len;
 function totUp(tr){const e=elev[tr.id];if(!e)return null;if(tr.loop!==false)return e.up;const dn=dnOf(tr);return e.up+(dn??e.up)}
-const item=tr=>({len:totLen(tr),one:tr.len,up:totUp(tr),scale:tr.scale,start:tr.start,loop:tr.loop,dogs:tr.dogs});
+// Cani ammessi (campo "dg" dei sentieri, da tools/build_dogs.py): [stato, testo, area]
+const DGS={no:"Cani vietati",lim:"Cani: solo in parte",lea:"Al guinzaglio",ok:"Cani ammessi"},DGC={no:"c2",lim:"c1",lea:"c0",ok:"c0"};
+function dogBlock(tr){const g=tr.dg;if(!g)return `<div class="block"><h2>Cani ammessi?</h2><p class="muted">Sto ancora controllando le regole per i cani in questa zona. Guarda i cartelli all'ingresso.</p></div>`;
+  return `<div class="block dogrule ${DGC[g[0]]}"><h2>${icon("paw")} ${DGS[g[0]]}</h2><p>${esc(g[1])}</p><p class="small muted" style="margin-top:6px">Fonti: regolamenti dei parchi e OpenStreetMap. Le regole possono cambiare: vale sempre il cartello all'ingresso.</p></div>`}
+// ombra tratto per tratto: una striscia verde (alberi) e gialla (sole), dalla partenza all'arrivo
+function shadeBar(sh,len){const n=sh.length;if(!n)return "";const w=100/n;let x="",i=0;while(i<n){let j=i;while(j<n&&sh[j]===sh[i])j++;x+=`<rect x="${(i*w).toFixed(2)}" width="${((j-i)*w+.05).toFixed(2)}" height="10" fill="${sh[i]==="1"?"#3f8f4f":"#f0c34a"}"/>`;i=j}
+  return `<div style="margin-top:12px"><p class="small"><b>Ombra lungo il percorso</b></p><svg viewBox="0 0 100 10" preserveAspectRatio="none" style="width:100%;height:14px;border-radius:7px;display:block;margin:6px 0">${x}</svg><p class="small muted" style="display:flex;justify-content:space-between"><span>Partenza</span><span><i class="dot" style="background:#3f8f4f"></i> alberi · <i class="dot" style="background:#f0c34a"></i> sole</span><span>${km(len)} km</span></p></div>`}
+const item=tr=>({len:totLen(tr),one:tr.len,up:totUp(tr),scale:tr.scale,start:tr.start,loop:tr.loop,dogs:tr.dogs,dg:tr.dg});
 const cellKey=(la,lo)=>(Math.floor(la/CELL)*CELL).toFixed(1)+"_"+(Math.floor(lo/CELL)*CELL).toFixed(1);
 const cellOf=store.get("alldogs-cellof")||{}; // in quale riquadro sta ogni sentiero aperto o salvato (per ritrovarlo dopo)
 function rememberCell(tr){if(tr&&tr.cell&&cellOf[tr.id]!==tr.cell){cellOf[tr.id]=tr.cell;store.set("alldogs-cellof",cellOf)}}
@@ -2130,7 +2146,7 @@ function cardHTML(tr,res,title){
   return `<article class="tcard" data-id="${tr.id}"><div class="img">${svgThumb(tr.path)}<img loading="lazy" alt="" src="${staticImg(tr.path)}" onerror="this.remove()">${badge}
     <button class="round ${sv?"saved":""}" data-save="${tr.id}" aria-label="${sv?"Togli dai salvati":"Salva"}">${icon("heart")}</button></div>
     <h3>${esc(title||tr.name)}</h3><p class="sub">${[title?esc(tr.name):"",esc(tr.zone),tr.ref?"sentiero "+esc(tr.ref):"",tr.scale?"CAI "+tr.scale:""].filter(Boolean).join(", ")}</p>
-    <p class="meta"><span class="sign">${fmtH(res.hours)} con ${dn()}</span><span>${km(totLen(tr))} km${tr.loop===false?" a/r":""}</span>${e?`<span>↑ ${totUp(tr)} m</span>`:""}${res.v>=0?`<span class="c${res.effort}"><b>${EFFORT[res.effort]}</b> per lui</span>`:""}</p>${featLine(tr)}</article>`;
+    <p class="meta"><span class="sign">${fmtH(res.hours)} con ${dn()}</span>${tr.dg&&tr.dg[0]!=="ok"?`<span class="${DGC[tr.dg[0]]}"><b>${DGS[tr.dg[0]]}</b></span>`:""}<span>${km(totLen(tr))} km${tr.loop===false?" a/r":""}</span>${e?`<span>↑ ${totUp(tr)} m</span>`:""}${res.v>=0?`<span class="c${res.effort}"><b>${EFFORT[res.effort]}</b> per lui</span>`:""}</p>${featLine(tr)}</article>`;
 }
 function placeCard(f,i){
   return `<article class="tcard" data-place="${i}"><div class="img"><img loading="lazy" alt="" src="${staticPlace(f.c)}" onerror="this.remove()"><span class="badge vw">Sentieri vicini</span></div>
@@ -2158,7 +2174,7 @@ function famousMatch(){
   });
 }
 const inView=tr=>{const b=S.view.b;return tr.bb[0][0]<=b[1][1]&&tr.bb[1][0]>=b[0][1]&&tr.bb[0][1]<=b[1][0]&&tr.bb[1][1]>=b[0][0]};
-function activeFilters(){return $("q").value.trim()||S.act||S.feat.length||S.near||["f-fit","f-eff","f-len","f-up","f-dif","f-zone"].some(id=>$(id).value!=="all")}
+function activeFilters(){return $("q").value.trim()||S.act||S.feat.length||S.near||["f-dog","f-fit","f-eff","f-len","f-up","f-dif","f-zone"].some(id=>$(id).value!=="all")}
 function filtered(){
   const d=dog(),q=$("q").value.trim().toLowerCase(),fit=$("f-fit").value,len=$("f-len").value,upf=$("f-up").value,dif=$("f-dif").value,zone=$("f-zone").value,eff=$("f-eff").value;
   const rows=[];
@@ -2168,6 +2184,7 @@ function filtered(){
     if(len!=="all"){const [a,b]=len.split("-").map(Number);const L=totLen(tr);if(L<a*1000||L>=b*1000)continue}
     if(upf!=="all"){const e=elev[tr.id];if(!e)continue;const [a,b]=upf.split("-").map(Number);if(e.up<a||e.up>=b)continue}
     if(dif!=="all"&&tr.scale!==dif)continue;
+    {const dg=tr.dg&&tr.dg[0],dv=$("f-dog").value;if(dg==="no"&&dv!=="show")continue;if(dv==="free"&&dg==="lim")continue} // di base i sentieri vietati ai cani non si mostrano
     if(zone!=="all"&&tr.zone!==zone)continue;
     if(S.feat.length){const f=FT[tr.id];if(!f||!S.feat.every(k=>f.f.includes(k)))continue}
     let dist;if(S.near){dist=Math.min(...sample(tr.path,20).map(p=>hav(p,S.near.c)));if(dist>6000)continue}else dist=hav(tr.start,S.view.c);
@@ -2228,7 +2245,7 @@ function renderList(){paintFAll();fitLabels();setTimeout(sizeSels,0);
   renderToday();
   renderPills();
   if(!S.ready)return;
-  ["f-fit","f-eff","f-len","f-up","f-dif","f-zone"].forEach(id=>$(id).classList.toggle("act",$(id).value!=="all"));
+  ["f-dog","f-fit","f-eff","f-len","f-up","f-dif","f-zone"].forEach(id=>$(id).classList.toggle("act",$(id).value!=="all"));
   $("f-day").classList.toggle("act",S.day>0);
   $("near-row").hidden=!S.near;
   if(S.near){$("near-row").innerHTML=`<button class="pill x" id="near-x">Vicino a ${esc(S.near.n)}<svg><use href="#i-x"/></svg></button>`;$("near-x").onclick=()=>setNear(null)}
@@ -2365,6 +2382,11 @@ async function sosSheet(pos){
     try{await navigator.clipboard.writeText(text+" "+url);toast("Posizione copiata: incollala in un messaggio")}catch(e){prompt("Copia e manda questo indirizzo:",url)}};
 }
 $("nav-sos").onclick=()=>sosSheet(nav&&nav.pos);
+// Foto del sentiero durante la passeggiata: restano sul telefono con il punto dove sono state scattate e a fine giro si possono mettere nella recensione
+$("nav-cam").onclick=()=>$("nav-cam-in").click();
+$("nav-cam-in").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f||!nav)return;
+  try{const v=await shrinkPhoto(f),k="nv-"+nav.t0+"-"+Date.now();await photoPut(k,v);(nav.photos=nav.photos||[]).push({k,p:nav.pos?r5(nav.pos):null,km:Math.round(nav.dist)});saveNav();toast("Foto salvata: a fine giro la puoi mettere nella recensione")}
+  catch(err){toast("Non riesco a salvare la foto")}};
 $("dog-sos").onclick=()=>sosSheet(null);
 // Grafico del dislivello. p = quote a distanze uguali lungo il percorso. In arancione i tratti ripidi PER IL CANE.
 function elevChart(p,len,d,opt){
@@ -2402,21 +2424,42 @@ function surfBlock(sh,d){
 }
 // Recensione del percorso, pensata per il cane. Per ora resta sul telefono: per mostrarla agli altri utenti serve un archivio online.
 const REV_TAGS=[["ombra","Ombra buona"],["acqua","Acqua trovata"],["zampe","Fondo buono per le zampe"],["tranq","Tranquillo"],["liberi","Cani liberi o bestiame"],["vetri","Rifiuti o vetri"],["scivola","Scivoloso"],["caldo","Troppo esposto al sole"]];
+// Domande veloci a fine passeggiata (un tocco: sì / no). Finiscono nella recensione del sentiero.
+const TQ=[["scale","Scale o scalette difficili per il cane?"],["recinti","Recinti, cancelli o griglie per il bestiame?"],["acqua","Acqua trovata lungo il percorso?"],["animali","Greggi, mucche o cani liberi?"],["ombra","Tanta ombra?"],["divieto","Cartelli di divieto per i cani?"]];
+const TQS={scale:["Scale o scalette","Niente scale difficili"],recinti:["Recinti o griglie","Niente recinti o griglie"],acqua:["Acqua trovata","Niente acqua"],animali:["Greggi o cani liberi","Niente greggi o cani liberi"],ombra:["Tanta ombra","Poca ombra"],divieto:["Cartelli di divieto per i cani","Nessun cartello di divieto"]};
+function qHTML(q){return TQ.map(([k,t])=>`<div class="qrow"><span>${t}</span><span class="qbtn"><button type="button" class="pill" data-q="${k}" data-v="1" aria-pressed="${q[k]===1}">Sì</button><button type="button" class="pill" data-q="${k}" data-v="0" aria-pressed="${q[k]===0}">No</button></span></div>`).join("")}
+function bindQ(root,q){root.querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>{const k=b.dataset.q,v=+b.dataset.v;q[k]=q[k]===v?undefined:v;root.querySelectorAll(`[data-q="${k}"]`).forEach(x=>x.setAttribute("aria-pressed",q[k]===+x.dataset.v))})}
+function qSummary(q){if(!q)return "";const L=TQ.filter(([k])=>q[k]===0||q[k]===1).map(([k])=>TQS[k][q[k]?0:1]);return L.join(" · ")}
+async function revPhotosPaint(id){const box=$("rev-ph");if(!box)return;const r=(store.get("alldogs-reviews")||{})[id]||{},ks=r.ph||[];
+  const imgs=await Promise.all(ks.map(k=>photoGet(k)));
+  box.innerHTML=ks.map((k,i)=>imgs[i]?`<span class="rph"><img src="${imgs[i]}" alt="Foto del sentiero"><button type="button" class="round" data-rphx="${k}" aria-label="Togli la foto">${icon("x")}</button></span>`:"").join("");
+  box.querySelectorAll("[data-rphx]").forEach(b=>b.onclick=async()=>{const all=store.get("alldogs-reviews")||{},x=all[id]||{};x.ph=(x.ph||[]).filter(k=>k!==b.dataset.rphx);all[id]=x;store.set("alldogs-reviews",all);try{await photoPut(b.dataset.rphx,null)}catch(e){}revPhotosPaint(id)})}
+async function revAddPhoto(id,file,where){const v=await shrinkPhoto(file),k="rv-"+id+"-"+Date.now();await photoPut(k,v);
+  const all=store.get("alldogs-reviews")||{},x=all[id]||{};x.ph=(x.ph||[]).concat(k).slice(-12);if(where)(x.pos=x.pos||{})[k]=where;all[id]=x;store.set("alldogs-reviews",all);return k}
 function reviewHTML(id){
   const r=(store.get("alldogs-reviews")||{})[id]||{};
   return `<div class="block" id="rev"><h2>La tua recensione</h2><p class="small muted">Com'è andata con ${dn()}? Serve a ricordarti com'era il percorso per lui.</p>
     <div class="stars">${[1,2,3,4,5].map(n=>`<button type="button" data-star="${n}" aria-label="${n} su 5" aria-pressed="${(r.stars||0)>=n}">★</button>`).join("")}</div>
     <div class="tags" style="margin-top:8px">${REV_TAGS.map(t=>`<button type="button" class="pill" data-tag="${t[0]}" aria-pressed="${!!(r.tags&&r.tags.includes(t[0]))}">${t[1]}</button>`).join("")}</div>
+    <p style="margin-top:14px"><b>Com'era per ${dn()}?</b></p><div id="rev-q" style="margin-top:6px">${qHTML(r.q||{})}</div>
     <textarea class="field" id="rev-note" style="margin-top:10px;min-height:70px" placeholder="Note: ombra, acqua, punti difficili per il cane…">${esc(r.note||"")}</textarea>
-    <button class="btn sm" id="rev-save" style="margin-top:8px">Salva la recensione</button>
-    <p class="small muted" style="margin-top:8px">${r.t?"Salvata il "+new Date(r.t).toLocaleDateString("it-IT",{day:"numeric",month:"long",year:"numeric"})+". ":""}Per ora la vedi solo tu, su questo telefono.</p></div>`;
+    <p style="margin-top:12px"><b>Foto del sentiero</b></p><div class="rphs" id="rev-ph"></div>
+    <div class="row" style="margin-top:8px;flex-wrap:wrap;gap:8px"><button class="btn sm" id="rev-cam" type="button">${icon("cam")}Scatta una foto</button><button class="btn sm" id="rev-gal" type="button">Dalla galleria</button></div>
+    <input type="file" id="rev-cam-in" accept="image/*" capture="environment" hidden><input type="file" id="rev-gal-in" accept="image/*" multiple hidden>
+    <button class="btn sm pri" id="rev-save" style="margin-top:12px">Salva la recensione</button>
+    <p class="small muted" style="margin-top:8px">${r.t?"Salvata il "+new Date(r.t).toLocaleDateString("it-IT",{day:"numeric",month:"long",year:"numeric"})+". ":""}Per ora la vedi solo tu, su questo telefono: quando ci saranno gli account, recensione, risposte e foto si potranno pubblicare per tutti.</p></div>`;
 }
 function bindReview(id){
   const root=$("rev");if(!root)return;let stars=((store.get("alldogs-reviews")||{})[id]||{}).stars||0;
   root.querySelectorAll("[data-star]").forEach(b=>b.onclick=()=>{stars=+b.dataset.star===stars?0:+b.dataset.star;root.querySelectorAll("[data-star]").forEach(x=>x.setAttribute("aria-pressed",+x.dataset.star<=stars))});
   root.querySelectorAll("[data-tag]").forEach(b=>b.onclick=()=>b.setAttribute("aria-pressed",b.getAttribute("aria-pressed")!=="true"));
-  $("rev-save").onclick=()=>{const all=store.get("alldogs-reviews")||{};
-    all[id]={stars,tags:[...root.querySelectorAll('[data-tag][aria-pressed="true"]')].map(b=>b.dataset.tag),note:$("rev-note").value.trim(),t:Date.now()};
+  const q=Object.assign({},((store.get("alldogs-reviews")||{})[id]||{}).q);bindQ($("rev-q"),q);
+  revPhotosPaint(id);
+  $("rev-cam").onclick=()=>$("rev-cam-in").click();$("rev-gal").onclick=()=>$("rev-gal-in").click();
+  const addF=async e=>{for(const f of e.target.files){try{await revAddPhoto(id,f)}catch(err){toast("Non riesco a salvare questa foto");break}}e.target.value="";revPhotosPaint(id);toast("Foto aggiunta alla recensione")};
+  $("rev-cam-in").onchange=addF;$("rev-gal-in").onchange=addF;
+  $("rev-save").onclick=()=>{const all=store.get("alldogs-reviews")||{},old=all[id]||{};
+    all[id]={stars,tags:[...root.querySelectorAll('[data-tag][aria-pressed="true"]')].map(b=>b.dataset.tag),q,note:$("rev-note").value.trim(),ph:old.ph,pos:old.pos,t:Date.now()};
     store.set("alldogs-reviews",all);toast("Recensione salvata")};
 }
 function bindDays(root,again){root.querySelectorAll("[data-day]").forEach(b=>b.onclick=()=>{S.day=+b.dataset.day;$("f-day").value=S.day;again()})}
@@ -2434,13 +2477,13 @@ async function showTrail(id){
     const f=FT[id];
     const tags=f?(f.f.length?`<div class="tags">${f.f.map(k=>`<span class="tag">${FEATL[k]}${f.n&&f.n[k]?": "+esc(f.n[k].join(", ")):""}</span>`).join("")}</div>`:`<p class="muted">Nessuna particolarità trovata vicino al tracciato.</p>`):`<p class="muted">Sto ricavando le particolarità…</p>`;
     const water=!f?"…":f.w.length?`Sì: ${f.w.length===1?"1 fontanella":f.w.length+" fontanelle"}`:"Nessuna segnata";
-    const shade=!f?"…":f.wood>=.6?"Tanta (bosco)":f.wood>=.3?"In parte":"Poca";
+    const shade=!f?"…":f.wood>=.7?`Tanta (${Math.round(f.wood*100)}%)`:f.wood>=.35?`A tratti (${Math.round(f.wood*100)}%)`:`Poca (${Math.round(f.wood*100)}%)`;
     const sh=surfShare(tr),dom=sh&&SFK.slice().sort((a,b)=>sh[b]-sh[a])[0];
     $("det").innerHTML=detailHTML({title:tr.name,ft:f,prof:elev[id]&&elev[id].p,
       tools:`<div class="tools">${toolB("data-3d","layers","Anteprima 3D")}${sh?toolB("data-surf","surf","Colora il fondo"):""}${toolB("data-steps","list","Indicazioni")}${toolB("data-pack","bag","Zaino")}${toolB("data-edit","edit","Modifica")}${offButton(navObjTrail(tr))}</div>`,sub:[tr.type==="walk"?"Giro in città ad anello":"",esc(tr.zone),tr.ref?"sentiero n. "+esc(tr.ref):"",tr.cai?"CAI":"",tr.scale?"difficoltà "+tr.scale:""].filter(Boolean).join(" · "),it:item(tr),
-      sections:`${tr.d?`<div class="block"><h2>Descrizione</h2><p>${esc(tr.d)}</p></div>`:""}${(hz=>hz.length?`<div class="block"><h2>Attenzione in questo periodo</h2><div class="tags">${hz.map(h=>`<span class="tag">${h.t}</span>`).join("")}</div><button class="btn sm" data-haz style="margin-top:10px">Leggi i consigli</button></div>`:"")(trailHaz(tr))}${sh?`<div class="block"><h2>Fondo del percorso</h2>${surfBlock(sh,dog())}</div>`:""}<div class="block"><h2>Particolarità</h2>${tags}<p class="small muted" style="margin-top:8px">Ricavate in automatico da OpenStreetMap: fiumi e torrenti che il sentiero costeggia, laghi e spiagge che raggiunge, cascate, cime, panorami e luoghi storici che si incontrano lungo il tracciato.</p></div>
-      <div class="block"><h2>Scheda per il cane</h2><div class="tiles"><div class="tile"><span>Acqua lungo il percorso</span><b>${water}</b></div><div class="tile"><span>Ombra (stima)</span><b>${shade}</b></div><div class="tile"><span>Fondo prevalente</span><b>${sh?SFL[dom]:"Da verificare"}</b></div>${tr.type==="walk"?`<div class="tile"><span>Nel verde</span><b>${Math.round((tr.green||0)*100)}% del giro</b></div>`:`<div class="tile"><span>Punti critici</span><b>Da verificare</b></div>`}</div>
-      <p class="small muted" style="margin-top:8px">${f&&f.w.length?"Le fontanelle sono i punti blu sulla mappa. ":""}Acqua e ombra sono stime dai dati di OpenStreetMap: verificale sul posto. Il sentiero non è ancora stato provato con un cane.</p></div>${trailRules(tr)}`})+
+      sections:`${dogBlock(tr)}${tr.d?`<div class="block"><h2>Descrizione</h2><p>${esc(tr.d)}</p></div>`:""}${(hz=>hz.length?`<div class="block"><h2>Attenzione in questo periodo</h2><div class="tags">${hz.map(h=>`<span class="tag">${h.t}</span>`).join("")}</div><button class="btn sm" data-haz style="margin-top:10px">Leggi i consigli</button></div>`:"")(trailHaz(tr))}${sh?`<div class="block"><h2>Fondo del percorso</h2>${surfBlock(sh,dog())}</div>`:""}<div class="block"><h2>Particolarità</h2>${tags}<p class="small muted" style="margin-top:8px">Ricavate in automatico da OpenStreetMap: fiumi e torrenti che il sentiero costeggia, laghi e spiagge che raggiunge, cascate, cime, panorami e luoghi storici che si incontrano lungo il tracciato.</p></div>
+      <div class="block"><h2>Scheda per il cane</h2><div class="tiles"><div class="tile"><span>Acqua lungo il percorso</span><b>${water}</b></div><div class="tile"><span>Ombra (stima)</span><b>${shade}</b></div><div class="tile"><span>Fondo prevalente</span><b>${sh?SFL[dom]:"Da verificare"}</b></div>${tr.type==="walk"?`<div class="tile"><span>Nel verde</span><b>${Math.round((tr.green||0)*100)}% del giro</b></div>`:`<div class="tile"><span>Punti critici</span><b>${(q=>q?esc(q):"Da verificare")(qSummary(((store.get("alldogs-reviews")||{})[tr.id]||{}).q))}</b></div>`}</div>
+      ${f&&f.sh?shadeBar(f.sh,tr.len):""}<p class="small muted" style="margin-top:8px">${f&&f.w.length?"Le fontanelle sono i punti blu sulla mappa. ":""}${f&&f.sh?"L'ombra viene dalla mappa satellitare degli alberi (ESA WorldCover, 10 m): conta come ombra solo dove ci sono alberi sul sentiero o a pochi metri. L'acqua viene da OpenStreetMap. ":"Acqua e ombra sono stime dai dati di OpenStreetMap. "}Verificale sul posto: il sentiero non è ancora stato provato con un cane.</p></div>${trailRules(tr)}`})+
       reviewHTML(tr.id)+(tr.type==="walk"?`<p class="small muted block">Giro in città calcolato da AllDogs sulle strade e i vialetti di OpenStreetMap, preferendo verde, zone pedonali e poco traffico. Controlla sempre attraversamenti, marciapiedi e orari di apertura dei parchi.</p>`:`<p class="small block"><a href="https://www.openstreetmap.org/relation/${tr.id}" target="_blank" rel="noopener">Vedi i dati del sentiero su OpenStreetMap</a></p>`);
     bindReview(tr.id);
     bindDays($("det"),paint);syncSave();bindTools($("det"));
@@ -3490,19 +3533,27 @@ function diaryHTML(x,i){const m=MOODS.find(m=>m[0]===x.mood);
     ${m||x.note?`<p class="dnote">${m?`<span class="mood ${m[0]}">${m[1]}</span> `:""}${esc(x.note||"")}</p>`:""}
     <button class="btn sm" data-dia="${i}" style="margin-top:8px">${m||x.note||x.ph?"Modifica il diario":"Scrivi com'è andata"}</button>`}
 function diaryPhotos(root){root.querySelectorAll("img[data-ph]").forEach(async im=>{const v=await photoGet(im.dataset.ph);if(v)im.src=v;else im.remove()})}
-function diarySheet(i){const x=S.acts[i];if(!x)return;let mood=x.mood||"",ph=null,phChanged=false;
+function diarySheet(i){const x=S.acts[i];if(!x)return;let mood=x.mood||"",ph=null,phChanged=false;const q=Object.assign({},x.q),isTr=x.kind==="trail"&&x.id;
   openSheet(`<h2>Com'è andata?</h2><p class="small muted" style="margin-top:6px">${esc(x.name)} · ${new Date(x.t).toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long"})} · ${km(x.dist)} km</p>
     <p style="margin-top:14px"><b>Come stava ${dn()}?</b></p><div class="tags" style="margin-top:8px">${MOODS.map(m=>`<button class="tag" data-mood="${m[0]}" aria-pressed="${mood===m[0]}">${m[1]}</button>`).join("")}</div>
+    <p style="margin-top:14px"><b>Com'era il percorso per ${dn()}?</b></p><p class="small muted">Un tocco per risposta, quelle che sai.${isTr?" Vanno anche nella recensione del sentiero.":""}</p><div id="dia-q" style="margin-top:4px">${qHTML(q)}</div>
+    ${x.photos&&x.photos.length?`<p style="margin-top:14px"><b>Foto scattate durante il giro</b></p><div class="rphs" id="dia-wph"></div>${isTr?`<label class="check" style="margin-top:8px"><input type="checkbox" id="dia-wph-rev" ${x.phRev?"":"checked"}>Mettile nella recensione del sentiero</label>`:""}`:""}
     <label style="display:block;margin-top:14px"><b>Note</b><textarea class="field" id="dia-n" rows="3" placeholder="Es. ha fatto il bagno nel torrente, tanta ombra, attenzione alle mucche" style="margin-top:6px">${esc(x.note||"")}</textarea></label>
     <div style="margin-top:12px"><b>Una foto</b><div id="dia-pv" style="margin-top:8px"></div><div class="row" style="margin-top:8px"><button class="btn sm" id="dia-pb" type="button">Scegli una foto</button><button class="btn sm" id="dia-px" type="button" hidden>Togli la foto</button></div><input type="file" id="dia-pi" accept="image/*" hidden></div>
     <button class="btn pri wide" id="dia-ok" style="margin-top:16px">Salva nel diario</button>`);
   const pv=v=>{$("dia-pv").innerHTML=v?`<img src="${v}" alt="" class="dph">`:"";$("dia-px").hidden=!v};
+  bindQ($("dia-q"),q);
+  if(x.photos&&x.photos.length)Promise.all(x.photos.map(o=>photoGet(o.k))).then(v=>{const b=$("dia-wph");if(b)b.innerHTML=v.map(u=>u?`<span class="rph"><img src="${u}" alt="Foto del giro"></span>`:"").join("")});
   if(x.ph)photoGet(x.t).then(v=>{if(!phChanged){ph=v;pv(v)}});
   $("sheet-box").querySelectorAll("[data-mood]").forEach(b=>b.onclick=()=>{mood=mood===b.dataset.mood?"":b.dataset.mood;$("sheet-box").querySelectorAll("[data-mood]").forEach(y=>y.setAttribute("aria-pressed",y.dataset.mood===mood))});
   $("dia-pb").onclick=()=>$("dia-pi").click();
   $("dia-pi").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{ph=await shrinkPhoto(f);phChanged=true;pv(ph)}catch(err){toast("Non riesco ad aprire questa foto")}};
   $("dia-px").onclick=()=>{ph=null;phChanged=true;pv(null)};
-  $("dia-ok").onclick=async()=>{x.mood=mood||undefined;x.note=$("dia-n").value.trim().slice(0,600)||undefined;
+  $("dia-ok").onclick=async()=>{x.mood=mood||undefined;x.note=$("dia-n").value.trim().slice(0,600)||undefined;x.q=Object.keys(q).some(k=>q[k]!==undefined)?q:undefined;
+    if(isTr){const all=store.get("alldogs-reviews")||{},r=all[x.id]||{};let ch=false;
+      if(x.q){r.q=Object.assign({},r.q,x.q);ch=true}
+      const put=$("dia-wph-rev");if(put&&put.checked&&!x.phRev&&x.photos){r.ph=(r.ph||[]).concat(x.photos.map(o=>o.k)).slice(-12);r.pos=r.pos||{};x.photos.forEach(o=>{if(o.p)r.pos[o.k]=o.p});x.phRev=1;ch=true}
+      if(ch){r.t=r.t||Date.now();all[x.id]=r;store.set("alldogs-reviews",all)}}
     if(phChanged){try{await photoPut(String(x.t),ph);x.ph=ph?1:undefined}catch(e){toast("Non c'è spazio per la foto")}}
     store.set("alldogs-acts",S.acts);$("sheet").hidden=true;if(location.hash==="#attivita")showAct();toast("Salvato nel diario")};
 }
@@ -3853,12 +3904,12 @@ function startNav(o){
   nav={o,t0:Date.now(),run:0,since:Date.now(),paused:false,dist:0,track:[],idx:0,prog:0,gps:"wait",last:null,lastT:0,pos:null,water:0,off:null,tip:null};
   navPrep();navFollow=true;saveNav();$("nav-bot").classList.remove("open");$("s-vai").classList.remove("nbopen");location.hash="vai";
 }
-function saveNav(){if(!nav)return;navSaveT=Date.now();store.set(NAV_KEY,{o:nav.o,t0:nav.t0,run:navElapsed(),at:Date.now(),paused:nav.paused,dist:nav.dist,track:nav.track,idx:nav.idx,prog:nav.prog,share:nav.share||null,water:nav.water,back:!!nav.back})}
+function saveNav(){if(!nav)return;navSaveT=Date.now();store.set(NAV_KEY,{o:nav.o,t0:nav.t0,run:navElapsed(),at:Date.now(),paused:nav.paused,dist:nav.dist,track:nav.track,idx:nav.idx,prog:nav.prog,share:nav.share||null,water:nav.water,back:!!nav.back,photos:nav.photos||[]})}
 function restoreNav(){
   const c=store.get(NAV_KEY);if(!c||!c.o||!c.o.path||Date.now()-c.at>6*3600e3){store.del(NAV_KEY);return false}
   // interruzione breve: il tempo continua a contare. Interruzione lunga: riparte in pausa, senza contare il buco.
   const gap=Date.now()-c.at,cont=!c.paused&&gap<10*60e3;
-  nav={o:c.o,t0:c.t0,run:c.run+(cont?gap:0),since:Date.now(),paused:!cont,dist:c.dist||0,track:c.track||[],idx:c.idx||0,prog:c.prog||0,gps:"wait",last:null,lastT:0,pos:null,water:c.water||0,off:null,tip:null,back:!!c.back};
+  nav={o:c.o,t0:c.t0,run:c.run+(cont?gap:0),since:Date.now(),paused:!cont,dist:c.dist||0,track:c.track||[],idx:c.idx||0,prog:c.prog||0,gps:"wait",last:null,lastT:0,pos:null,water:c.water||0,off:null,tip:null,back:!!c.back,photos:c.photos||[]};
   navPrep();nav.idx=Math.min(nav.idx,nav.P.length-1);navFollow=true;nav.share=c.share||null;
   return true;
 }
@@ -3899,9 +3950,13 @@ function onFix(pos){
       if(d>=Math.max(6,acc*.4)){
         nav.moveT=now;
         if(nav.paused&&nav.auto&&d>=10){nav.paused=false;nav.auto=false;nav.since=now;say("Si riparte")} // fine della pausa automatica
-        // conta solo spostamenti credibili a piedi (fino a 3 m/s): scarta i salti del GPS
-        if(!nav.paused&&d/dt<=3){nav.dist+=d;nav.track.push(r5(p));if(M&&styleOK&&scene.mode==="nav")setData("track",fc(nav.track.length>1?[lineF([nav.track])]:[]))}
-        nav.last=p;nav.lastT=now;
+        // conta solo spostamenti credibili, anche di corsa: fino a 7 m/s (25 km/h), o poco più della velocità che dà il GPS stesso.
+        // Un salto del GPS NON sposta il punto di riferimento: al punto buono successivo il tratto viene contato tutto (prima andava perso).
+        const v=d/dt,gv=pos.coords.speed,okV=v<=7||(gv!=null&&gv>0&&v<=gv*1.6+1);
+        if(okV||nav.bad>=4){
+          if(!nav.paused&&okV){nav.dist+=d;nav.track.push(r5(p));if(M&&styleOK&&scene.mode==="nav")setData("track",fc(nav.track.length>1?[lineF([nav.track])]:[]))}
+          nav.last=p;nav.lastT=now;nav.bad=0;
+        }else nav.bad=(nav.bad||0)+1;
       }
     }
     navProgress(p);navAlerts(p);
@@ -4049,7 +4104,7 @@ $("nav-end").onclick=()=>{
     const pick=document.querySelector('input[name="nsd"]:checked'),useGps=pick?pick.value==="gps":true,dist=Math.round(useGps?nav.dist:full);
     let tr=nav.track.length>1?thin(nav.track,15):[];if(tr.length>400)tr=sample(tr,400);
     const stp=parseSteps($("ns-steps").value);if($("ns-steps").value.trim()&&!stp){toast("Il numero dei passi non sembra giusto");return}
-    S.acts.unshift({dogs:DOGS.walk.slice(),t:nav.t0,name:o.name,kind:o.kind,id:o.id||null,dur:Math.round(el),dist,plan:full,up:Math.round((o.up||0)*(o.loop===false?2:1)*Math.min(1,dist/Math.max(1,full))),gps:useGps,track:tr,steps:stp});
+    S.acts.unshift({dogs:DOGS.walk.slice(),t:nav.t0,name:o.name,kind:o.kind,id:o.id||null,dur:Math.round(el),dist,plan:full,up:Math.round((o.up||0)*(o.loop===false?2:1)*Math.min(1,dist/Math.max(1,full))),gps:useGps,track:tr,steps:stp,photos:(nav.photos||[]).length?nav.photos:undefined});
     S.acts=S.acts.slice(0,200);
     if(!store.set("alldogs-acts",S.acts)){S.acts.slice(5).forEach(x=>delete x.track);store.set("alldogs-acts",S.acts)}
     if(nav.share)sharePub({k:"e",t:Date.now(),d:dist,e:Math.round(el/1000)});
@@ -4156,6 +4211,10 @@ $("dog-del").onclick=()=>{const nm=S.dog&&S.dog.name||"questo cane";if(DOGS.list
   const id=DOGS.cur;DOGS.list=DOGS.list.filter(x=>x.id!==id);DOGS.walk=DOGS.walk.filter(x=>x!==id);DOGS.cur=DOGS.list[0].id;if(!DOGS.walk.length)DOGS.walk=[DOGS.cur];dogsSave();
   if(id!=="d1")["alldogs-train","alldogs-goal","alldogs-salute","alldogs-photo"].forEach(k=>store.del(k+"-"+id));
   try{localStorage.setItem("alldogs-dog",JSON.stringify(DOGS.list[0]))}catch(e){}toast(nm+" tolto dall'app");location.reload()};
+// Libretto ancora vuoto: un invito a completarlo (razza, pelo, agilità, salute, microchip, veterinario, vaccini)
+function bookTodo(d){const h=d.health||{},miss=[!d.breed&&"razza",!(d.pat&&Object.keys(d.pat).length)&&!d.healthOk&&"salute",!h.chip&&"microchip",!h.vet&&"veterinario",!(h.vax&&h.vax.length)&&"vaccini"].filter(Boolean);
+  if(miss.length<3)return "";
+  return `<span class="box" style="display:block;margin-top:10px"><b>Completa il libretto di ${esc(d.name||"del cane")}</b><br><span class="small muted">Mancano ${miss.join(", ")}. Servono per consigli più giusti e da avere a portata di mano in caso di emergenza.</span><br><button class="btn sm" type="button" style="margin-top:8px" onclick="const f=document.getElementById('fold-dog');f.open=true;f.scrollIntoView({behavior:'smooth'})">Completa ora</button></span>`}
 function showDog(){
   syncPhoto();
   const first=!S.dog||!!S.addDog,d=S.addDog?DEF_DOG:dog();renderPick();
@@ -4170,7 +4229,7 @@ function showDog(){
   const h=first?{}:d.health||{};HF.forEach(([k,id])=>$(id).value=h[k]||"");
   $("vax").innerHTML="";(h.vax||[]).forEach(vaxRow);
   if(!first){const c=capacity(d);$("avatar").textContent=(d.name||"?").trim().charAt(0).toUpperCase();$("dog-title").textContent=d.name||"Il mio cane";
-    $("dog-cap").textContent=`Fino a circa ${kmN(c.km)} km e ${c.up} m di salita`;$("dog-alert").innerHTML=healthAlerts(d)}
+    $("dog-cap").textContent=`Fino a circa ${kmN(c.km)} km e ${c.up} m di salita`;$("dog-alert").innerHTML=healthAlerts(d)+bookTodo(d)}
   else $("dog-alert").innerHTML="";
   $("ors-key").value=store.get("alldogs-ors")?"••••••••••••":"";
   $("gem-key").value=store.get("alldogs-gemini")?"••••••••••••":"";
@@ -4185,7 +4244,7 @@ $("dog-save").onclick=()=>{
   d.health={};HF.forEach(([k,id])=>{const v=$(id).value.trim();if(v)d.health[k]=v});
   d.health.vax=[...$("vax").querySelectorAll(".vax")].map(r=>{const i=r.querySelectorAll("input");return {n:i[0].value.trim(),d:i[1].value}}).filter(v=>v.n||v.d);
   if(S.addDog){DOGS.cur="d"+Date.now().toString(36);DOGS.walk=[DOGS.cur];dogsSave();store.set("alldogs-dog",d);toast("Nuovo cane aggiunto");location.hash="cane";location.reload();return}
-  const first=!S.dog;S.dog=d;store.set("alldogs-dog",d);toast("Profilo salvato");S.chat=[];for(const c in MC)MC[c].msgs=[];
+  const first=!S.dog;S.dog=d;store.set("alldogs-dog",d);toast(first?`Fatto! Quando vuoi, completa il libretto di ${d.name} nella sua pagina.`:"Profilo salvato");S.chat=[];for(const c in MC)MC[c].msgs=[];
   if(first)location.hash="esplora";else showDog();
 };
 $("keys-save").onclick=()=>{
@@ -4222,7 +4281,7 @@ function openSearch(){
   setTimeout(()=>$("sq").focus(),30);loadNames().catch(()=>{});
 }
 function closeSearch(){$("srch").hidden=true;document.body.classList.remove("noscroll");$("sq").blur()}
-function quickFilter(fn){closeSearch();["f-fit","f-eff","f-len","f-up","f-dif","f-zone"].forEach(id=>$(id).value="all");fn();S.limit=20;renderList();setTimeout(()=>document.querySelector(".frow").scrollIntoView({behavior:"smooth",block:"start"}),100)}
+function quickFilter(fn){closeSearch();["f-dog","f-fit","f-eff","f-len","f-up","f-dif","f-zone"].forEach(id=>$(id).value="all");fn();S.limit=20;renderList();setTimeout(()=>document.querySelector(".frow").scrollIntoView({behavior:"smooth",block:"start"}),100)}
 function trailSub(r){const tr=TR.get(r.id);let v="";
   if(tr){const res=verdict(item(tr),dog(),S.day);if(res.v>=0)v=`<span class="vl c${res.v}"><i class="dot b${res.v}"></i>${VLABEL[res.v]} per ${dn()}</span> · `+fmtH(res.hours)+" · "}
   const d=hav(S.view.c,r.p);return [r.zone?esc(r.zone):"",v+km(r.len)+" km",d<100e3?Math.round(d/1000)+" km da qui":""].filter(Boolean).join(" · ")}
@@ -4291,10 +4350,10 @@ $("q").addEventListener("focus",e=>{e.target.blur();openSearch()});
 $("q").addEventListener("click",openSearch);
 document.querySelector("#s-esplora .search").addEventListener("click",openSearch);
 // ---- tutti i filtri in una finestra (il primo bottone della fila) ----
-function paintFAll(){const n=["f-fit","f-eff","f-len","f-up","f-dif","f-zone"].filter(id=>$(id).value!=="all").length+(S.act?1:0)+S.feat.length;
+function paintFAll(){const n=["f-dog","f-fit","f-eff","f-len","f-up","f-dif","f-zone"].filter(id=>$(id).value!=="all").length+(S.act?1:0)+S.feat.length;
   $("f-all").innerHTML=`${icon("filter")}${n?`<span class="ddn">${n}</span>`:"Filtri"}`}
 $("f-all").onclick=()=>{
-  const ids=["f-fit","f-eff","f-len","f-up","f-dif","f-zone"];
+  const ids=["f-dog","f-fit","f-eff","f-len","f-up","f-dif","f-zone"];
   openSheet(`<div class="fsheet"><h2>Filtri</h2>${ids.map(id=>`<label>${esc($(id).getAttribute("aria-label"))}<select data-fs="${id}">${$(id).innerHTML}</select></label>`).join("")}
     <p class="small muted" style="margin-top:12px">Attività e particolarità le trovi nella fila dei filtri.</p>
     <button class="btn wide" id="fs-reset" type="button" style="margin-top:14px">Azzera i filtri</button></div>`);
@@ -4302,11 +4361,11 @@ $("f-all").onclick=()=>{
   $("fs-reset").onclick=()=>{$("reset").click();$("sheet").hidden=true};
 };
 $("q").addEventListener("input",()=>{S.limit=20;renderList();clearTimeout(geoT);geoT=setTimeout(geoSuggest,450)});
-["f-fit","f-eff","f-len","f-up","f-dif","f-zone"].forEach(id=>$(id).addEventListener("change",()=>{S.limit=20;renderList()}));
+["f-dog","f-fit","f-eff","f-len","f-up","f-dif","f-zone"].forEach(id=>$(id).addEventListener("change",()=>{S.limit=20;renderList()}));
 $("f-day").innerHTML=[0,1,2,3,4,5,6].map(i=>`<option value="${i}">${dayName(i)}</option>`).join("");
 $("f-day").addEventListener("change",e=>{S.day=+e.target.value;renderList()});
 $("more").onclick=()=>{S.limit+=20;renderList()};
-$("reset").onclick=()=>{$("q").value="";["f-fit","f-eff","f-len","f-up","f-dif","f-zone"].forEach(id=>$(id).value="all");S.act=null;S.feat=[];S.near=null;S.limit=20;$("place-row").hidden=true;renderList()};
+$("reset").onclick=()=>{$("q").value="";["f-dog","f-fit","f-eff","f-len","f-up","f-dif","f-zone"].forEach(id=>$(id).value="all");S.act=null;S.feat=[];S.near=null;S.limit=20;$("place-row").hidden=true;renderList()};
 syncLayersMenu();
 
 const onList=()=>(location.hash.slice(1)||"esplora")==="esplora";
