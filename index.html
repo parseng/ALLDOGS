@@ -342,6 +342,7 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
     <button data-st="3d">Rilievo 3D</button>
     <button data-st="hill">Ombre del rilievo</button>
     <button data-st="rain">Pioggia adesso</button>
+    <button data-st="poi">Luoghi per il cane</button>
     <button data-st="legend">Legenda della mappa</button>
   </div>
   <div class="surfleg" id="surfleg" hidden></div>
@@ -370,6 +371,10 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
   <p class="flabel">Particolarità</p>
   <div class="hscroll" id="f-feat" style="margin-top:6px"></div>
   <p class="small muted" id="feat-status" style="margin-top:6px"></p>
+  <div id="parks-box" hidden>
+    <div class="count"><h2>Parchi per una passeggiata</h2><span class="muted small">tocca per creare un giro lì</span></div>
+    <div class="carousel" id="parks"></div>
+  </div>
   <div id="reco-box">
     <div class="count"><h2>Consigliati</h2><span class="muted small">i posti famosi qui vicino</span></div>
     <div class="carousel" id="reco"></div>
@@ -747,6 +752,24 @@ function loadCell(k){
     S.trails=[...TR.values()];return d.trails.length;
   }).catch(e=>{delete cellState[k];throw e});
 }
+// Luoghi utili per il cane (aree cani, veterinari, spiagge per cani) e parchi: data/p/<riquadro>.json, creati da tools/build_city.py
+const PL={},plState={},POI_T={a:["Area cani","#1f8a4c"],v:["Veterinario","#d9483b"],s:["Spiaggia per cani","#1e88e5"]};
+let poiOn=store.get("alldogs-poi")!==false;
+function loadPlaces(k){
+  if(plState[k])return plState[k];
+  if(!IDX||!(IDX.places||[]).includes(k))return plState[k]=Promise.resolve();
+  return plState[k]=getJSON(`data/p/${k}.json`).then(d=>{PL[k]=d;poiData()}).catch(()=>{delete plState[k]});
+}
+function allPoi(){const o=[];for(const k in PL)for(const p of PL[k].poi)o.push(p);return o}
+function poiData(){if(!M||!styleOK||!M.getSource("poi"))return;
+  setData("poi",fc(poiOn?allPoi().map(p=>({type:"Feature",properties:{k:p[0],n:p[3]||"",tel:p[4]||"",h:p[5]||"",col:POI_T[p[0]][1]},geometry:{type:"Point",coordinates:[p[2],p[1]]}})):[]))}
+function poiSheet(pr,c){
+  const g=`${c[1].toFixed(5)},${c[0].toFixed(5)}`;
+  openSheet(`<p class="small muted">${POI_T[pr.k][0]}${pr.h?" · segnato come pronto soccorso o sempre aperto":""}</p><h2>${esc(pr.n||POI_T[pr.k][0])}</h2>
+    <div class="stack" style="margin-top:14px">${pr.tel?`<a class="btn pri wide" href="tel:${esc(pr.tel)}">Chiama ${esc(pr.tel)}</a>`:""}
+    <a class="btn wide" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${g}">Portami lì</a></div>
+    <p class="small muted" style="margin-top:10px">Dato di OpenStreetMap: orari e regole vanno verificati sul posto.</p>`);
+}
 function viewCells(b){const out=[];for(let la=Math.floor(b[0][0]/CELL)*CELL;la<b[1][0];la+=CELL)for(let lo=Math.floor(b[0][1]/CELL)*CELL;lo<b[1][1];lo+=CELL)out.push(cellKey(la+.01,lo+.01));return out}
 async function findTrail(id){ // per aprire un sentiero salvato o un indirizzo diretto
   if(TR.has(id))return TR.get(id);
@@ -889,6 +912,8 @@ function initMap(){
   M.on("moveend",()=>{if(scene.mode!=="explore"||!curHost||curHost.id!=="hostExplore")return;clearTimeout(viewT);viewT=setTimeout(viewChanged,350)});
   M.once("load",()=>{if(scene.mode==="explore"&&curHost&&curHost.id==="hostExplore")viewChanged()});
   M.on("click",e=>{
+    if(scene.mode!=="nav"&&M.getLayer("ad-poi")){const pf=M.queryRenderedFeatures([[e.point.x-8,e.point.y-8],[e.point.x+8,e.point.y+8]],{layers:["ad-poi"]});
+      if(pf.length&&!(scene.mode==="crea"&&drawing())){poiSheet(pf[0].properties,pf[0].geometry.coordinates);return}}
     if(scene.mode==="explore"){
       if(M.getLayer("ad-cells")){const cf=M.queryRenderedFeatures(e.point,{layers:["ad-cells"]});if(cf.length){M.flyTo({center:cf[0].geometry.coordinates,zoom:9.6});return}}const f=M.queryRenderedFeatures([[e.point.x-10,e.point.y-10],[e.point.x+10,e.point.y+10]],{layers:["ad-trails-hit","ad-trails-start"]});if(f.length){peek(f[0].properties.id);return}hidePeek()}
     else if(scene.mode==="trail"&&!curHost.classList.contains("full"))setFull(true);
@@ -921,13 +946,17 @@ function addLayers(){
   if(mapStyle==="sat")try{fixSatellite()}catch(e){console.warn(e)}
   detailMap();
   const empty={type:"FeatureCollection",features:[]};
-  ["trails","sel","selpath","water","startpt","track","cells"].forEach(s=>{if(!M.getSource(s))M.addSource(s,{type:"geojson",data:empty})});
+  ["trails","sel","selpath","water","startpt","track","cells","poi"].forEach(s=>{if(!M.getSource(s))M.addSource(s,{type:"geojson",data:empty})});
   if(!M.getSource("dem"))M.addSource("dem",{type:"raster-dem",tiles:[DEM_TILES],encoding:"terrarium",tileSize:256,maxzoom:14,attribution:"Rilievo: Terrain Tiles (Mapzen, AWS Open Data)"});
   M.addLayer({id:"ad-trails-line",type:"line",source:"trails",layout:{"line-cap":"round","line-join":"round"},paint:{"line-color":["get","col"],"line-width":["interpolate",["linear"],["zoom"],8,2,13,4],"line-opacity":.9}});
   M.addLayer({id:"ad-trails-hit",type:"line",source:"trails",paint:{"line-color":"#000","line-width":16,"line-opacity":0}});
   M.addLayer({id:"ad-trails-start",type:"circle",source:"startpt",paint:{"circle-color":["get","col"],"circle-radius":["interpolate",["linear"],["zoom"],8,3.5,13,7],"circle-stroke-color":"#fff","circle-stroke-width":2}});
   M.addLayer({id:"ad-sel-casing",type:"line",source:"sel",layout:{"line-cap":"round","line-join":"round"},paint:{"line-color":"#ffffff","line-width":9,"line-opacity":.95}});
   M.addLayer({id:"ad-sel-line",type:"line",source:"sel",layout:{"line-cap":"round","line-join":"round"},paint:{"line-color":["match",["get","sf"],"a",SFC.a,"n",SFC.n,"g",SFC.g,"u",SFC.u,"#ff5d2a"],"line-width":5}});
+  // luoghi utili per il cane: verde = area cani, rosso = veterinario, azzurro = spiaggia per cani
+  M.addLayer({id:"ad-poi",type:"circle",source:"poi",minzoom:10.5,paint:{"circle-color":["get","col"],"circle-radius":["interpolate",["linear"],["zoom"],10.5,3.5,14,7.5],"circle-stroke-color":"#fff","circle-stroke-width":2}});
+  M.addLayer({id:"ad-poi-l",type:"symbol",source:"poi",minzoom:13,layout:{"text-field":["match",["get","k"],"a","C","v","+","~"],"text-size":10,"text-font":["DIN Pro Bold","Arial Unicode MS Bold"],"text-allow-overlap":true},paint:{"text-color":"#fff"}});
+  poiData();
   // da lontano: un cerchio per ogni riquadro con il numero dei sentieri
   M.addLayer({id:"ad-cells",type:"circle",source:"cells",paint:{"circle-color":"#2456f5","circle-opacity":.85,"circle-stroke-color":"#fff","circle-stroke-width":2,"circle-radius":["interpolate",["linear"],["get","n"],1,11,200,17,1500,26]}});
   M.addLayer({id:"ad-cells-n",type:"symbol",source:"cells",layout:{"text-field":["get","t"],"text-size":11.5,"text-font":["DIN Pro Bold","Arial Unicode MS Bold"],"text-allow-overlap":true},paint:{"text-color":"#fff"}});
@@ -967,11 +996,12 @@ function setStyleKind(k){
   if(k==="3d"){map3d=!map3d;store.set("alldogs-map3d",map3d);prev3d=false;stopSpin();terrain(map3d)}
   else if(k==="hill"){hillOn=!hillOn;store.set("alldogs-hill",hillOn);overlays()}
   else if(k==="rain"){rainOn=!rainOn;overlays();if(rainOn)toast("Radar: dove sta piovendo adesso")}
+  else if(k==="poi"){poiOn=!poiOn;store.set("alldogs-poi",poiOn);poiData();toast(poiOn?"Aree cani, veterinari e spiagge sulla mappa":"Luoghi nascosti")}
   else if(k==="legend")showLegend();
   else if(k!==mapStyle){mapStyle=k;store.set("alldogs-mapstyle",k);styleOK=false;M.setStyle(STYLES[k],{diff:false})}
   syncLayersMenu();
 }
-function syncLayersMenu(){document.querySelectorAll("#layers button").forEach(b=>b.setAttribute("aria-pressed",({"3d":map3d,hill:hillOn,rain:rainOn,legend:false})[b.dataset.st]??b.dataset.st===mapStyle))}
+function syncLayersMenu(){document.querySelectorAll("#layers button").forEach(b=>b.setAttribute("aria-pressed",({"3d":map3d,hill:hillOn,rain:rainOn,poi:poiOn,legend:false})[b.dataset.st]??b.dataset.st===mapStyle))}
 const fc=f=>({type:"FeatureCollection",features:f});
 const lineF=(ways,props)=>({type:"Feature",properties:props||{},geometry:{type:"MultiLineString",coordinates:ways.map(w=>w.map(ll))}});
 function setData(src,data){const s=M.getSource(src);if(s)s.setData(data)}
@@ -1132,7 +1162,8 @@ function showLegend(){
     ${row(dot(css("--ok")),"Sentiero fattibile per "+dn(),"Il colore del sentiero è il verdetto per il tuo cane")}
     ${row(dot(css("--warn")),"Con prudenza")}${row(dot(css("--no")),"Sconsigliato")}${row(dot(css("--wait")),"Lo sto ancora valutando")}
     ${row(ln("#ff5d2a",null,4),"Percorso scelto")}${row(ln("#2f7bff",null,4),"Strada già fatta","Durante Avvia percorso")}
-    ${row(dot("#1e88e5"),"Fontanella","Acqua lungo il percorso, da verificare sul posto")}${row(dot("#fff","2"),"Tappa o segnaposto")}
+    ${row(dot("#1e88e5"),"Fontanella","Acqua lungo il percorso, da verificare sul posto")}
+    ${row(dot("#1f8a4c","C"),"Area cani")}${row(dot("#d9483b","+"),"Veterinario")}${row(dot("#1e88e5","~"),"Spiaggia per cani")}${row(dot("#fff","2"),"Tappa o segnaposto")}
     ${SFK.map(k=>row(ln(SFC[k],null,5),"Fondo: "+SFL[k].toLowerCase(),k==="a"?"D'estate può scottare le zampe":k==="g"?"Faticosi per le articolazioni":k==="u"?"Nei dati non c'è scritto":"Il migliore per le zampe")).join("")}
   </div>
   <h3>Sentieri e strade</h3><div class="lg">
@@ -1262,6 +1293,16 @@ function filtered(){
   else rows.sort((a,b)=>((a.res.v<0?.5:a.res.v)-(b.res.v<0?.5:b.res.v))||(a.res.effort-b.res.effort)||(b.tr.cai-a.tr.cai)||a.dist-b.dist);
   return rows;
 }
+// Parchi abbastanza grandi nella zona inquadrata: un tocco e si crea un giro lì
+function renderParks(){
+  const b=S.view.b,ps=[];
+  if(!S.far&&!activeFilters())for(const k in PL)for(const p of PL[k].parks)if(p.c[0]>=b[0][0]&&p.c[0]<=b[1][0]&&p.c[1]>=b[0][1]&&p.c[1]<=b[1][1])ps.push(p);
+  ps.sort((x,y)=>y.d-x.d);const top=ps.slice(0,10);
+  $("parks-box").hidden=!top.length;
+  $("parks").innerHTML=top.map((p,i)=>`<article class="tcard" data-pk="${i}"><div class="img"><img loading="lazy" alt="" src="${staticPlace(p.c)}" onerror="this.remove()"><span class="badge v0">Parco</span></div>
+    <h3>${esc(p.n)}</h3><p class="sub">${p.dog==="no"?"Secondo OpenStreetMap i cani non sono ammessi":p.dog==="leashed"?"Cani al guinzaglio":"Verifica sul posto le regole per i cani"}</p><p class="meta">Tocca per creare un giro su misura per ${dn()}</p></article>`).join("");
+  $("parks").querySelectorAll(".tcard").forEach(c=>c.onclick=()=>{const p=top[+c.dataset.pk];S.start=p.c;store.set("alldogs-start",p.c);S.gen=null;$("gen-out").innerHTML="";S.mode="auto";store.set("alldogs-creamode","auto");lastList=window.scrollY;location.hash="crea";toast("Partenza nel parco: tocca Crea il giro")});
+}
 function renderPills(){
   $("f-act").innerHTML=ACTS.map(a=>`<button class="pill" data-a="${a[0]}" aria-pressed="${S.act===a[0]}">${a[1]}</button>`).join("");
   $("f-feat").innerHTML=FEATS.map(a=>`<button class="pill" data-f="${a[0]}" aria-pressed="${S.feat.includes(a[0])}">${a[1]}</button>`).join("");
@@ -1288,6 +1329,7 @@ function renderList(){
   const fam=af||S.far?[]:famousMatch();
   $("reco-box").hidden=!fam.length;
   if(fam.length){const d=dog();$("reco").innerHTML=fam.map(m=>m.tr?cardHTML(m.tr,verdict(item(m.tr),d,S.day),m.f.n):placeCard(m.f,m.i)).join("");bindCards($("reco"))}
+  renderParks();
   const rows=filtered();S.rows=rows;
   {const cnt={};rows.slice(0,40).forEach(r=>{if(r.tr.zone)cnt[r.tr.zone]=(cnt[r.tr.zone]||0)+1});const top=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0];
     $("where").textContent=S.far||!top?"Italia":"Zona di "+top}
@@ -1376,10 +1418,12 @@ function renderToday(){
 async function sosSheet(pos){
   const d=dog(),tel=d.health&&d.health.vettel?String(d.health.vettel).replace(/[^+0-9]/g,""):"";
   if(!pos){try{pos=await getPos()}catch(e){pos=null}}
+  if(pos&&IDX){try{await Promise.all(viewCells([[pos[0]-.25,pos[1]-.25],[pos[0]+.25,pos[1]+.25]]).map(loadPlaces))}catch(e){}}
   const g=pos?`${pos[0].toFixed(5)},${pos[1].toFixed(5)}`:"";
   openSheet(`<h2>Emergenza</h2><p class="small muted" style="margin-top:6px">Se ${dn()} sta male, la cosa giusta è sentire subito un veterinario.</p>
     <div class="stack" style="margin-top:14px">
       ${tel?`<a class="btn pri wide" href="tel:${tel}">Chiama ${esc(d.health.vet||"il veterinario")}</a>`:`<p class="small">Non hai ancora salvato il telefono del veterinario: aggiungilo in Il mio cane, nel libretto sanitario.</p>`}
+      ${pos?allPoi().filter(p=>p[0]==="v").map(p=>({p,d:hav(pos,[p[1],p[2]])})).filter(x=>x.d<30000).sort((a,b)=>a.d-b.d).slice(0,3).map(({p,d:dd})=>`<div class="box"><b>${esc(p[3]||"Veterinario")}</b><p class="small muted">a circa ${km(dd)} km in linea d'aria${p[5]?" · segnato come pronto soccorso o sempre aperto":""}</p><div class="row" style="margin-top:8px">${p[4]?`<a class="btn sm pri" href="tel:${esc(p[4])}">Chiama</a>`:""}<a class="btn sm" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${p[1]},${p[2]}">Portami lì</a></div></div>`).join(""):""}
       <a class="btn wide" target="_blank" rel="noopener" href="https://www.google.com/maps/search/${encodeURIComponent("veterinario pronto soccorso aperto ora")}${pos?"/@"+g+",13z":""}">Cerca un veterinario aperto qui vicino</a>
       ${pos?`<button class="btn wide" id="sos-pos">Manda a qualcuno dove sono</button>`:`<p class="small muted">Posizione non disponibile.</p>`}
       <a class="btn wide" href="tel:112">Chiama il 112 (emergenze per le persone)</a>
@@ -2185,6 +2229,7 @@ async function refreshView(){
   S.far=keys.length>12; // troppo lontano: si mostrano solo i cerchi con i numeri
   if(S.far){S.loadingView=false;if(onList())renderList();return}
   if(keys.some(k=>!cellState[k]&&IDX.cells[k])){S.loadingView=true;if(onList())renderList()}
+  keys.forEach(k=>loadPlaces(k).then(()=>{if(my===viewSeq&&onList())renderParks()}));
   try{await Promise.all(keys.map(loadCell))}catch(e){console.warn("Sentieri:",e)}
   if(my!==viewSeq)return;S.loadingView=false;
   if(TR.size>6000){ // libero memoria: tolgo i riquadri lontani (tranne i salvati e quello aperto)

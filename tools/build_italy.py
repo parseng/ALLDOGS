@@ -14,7 +14,7 @@ import build_data as bd
 CELL = 0.5
 HOME = (40.85, 14.25)  # si parte dai riquadri più vicini a Napoli
 RAW = os.path.join(bd.CACHE, "italy")
-SERVERS = ["https://overpass-api.de/api/interpreter", "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+SERVERS = ["https://overpass.openstreetmap.fr/api/interpreter", "https://overpass-api.de/api/interpreter", "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
            "https://overpass.private.coffee/api/interpreter"]
 REL = 'relation["route"~"^(hiking|foot)$"]["network"!~"^(iwn|nwn)$"]'
 bd.Z = 12
