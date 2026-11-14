@@ -36,7 +36,9 @@ def build(c, towns):
         if el["type"] == "way" and el.get("geometry") and t.get("highway"):
             ways.setdefault(t["name"].strip(), []).append((el, [[round(p["lat"], 5), round(p["lon"], 5)] for p in el["geometry"]]))
             continue
-        ce = el.get("center") or ({"lat": el["lat"], "lon": el["lon"]} if "lat" in el else None)
+        b0 = el.get("bounds")
+        ce = el.get("center") or ({"lat": el["lat"], "lon": el["lon"]} if "lat" in el else
+                                  ({"lat": (b0["minlat"] + b0["maxlat"]) / 2, "lon": (b0["minlon"] + b0["maxlon"]) / 2} if b0 else None))
         if not ce:
             continue
         p = [round(ce["lat"], 5), round(ce["lon"], 5)]
@@ -48,9 +50,9 @@ def build(c, towns):
         elif t.get("amenity") == "veterinary":
             tel = re.sub(r"[^+0-9]", "", (t.get("phone") or t.get("contact:phone") or "").split(";")[0])
             poi.append(["v", p[0], p[1], name, tel, "1" if t.get("emergency") == "yes" or "24/7" in t.get("opening_hours", "") else ""])
-        elif t.get("dog"):
+        elif t.get("natural") == "beach" or t.get("leisure") == "beach_resort":
             poi.append(["s", p[0], p[1], name])
-        elif t.get("leisure") == "park" and el.get("bounds"):
+        elif t.get("leisure") == "park" and el.get("bounds") and t.get("access") not in ("private", "no", "military") and not t.get("military"):
             b = el["bounds"]
             diag = bd.hav([b["minlat"], b["minlon"]], [b["maxlat"], b["maxlon"]])
             if diag >= 450:  # solo parchi abbastanza grandi per un giro
@@ -64,7 +66,7 @@ def build(c, towns):
     for name, lst in ways.items():
         segs = [w for _, w in lst]
         ln = sum(bd.hav(w[i - 1], w[i]) for w in segs for i in range(1, len(w)))
-        if ln < 600 or ln > 15000:
+        if ln < 350 or ln > 15000:
             continue
         path = bd.chain(segs)
         if bi.cell_of(path[0]) != c:

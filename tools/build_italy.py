@@ -337,8 +337,11 @@ def build(limit=None):
             n = len(json.load(open(os.path.join(out_dir, fn), encoding="utf-8"))["trails"])
             index[fn[:-5]] = n
             tot += n
-    json.dump({"t": int(time.time() * 1000), "cell": CELL, "cells": index, "todo": len([c for c in order if key(c) not in built])},
-              open(os.path.join(bd.ROOT, "data", "index.json"), "w"), separators=(",", ":"))
+    idxf = os.path.join(bd.ROOT, "data", "index.json")
+    pdir = os.path.join(bd.ROOT, "data", "p")
+    places = sorted(fn[:-5] for fn in os.listdir(pdir) if fn.endswith(".json")) if os.path.isdir(pdir) else []
+    json.dump({"t": int(time.time() * 1000), "cell": CELL, "cells": index, "places": places, "todo": len([c for c in order if key(c) not in built])},
+              open(idxf, "w"), separators=(",", ":"))
     log("Indice:", len(index), "riquadri,", tot, "sentieri; riquadri ancora da fare:", len([c for c in order if key(c) not in built]))
 
 
