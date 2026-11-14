@@ -119,6 +119,10 @@ body > #mapwrap{display:none}
 .peek .sub{color:var(--muted);font-size:15px}
 .mk-stop{width:24px;height:24px;border-radius:50%;background:#fff;color:#131a2a;border:2px solid #1d4f3c;font:700 13.5px/20px var(--body);text-align:center}
 .mk-me{width:16px;height:16px;border-radius:50%;background:#2f7bff;border:3px solid #fff;box-shadow:0 0 0 6px rgba(47,123,255,.25)}
+.mk-me svg{display:none}
+.mk-me.arrow{width:46px;height:46px;border:0;background:rgba(47,123,255,.28);box-shadow:0 0 0 10px rgba(47,123,255,.14)}
+.mk-me.arrow svg{display:block;width:100%;height:100%}
+.mk-me.arrow path{fill:#2f7bff;stroke:#fff;stroke-width:3;stroke-linejoin:round}
 .mk-pin{width:28px;height:28px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#d9531a;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4);cursor:grab}
 
 /* schede sentiero grandi */
@@ -413,13 +417,35 @@ button.tag{font:inherit;font-size:15px;color:var(--ink);cursor:pointer}
 /* in cammino */
 .mapclear{position:absolute;left:10px;top:10px;z-index:6;box-shadow:0 2px 10px rgba(0,0,0,.25)}
 .maphost.full .mapclear{top:calc(env(safe-area-inset-top,0px) + 12px)}
-#s-vai.on{position:fixed;inset:0;z-index:950;display:flex;flex-direction:column;padding:0;max-width:none;background:var(--bg)}
+#s-vai.on{position:fixed;inset:0;z-index:950;display:block;padding:0;max-width:none;background:#0e1424}
+/* in cammino la schermata è sempre scura, come la mappa da navigazione: stessi token del tema scuro */
+#s-vai{--bg:#111613;--surface:#1a211d;--ink:#e8ede9;--muted:#9aa79f;--line:#2c3630;--accent:#86c9a6;--accent-ink:#0f1a14;--accent-soft:#1f3329;--dog:#ff8a55;--dog-ink:#1a0c05;--ok:#7fd29c;--warn:#e6c15a;--steep:#ff8a55;color:var(--ink);color-scheme:dark}
+#s-vai #hostNav{position:absolute;inset:0;height:auto}
+#s-vai .nav-top{position:absolute;left:0;right:0;top:0;z-index:6;padding:calc(env(safe-area-inset-top,0px) + 10px) 12px 0;background:none;border:0;pointer-events:none}
+#s-vai .nav-top > *{pointer-events:auto}
+#s-vai .nav-turn{margin-top:0;background:rgba(17,22,19,.92);box-shadow:0 6px 18px rgba(0,0,0,.35);border-radius:18px;padding:12px 14px}
+#s-vai .nav-turn b{font-size:28px}
+#s-vai .nav-turn span{font-size:17px}
+#s-vai .nav-msg{display:inline-block;margin-top:8px;max-width:100%;padding:9px 14px;border-radius:14px;background:var(--surface);color:var(--ink);box-shadow:0 4px 14px rgba(0,0,0,.3)}
+#s-vai .nav-msg:empty{display:none}
+#s-vai .nav-bot{position:absolute;left:0;right:0;bottom:0;margin:0}
+#s-vai .mapctl{top:auto;bottom:calc(var(--nbh,160px) + 80px)}
+#s-vai .mapctl .round,.nav-fl .round{width:54px;height:54px;background:rgba(26,33,29,.92);color:#fff;border:0;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+#s-vai .mapctl .round svg,.nav-fl .round svg{width:24px;height:24px}
+#s-vai .kmscale{top:calc(var(--ntop,120px) + 8px);bottom:auto;left:14px;right:auto}
+#s-vai .mapboxgl-ctrl-bottom-left,#s-vai .mapboxgl-ctrl-bottom-right{bottom:calc(var(--nbh,160px) + 4px)}
+.nav-fl{position:absolute;left:12px;bottom:calc(var(--nbh,160px) + 80px);z-index:6;display:flex;flex-direction:column;gap:10px}
+.nav-fl .round svg{width:30px!important;height:30px!important;transition:transform .2s}
+#nav-comp text{font:700 9px/1 var(--display)}
+#nav-comp[aria-pressed=true]{background:#2f7bff}
+.nb-head{margin:2px 0 6px}
+.nb-head h3{font-size:22px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nav-top{padding:calc(env(safe-area-inset-top,0px) + 10px) 14px 10px;background:var(--surface);border-bottom:1px solid var(--line)}
 .nav-top h3{font-size:22px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nav-msg{margin-top:6px;font-size:17px;font-weight:500}
 #hostNav{flex:1;min-height:0;border-radius:0;border:0}
 #hostNav #m-full{display:none}
-.nav-bot{overflow-x:hidden;position:relative;padding:6px 18px calc(env(safe-area-inset-bottom,0px) + 14px);background:var(--surface);border-radius:22px 22px 0 0;margin-top:-22px;z-index:5;box-shadow:0 -6px 22px rgba(0,0,0,.22);max-height:72vh;overflow-y:auto;overscroll-behavior:contain}
+.nav-bot{overflow-x:hidden;position:relative;padding:6px 18px calc(env(safe-area-inset-bottom,0px) + 14px);background:var(--surface);border-radius:22px 22px 0 0;z-index:5;box-shadow:0 -6px 22px rgba(0,0,0,.22);max-height:72vh;overflow-y:auto;overscroll-behavior:contain}
 .nav-bot .btn{flex:1}
 .nb-grab{display:block;width:100%;height:20px;border:0;background:none;padding:0;cursor:pointer}
 .nb-grab::before{content:"";display:block;width:44px;height:5px;border-radius:3px;background:var(--line);margin:4px auto 0}
@@ -923,12 +949,14 @@ body{font-size:17px;line-height:1.5}
 
 <!-- IN CAMMINO -->
 <section class="screen" id="s-vai">
-  <div class="nav-top"><p class="small muted" id="nav-kicker"></p><h3 id="nav-title"></h3><button class="nav-turn" id="nav-turn" hidden></button><p class="nav-msg" id="nav-msg"></p></div>
   <div class="maphost" id="hostNav"></div>
+  <div class="nav-top" id="nav-top"><button class="nav-turn" id="nav-turn" hidden></button><p class="nav-msg" id="nav-msg"></p></div>
+  <div class="nav-fl"><button class="round" id="nav-comp" aria-label="Mappa che gira con te o con il nord in alto"><svg viewBox="0 0 24 24"><path d="M12 2.5 15 8.5H9Z" fill="#ff5a3c"/><text x="12" y="17.5" text-anchor="middle" fill="currentColor">N</text></svg></button></div>
   <div class="nav-bot" id="nav-bot">
     <button class="nb-grab" id="nb-grab" aria-label="Mostra o nascondi tutti i dati"></button>
     <button class="nb-mini" id="nb-mini" aria-label="Mostra tutti i dati"><div><b data-nv="time">0:00</b><span class="pz" id="nb-pz"></span></div><i class="sep"></i><div><b data-nv="km">0,00</b><small>km</small></div><span class="round"><svg><use href="#i-chevup"/></svg></span></button>
     <div class="nb-more">
+      <div class="nb-head"><p class="small muted" id="nav-kicker"></p><h3 id="nav-title"></h3></div>
       <div class="nb-grid">
         <div><b data-nv="time">0:00</b><span>Tempo</span></div>
         <div><b><i data-nv="km" style="font-style:normal">0,00</i><small>km</small></b><span>Distanza</span></div>
@@ -1074,7 +1102,7 @@ body{font-size:17px;line-height:1.5}
 const MAPBOX_TOKEN="pk.eyJ1IjoicGFyc2VuZyIsImEiOiJjbXdmOWdvdm0wNXVpMnhxcDIyaHc0bmVnIn0.j8nlRTa34ZMNdK8Oz-Go4w";
 // Satellite: stile ufficiale, ma le foto aeree arrivano dalla Static Tiles API (l'API "raster tiles" v4 di questo account risponde 429).
 // Rilievo 3D: AWS Terrain Tiles (dati aperti).
-const STYLES={map:"mapbox://styles/mapbox/outdoors-v12",sat:"mapbox://styles/mapbox/satellite-streets-v12",str:"mapbox://styles/mapbox/streets-v12",dark:"mapbox://styles/mapbox/dark-v11",
+const STYLES={map:"mapbox://styles/mapbox/outdoors-v12",sat:"mapbox://styles/mapbox/satellite-streets-v12",str:"mapbox://styles/mapbox/streets-v12",dark:"mapbox://styles/mapbox/dark-v11",navn:"mapbox://styles/mapbox/navigation-night-v1",
   // carta topografica classica con curve di livello: OpenTopoMap (dati OpenStreetMap + SRTM)
   topo:{version:8,glyphs:"mapbox://fonts/mapbox/{fontstack}/{range}.pbf",sources:{topo:{type:"raster",tiles:["a","b","c"].map(x=>`https://${x}.tile.opentopomap.org/{z}/{x}/{y}.png`),tileSize:256,maxzoom:17,attribution:"Mappa © OpenTopoMap (CC-BY-SA) · dati © OpenStreetMap"}},layers:[{id:"topo",type:"raster",source:"topo"}]}};
 // Sentinel-2 senza nuvole (mosaico 2024 di EOX, dati Copernicus): foto dal satellite europeo, gratuita per uso non commerciale
@@ -1515,6 +1543,7 @@ function mountMap(host,inter){
   const wrap=$("mapwrap");
   if(wrap.parentNode!==host)host.prepend(wrap);
   curHost=host;interactive=inter;
+  if(M&&host.id!=="hostNav"&&(M.getBearing()||(!map3d&&M.getPitch())))M.jumpTo({bearing:0,pitch:map3d?M.getPitch():0});
   document.querySelectorAll(".maphost.full").forEach(h=>{if(h!==host)h.classList.remove("full")});
   syncFullBtn();
   if(!mapOK()){$("map").innerHTML=`<div class="mapnote">La mappa non si carica. Controlla la connessione e ricarica la pagina.</div>`;return}
@@ -1527,6 +1556,7 @@ function mountMap(host,inter){
 function wantStyle(){
   if(!navigator.onLine)return "topo";
   if(nav&&curHost&&curHost.id==="hostNav"&&OFF[offKeyOf(nav.o)])return "topo";
+  if(nav&&curHost&&curHost.id==="hostNav"&&mapStyle==="map")return "navn"; // in cammino: mappa scura da navigazione con i palazzi in 3D
   return mapStyle;
 }
 function syncStyle(){const k=wantStyle();if(!M||k===styleNow)return;styleNow=k;styleOK=false;M.setStyle(STYLES[k],{diff:false})}
@@ -1559,6 +1589,7 @@ function initMap(){
   });
   ["mousedown","touchstart","wheel"].forEach(ev=>M.on(ev,()=>{if(fly&&fly.playing&&fly.started){fly.playing=false;paintFly()}}));
   M.on("dragstart",()=>{if(scene.mode==="nav")navFollow=false});
+  M.on("rotate",()=>{if(scene.mode==="nav")navCompass()});
 }
 // Scala dei km in basso: barra lunga al massimo 170 pixel, con valori tondi (1, 2, 5, 10…)
 let ksRaf=0;
@@ -1593,6 +1624,11 @@ function detailMap(){
 }
 function addLayers(){
   if(styleNow==="sat")try{fixSatellite()}catch(e){console.warn(e)}
+  if(styleNow==="navn"&&M.getSource("composite")&&!M.getLayer("ad-bld"))try{
+    const sym=(M.getStyle().layers||[]).find(l=>l.type==="symbol");
+    M.addLayer({id:"ad-bld",type:"fill-extrusion",source:"composite","source-layer":"building",filter:["==",["get","extrude"],"true"],minzoom:14,
+      paint:{"fill-extrusion-color":"#1d2640","fill-extrusion-height":["get","height"],"fill-extrusion-base":["get","min_height"],"fill-extrusion-opacity":.9}},sym&&sym.id);
+  }catch(e){console.warn(e)}
   detailMap();
   const empty={type:"FeatureCollection",features:[]};
   ["trails","sel","selpath","water","startpt","track","cells","poi"].forEach(s=>{if(!M.getSource(s))M.addSource(s,{type:"geojson",data:empty})});
@@ -1829,7 +1865,7 @@ function applyScene(){
     const el=document.createElement("div");el.className="mk-stop";el.style.borderColor="#1f8a4c";el.textContent="▶";
     stopMarkers.push(new mapboxgl.Marker({element:el}).setLngLat(ll(o.path[0])).addTo(M));
     (o.stops||[]).forEach((s,i)=>{if(!i)return;const e2=document.createElement("div");e2.className="mk-stop";e2.textContent=i+1;stopMarkers.push(new mapboxgl.Marker({element:e2}).setLngLat(ll(s.p)).addTo(M))});
-    if(fitPending){fitPending=false;if(nav.pos)M.jumpTo({center:ll(nav.pos),zoom:16});else fitTo(boundsOf(o.ways),50)}
+    if(fitPending){fitPending=false;if(nav.pos){navFollow=true;navCam(0)}else fitTo(boundsOf(o.ways),{top:120,left:40,right:70,bottom:$("nav-bot").offsetHeight+30})}
   }
 }
 // Fondo colorato: ogni tratto del percorso prende il colore del suo tipo di fondo
@@ -1955,9 +1991,10 @@ document.querySelectorAll("#layers [data-st]").forEach(b=>b.onclick=()=>{if(M)se
 $("layers-x").onclick=()=>$("layers").hidden=true;
 $("layers").onclick=e=>{if(e.target===$("layers"))$("layers").hidden=true};
 function getPos(){return new Promise((res,rej)=>{if(!navigator.geolocation)return rej(new Error("no geo"));navigator.geolocation.getCurrentPosition(p=>res([p.coords.latitude,p.coords.longitude]),rej,{enableHighAccuracy:true,timeout:12000,maximumAge:60000})})}
-function showMe(p){if(!M)return;if(!meM){const el=document.createElement("div");el.className="mk-me";meM=new mapboxgl.Marker({element:el})}meM.setLngLat(ll(p)).addTo(M)}
+function showMe(p){if(!M)return;if(!meM){const el=document.createElement("div");el.className="mk-me";el.innerHTML='<svg viewBox="0 0 40 40"><path d="M20 7 31 30 20 25 9 30Z"/></svg>';meM=new mapboxgl.Marker({element:el,rotationAlignment:"map",pitchAlignment:"map"})}
+  const ar=scene.mode==="nav"&&nav&&nav.hd!=null;meM.getElement().classList.toggle("arrow",ar);meM.setRotation(ar?nav.hd:0);meM.setLngLat(ll(p)).addTo(M)}
 $("m-loc").onclick=async()=>{
-  if(scene.mode==="nav"&&nav){navFollow=true;if(nav.pos)M.easeTo({center:ll(nav.pos),zoom:Math.max(M.getZoom(),16)});else toast("Cerco il segnale GPS…");return}
+  if(scene.mode==="nav"&&nav){navFollow=true;if(nav.pos)navCam(500);else toast("Cerco il segnale GPS…");return}
   try{const p=await getPos();showMe(p);if(scene.mode==="crea")setStart(p);else M.flyTo({center:ll(p),zoom:Math.max(M.getZoom(),13)})}catch(e){toast("Non riesco a leggere la posizione")}};
 
 // ================= Navigazione =================
@@ -3758,12 +3795,17 @@ function showNav(){
     nav.wxT=Date.now();navWeather();
     if(!store.get("alldogs-navset")){store.set("alldogs-navset",NS);navSettings()} // la prima volta mostro le impostazioni
   }
-  paintNav();
+  paintNav();navSizes();navCompass();
 }
 function onFix(pos){
   if(!nav)return;
   const p=[pos.coords.latitude,pos.coords.longitude],acc=pos.coords.accuracy||99,now=Date.now();
-  nav.gps="ok";nav.pos=p;showMe(p);
+  nav.gps="ok";nav.pos=p;
+  // direzione di marcia: quella del GPS se c'è, altrimenti dagli ultimi metri fatti
+  const hd=pos.coords.heading;if(hd!=null&&!isNaN(hd)&&(pos.coords.speed||0)>.4)nav.hd=hd;
+  else if(nav.hp&&hav(nav.hp,p)>=8)nav.hd=brg(nav.hp,p);
+  if(!nav.hp||hav(nav.hp,p)>=8)nav.hp=p;
+  showMe(p);
   if(acc<=45){
     if(!nav.last){nav.last=p;nav.lastT=now;nav.moveT=now;if(!nav.paused)nav.track.push(r5(p))}
     else{
@@ -3778,9 +3820,18 @@ function onFix(pos){
     }
     navProgress(p);navAlerts(p);
   }
-  if(navFollow&&M&&scene.mode==="nav")M.easeTo({center:ll(p),zoom:Math.max(M.getZoom(),16),duration:600});
+  navCam(600);
   paintNav();
 }
+function brg(a,b){const r=Math.PI/180,y=Math.sin((b[1]-a[1])*r)*Math.cos(b[0]*r),x=Math.cos(a[0]*r)*Math.sin(b[0]*r)-Math.sin(a[0]*r)*Math.cos(b[0]*r)*Math.cos((b[1]-a[1])*r);return (Math.atan2(y,x)/r+360)%360}
+// inquadratura in cammino: inclinata, la freccia in basso al centro, la mappa gira con la direzione di marcia (se scelto)
+let navHeadUp=store.get("alldogs-headup")!==false;
+function navCam(ms){
+  if(!M||scene.mode!=="nav"||!nav||!nav.pos||!navFollow)return;
+  const H=$("hostNav").clientHeight,bot=$("nav-bot").offsetHeight;
+  M.easeTo({center:ll(nav.pos),zoom:Math.max(M.getZoom(),17),pitch:55,bearing:navHeadUp&&nav.hd!=null?nav.hd:0,padding:{top:Math.round(H*.4),bottom:bot,left:0,right:0},duration:ms});
+}
+function navCompass(){const b=M?M.getBearing():0;$("nav-comp").firstChild.style.transform=`rotate(${-b}deg)`;$("nav-comp").setAttribute("aria-pressed",navHeadUp)}
 // a che punto del percorso siamo: cerco il punto più vicino poco prima e poco dopo l'ultimo trovato (così gli anelli e i tratti che si incrociano non confondono)
 function navProgress(p){
   const P=nav.P,C=nav.C;let bi=-1,bd=Infinity;
@@ -3880,8 +3931,11 @@ function paintNav(){
   const m=$("nav-msg");if(m.dataset.h!==msg){m.dataset.h=msg;m.innerHTML=msg}m.className="nav-msg "+cls;
   $("nav-pause").textContent=nav.paused?"Riprendi":"Pausa";
 }
-function navOpen(on){$("nav-bot").classList.toggle("open",on);$("nb-mini").setAttribute("aria-expanded",on);$("nb-chart").dataset.k="";paintNav();if(M)requestAnimationFrame(()=>M.resize())}
+function navOpen(on){$("nav-bot").classList.toggle("open",on);$("nb-mini").setAttribute("aria-expanded",on);$("nb-chart").dataset.k="";paintNav();navSizes()}
 $("nb-mini").onclick=()=>navOpen(true);
+$("nav-comp").onclick=()=>{navHeadUp=!navHeadUp;store.set("alldogs-headup",navHeadUp);navFollow=true;if(nav&&nav.pos)navCam(500);else if(M)M.easeTo({bearing:0});toast(navHeadUp?"La mappa gira con voi":"Nord in alto");navCompass()};
+function navSizes(){const s=$("s-vai");s.style.setProperty("--nbh",$("nav-bot").offsetHeight+"px");s.style.setProperty("--ntop",$("nav-top").offsetHeight+"px")}
+if(window.ResizeObserver){const ro=new ResizeObserver(()=>{navSizes();if(nav&&navFollow)navCam(300)});ro.observe($("nav-bot"));ro.observe($("nav-top"))}
 $("nb-grab").onclick=()=>navOpen(!$("nav-bot").classList.contains("open"));
 $("nav-pause").onclick=()=>{if(!nav)return;nav.auto=false;nav.moveT=Date.now();if(nav.paused){nav.paused=false;nav.since=Date.now()}else{nav.run=navElapsed();nav.paused=true}saveNav();paintNav()};
 $("nav-end").onclick=()=>{
