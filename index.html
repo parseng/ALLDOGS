@@ -309,6 +309,45 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--tab) + env(safe-area-inset-bottom,0px) + 80px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:14px;z-index:2000;display:none;white-space:nowrap}
 .toast.on{display:block}
 .mapboxgl-ctrl-attrib{font-size:10px}
+
+/* menu a sinistra, obiettivi, addestramento */
+.hd{display:flex;align-items:center;gap:12px}
+.hd h1{min-width:0}
+.drawer-bg{position:fixed;inset:0;z-index:990;background:rgba(10,14,28,.5)}
+.drawer{position:fixed;top:0;bottom:0;left:0;z-index:1000;width:min(300px,84vw);background:var(--surface);box-shadow:8px 0 30px rgba(0,0,0,.25);padding:calc(env(safe-area-inset-top,0px) + 14px) 12px 20px max(12px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:6px;transform:translateX(-104%);visibility:hidden;transition:transform .22s ease,visibility .22s}
+.drawer.on{transform:none;visibility:visible}
+.drawer .dtop{display:flex;align-items:center;gap:10px;padding:0 4px 12px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.drawer .dtop b{font:800 22px/1 var(--display);flex:1}
+.drawer a{display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;text-decoration:none;color:var(--ink)}
+.drawer a svg{width:26px;height:26px;flex:none;color:var(--accent)}
+.drawer a b{display:block;font-size:16px}
+.drawer a small{display:block;color:var(--muted);font-size:13px}
+.drawer a.on{background:var(--accent-soft)}
+@media (prefers-reduced-motion:reduce){.drawer{transition:none}}
+.prog{height:10px;border-radius:5px;background:var(--line);overflow:hidden;margin-top:6px}
+.prog i{display:block;height:100%;background:var(--ok);border-radius:5px}
+.gl{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-top:14px;font-size:14.5px}
+.gl b{font-variant-numeric:tabular-nums}
+.wk{list-style:none;padding:0;margin:0;display:flex;flex-direction:column}
+.wk li{display:grid;grid-template-columns:86px minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.wk li:last-child{border-bottom:0}
+.wk li.today{font-weight:700}
+.wk li .muted{font-weight:400}
+.hx{display:flex;align-items:center;gap:10px;width:100%;margin-top:10px;padding:11px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-size:14.5px;text-decoration:none;color:var(--ink)}
+.hx svg{width:22px;height:22px;flex:none;color:var(--accent)}
+.hx span{flex:1;min-width:0}
+.lesson{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);margin-top:10px}
+.lesson summary{list-style:none;cursor:pointer;padding:12px 14px;display:flex;align-items:center;gap:10px}
+.lesson summary::-webkit-details-marker{display:none}
+.lesson summary span{flex:1;min-width:0}
+.lesson summary small{display:block;color:var(--muted);font-size:13px}
+.lesson .lb{padding:0 14px 14px}
+.lesson ol{margin:8px 0 0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
+.lesson .ck{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;flex:none;font-size:14px;font-weight:800}
+.lesson .ck.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.lesson .ck.seen{border-color:var(--warn);color:var(--warn)}
+.lesson.big{border-color:var(--accent);box-shadow:0 6px 18px rgba(20,40,120,.10)}
+.lvl{margin-top:22px}
 </style>
 </head>
 <body>
@@ -338,6 +377,9 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
     <symbol id="i-surf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20 9 4M19 20 15 4M12 5v2.5M12 10.5V13M12 16v3"/></symbol>
     <symbol id="i-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z"/></symbol>
     <symbol id="i-rain" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15.5a4 4 0 0 1-.5-8 5.5 5.5 0 0 1 10.6 1.2A3.4 3.4 0 0 1 17 15.5H7Z"/><path d="M9 18.5l-1 2.5M13 18.5l-1 2.5M17 18.5l-1 2.5"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+    <symbol id="i-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".8" fill="currentColor"/></symbol>
+    <symbol id="i-cap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 9 12 4.5 21.5 9 12 13.5 2.5 9Z"/><path d="M6.5 11v4.5c1.5 1.6 3.4 2.4 5.5 2.4s4-.8 5.5-2.4V11M21.5 9v5"/></symbol>
   </defs>
 </svg>
 
@@ -371,8 +413,9 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
 
 <!-- ESPLORA -->
 <section class="screen" id="s-esplora">
-  <div class="row"><div class="sp" style="min-width:0"><p class="muted small" id="where">Italia</p><h1 id="hello">Dove andiamo oggi?</h1></div><a class="avatar sm" id="home-av" href="#cane" aria-label="Il mio cane"></a></div>
+  <div class="row"><button class="round mbtn" data-menu aria-label="Apri il menu"><svg><use href="#i-menu"/></svg></button><div class="sp" style="min-width:0"><p class="muted small" id="where">Italia</p><h1 id="hello">Dove andiamo oggi?</h1></div><a class="avatar sm" id="home-av" href="#cane" aria-label="Il mio cane"></a></div>
   <div id="today"></div>
+  <div id="home-extra"></div>
   <div class="maphost" id="hostExplore"><div class="peek" id="peek"></div></div>
   <div class="search" style="margin-top:14px"><svg width="22" height="22"><use href="#i-search"/></svg><input id="q" type="search" placeholder="Cerca un sentiero o una zona" aria-label="Cerca un sentiero o una zona"></div>
   <div class="hscroll" id="place-row" hidden></div>
@@ -418,7 +461,7 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
 
 <!-- CREA GIRO -->
 <section class="screen" id="s-crea">
-  <h1>Crea un giro</h1>
+  <div class="hd"><button class="round mbtn" data-menu aria-label="Apri il menu"><svg><use href="#i-menu"/></svg></button><h1>Crea un giro</h1></div>
   <div class="seg three" id="crea-mode" style="margin-top:14px">
     <button data-mode="chat"><svg><use href="#i-chat"/></svg>Chat</button>
     <button data-mode="auto"><svg><use href="#i-bolt"/></svg>Automatico</button>
@@ -457,17 +500,33 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
 
 <!-- SALVATI -->
 <section class="screen" id="s-salvati">
-  <h1>Salvati</h1>
+  <div class="hd"><button class="round mbtn" data-menu aria-label="Apri il menu"><svg><use href="#i-menu"/></svg></button><h1>Salvati</h1></div>
   <div class="block"><h2>I miei giri</h2><div id="saved-routes"></div></div>
   <div class="block"><h2>Sentieri</h2><div id="saved-trails"></div></div>
 </section>
 
 <!-- ATTIVITÀ -->
 <section class="screen" id="s-attivita">
-  <h1>Attività</h1>
+  <div class="hd"><button class="round mbtn" data-menu aria-label="Apri il menu"><svg><use href="#i-menu"/></svg></button><h1>Attività</h1></div>
   <div class="box" id="pace-box" style="margin-top:16px"></div>
   <div class="block"><h2>Passeggiate fatte</h2><div id="act-list" class="stack"></div></div>
   <div class="box" id="steps-box" style="margin-top:22px"></div>
+</section>
+
+<!-- OBIETTIVI: programma di allenamento graduale -->
+<section class="screen" id="s-obiettivi">
+  <div class="hd"><button class="round mbtn" data-menu aria-label="Apri il menu"><svg><use href="#i-menu"/></svg></button><h1>Obiettivi</h1></div>
+  <div id="ob-main"></div>
+  <div class="block"><h2>Chiedi all'allenatore</h2><div id="ob-chat"></div></div>
+  <p class="small muted" style="margin-top:22px">Il programma è un <b>consiglio prudente, non una garanzia</b>. Osserva sempre il tuo cane e fermati ai primi segni di stanchezza, affanno o zoppia. Non sostituisce il veterinario.</p>
+</section>
+
+<!-- ADDESTRAMENTO: una lezione al giorno -->
+<section class="screen" id="s-addestramento">
+  <div class="hd"><button class="round mbtn" data-menu aria-label="Apri il menu"><svg><use href="#i-menu"/></svg></button><h1>Addestramento</h1></div>
+  <div id="tr-main"></div>
+  <div class="block"><h2>Chiedi all'educatore</h2><div id="tr-chat"></div></div>
+  <p class="small muted" style="margin-top:22px">Solo metodi gentili, con premi e mai punizioni. Per paure forti, aggressività o problemi seri chiedi a un educatore cinofilo o a un veterinario esperto di comportamento.</p>
 </section>
 
 <!-- IN CAMMINO -->
@@ -486,7 +545,7 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
 <!-- CANE -->
 <section class="screen" id="s-cane">
   <div id="onb" hidden><h1>Parlami del tuo cane</h1><p class="muted" style="margin:8px 0 18px">Mi serve per dirti quali sentieri sono adatti a lui e quali no.</p></div>
-  <div class="row" id="dog-head"><div class="avatar" id="avatar" role="button" tabindex="0" aria-label="Cambia la foto del cane">L</div><div><h1 id="dog-title">Il mio cane</h1><p class="muted" id="dog-cap"></p>
+  <div class="row" id="dog-head"><button class="round mbtn" data-menu aria-label="Apri il menu" style="align-self:flex-start"><svg><use href="#i-menu"/></svg></button><div class="avatar" id="avatar" role="button" tabindex="0" aria-label="Cambia la foto del cane">L</div><div><h1 id="dog-title">Il mio cane</h1><p class="muted" id="dog-cap"></p>
     <div class="row" style="margin-top:8px"><button class="btn sm" id="photo-btn" type="button">Aggiungi una foto</button><button class="btn sm" id="photo-del" type="button" hidden>Togli la foto</button></div><input type="file" id="photo-in" accept="image/*" hidden></div></div>
   <p class="small" id="dog-alert" style="margin-top:10px"></p>
   <div class="form" style="margin-top:20px">
@@ -549,6 +608,12 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
   <a href="#cane" data-t="cane"><svg><use href="#i-paw"/></svg>Il mio cane</a>
 </div></nav>
 <a class="btn pri sm" id="nav-pill" href="#vai" hidden><svg><use href="#i-play"/></svg>Passeggiata in corso · torna alla mappa</a>
+<div class="drawer-bg" id="drawer-bg" hidden></div>
+<aside class="drawer" id="drawer" aria-label="Menu">
+  <div class="dtop"><b>AllDogs</b><button class="round" id="drawer-x" aria-label="Chiudi il menu">✕</button></div>
+  <a href="#obiettivi" data-d="obiettivi"><svg><use href="#i-target"/></svg><span><b>Obiettivi</b><small>Allenamento graduale su misura</small></span></a>
+  <a href="#addestramento" data-d="addestramento"><svg><use href="#i-cap"/></svg><span><b>Addestramento</b><small>Una lezione nuova ogni giorno</small></span></a>
+</aside>
 <div class="sheetbg" id="sheet" hidden><div class="box" id="sheet-box"></div></div>
 <div class="toast" id="toast" role="status"></div>
 
@@ -1221,7 +1286,7 @@ $("m-loc").onclick=async()=>{
   try{const p=await getPos();showMe(p);if(scene.mode==="crea")setStart(p);else M.flyTo({center:ll(p),zoom:Math.max(M.getZoom(),13)})}catch(e){toast("Non riesco a leggere la posizione")}};
 
 // ================= Navigazione =================
-const SCREENS=["esplora","sentiero","crea","salvati","attivita","cane","vai","segui"];
+const SCREENS=["esplora","sentiero","crea","salvati","attivita","cane","vai","segui","obiettivi","addestramento"];
 let lastList=0;
 function route(){
   let h=location.hash.slice(1)||"esplora";
@@ -1235,18 +1300,22 @@ function route(){
   document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on",s.id==="s-"+scr));
   document.querySelectorAll("#tabs a").forEach(a=>a.classList.toggle("on",a.dataset.t===(scr==="sentiero"?"esplora":scr)));
   $("tabs").classList.toggle("hide",!S.dog);
+  openMenu(false);document.querySelectorAll(".mbtn").forEach(b=>b.hidden=!S.dog);
+  document.querySelectorAll("#drawer a").forEach(a=>a.classList.toggle("on",a.dataset.d===scr));
   document.querySelectorAll(".maphost.full").forEach(h=>h.classList.remove("full"));
   end3d();$("layers").hidden=true;
   if(scr==="esplora"){
     // tornando da un sentiero o da un giro la mappa deve mostrare di nuovo tutti i sentieri, non solo l'ultimo percorso aperto
     if(scene.mode!=="explore"){scene={mode:"explore"};S.backView=true;fitPending=true}
-    mountMap($("hostExplore"),true);renderList();window.scrollTo(0,lastList)}
+    mountMap($("hostExplore"),true);renderList();homeExtra();window.scrollTo(0,lastList)}
   else window.scrollTo(0,0);
   if(scr==="sentiero")showTrail(arg);
   if(scr==="crea")showCrea();
   if(scr==="salvati")showSaved();
   if(scr==="cane")showDog();
   if(scr==="attivita")showAct();
+  if(scr==="obiettivi")showGoals();
+  if(scr==="addestramento")showTrain();
   if(scr==="vai")showNav();
   if(scr==="segui")showFollow(arg);else stopFollow();
   retryWx();
@@ -1803,9 +1872,9 @@ ${S.cand&&S.cand.length?S.cand.map(c=>c.line).join("\n"):"nessuno caricato"}
 - Non inventare sentieri: solo quelli della lista, con il loro id esatto. Se nessuno è adatto, dillo e proponi di creare un giro nuovo.
 - Usa create=true solo quando l'utente vuole un giro nuovo che parte dal segnaposto (per esempio "un giro di mezz'ora qui vicino").`;
 }
-async function gemini(key){
-  const contents=S.chat.filter(m=>!m.err&&!m.local).map(m=>({role:m.r==="u"?"user":"model",parts:[{text:m.raw||m.t}]}));
-  const body=JSON.stringify({systemInstruction:{parts:[{text:sysPrompt()}]},contents,generationConfig:{responseMimeType:"application/json",responseSchema:GEM_SCHEMA,temperature:.6}});
+async function gemini(key,msgs=S.chat,sys=sysPrompt(),schema=GEM_SCHEMA){
+  const contents=msgs.filter(m=>!m.err&&!m.local).map(m=>({role:m.r==="u"?"user":"model",parts:[{text:m.raw||m.t}]}));
+  const body=JSON.stringify({systemInstruction:{parts:[{text:sys}]},contents,generationConfig:{responseMimeType:"application/json",responseSchema:schema,temperature:.6}});
   let err;const seen=[];
   for(const model of gemGood?[gemGood,...GEM_MODELS.filter(m=>m!==gemGood)]:GEM_MODELS){
     const ac=new AbortController(),to=setTimeout(()=>ac.abort(),15000);
@@ -1922,6 +1991,352 @@ function showAct(){
   });
   $("act-list").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{if(!confirm("Eliminare questa passeggiata?"))return;S.acts.splice(+b.dataset.del,1);store.set("alldogs-acts",S.acts);showAct();toast("Passeggiata eliminata")});
   $("steps-box").innerHTML=`<h2>Quanti passi fa ${dn()}?</h2><p style="margin-top:8px">In una passeggiata di 5 km tu fai circa <b>${s.me.toLocaleString("it-IT")}</b> passi, ${dn()} circa <b>${s.dog.toLocaleString("it-IT")}</b>.</p><p class="small muted" style="margin-top:6px">${myStride()!==.75?`Il tuo passo misurato è di circa ${Math.round(myStride()*100)} cm, ricavato dai passi di Salute che hai scritto.`:"Per te uso un passo medio di 75 cm: scrivendo i passi dell'app Salute nelle passeggiate, l'app impara il tuo."} Per ${dn()} è una stima dalla taglia.</p>`;
+}
+
+// ================= Menu a sinistra =================
+function openMenu(o){$("drawer").classList.toggle("on",!!o);$("drawer-bg").hidden=!o}
+document.addEventListener("click",e=>{if(e.target.closest("[data-menu]"))openMenu(true)});
+$("drawer-bg").onclick=$("drawer-x").onclick=()=>openMenu(false);
+document.addEventListener("keydown",e=>{if(e.key==="Escape")openMenu(false)});
+
+// ================= Date e profilo =================
+const DAY=864e5;
+const dKey=t=>{const x=new Date(t);return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0")};
+const day0=t=>{const x=new Date(t);x.setHours(0,0,0,0);return x.getTime()};
+const addDays=(t,n)=>{const x=new Date(t);x.setDate(x.getDate()+n);return x.getTime()};
+const monday=t=>addDays(day0(t),-((new Date(t).getDay()+6)%7));
+const fmtDay=t=>new Date(t).toLocaleDateString("it-IT",{day:"numeric",month:"long"});
+const r1=x=>Math.round(x*10)/10;
+// che tipo di cane è: serve per scegliere esercizi e ritmo di allenamento
+function dogKind(d){
+  const b=(d.breed||"").toLowerCase(),p=d.pat||{},senior=d.age>=(d.weight>=25?7:9);
+  return {p,senior,young:d.age<1,puppy:d.age<(d.weight>=25?1.5:1),small:d.weight<8,
+    giant:d.weight>40||/alano|san bernardo|terranova|mastino|leonberger|cane corso|bovaro|dogue|caucaso/.test(b),
+    longback:/bassott|corgi|basset/.test(b),sight:/levrier|greyhound|whippet|galgo|saluki|borzoi/.test(b),
+    energy:/border|pastore|malinois|husky|labrador|retriever|setter|pointer|bracco|jack russell|spinone|segugio|kurzhaar|weimaraner|vizsla|dalmata|australian|kelpie|malamute|epagneul|springer|cocker/.test(b),
+    brachy:!!d.brachy||/carlin|bulldog|boxer|shih|pechinese|boston|dogue|cavalier/.test(b),
+    joint:!!(p.art||p.conv),heart:!!(p.cuore||p.resp)};
+}
+
+// ================= Mini chat con l'AI (Obiettivi, Addestramento) =================
+const MINI_SCHEMA={type:"OBJECT",properties:{reply:{type:"STRING",description:"Risposta all'utente, in italiano semplice"}},required:["reply"]};
+const MC={};
+function gemErr(e){const st=e.status,msg=e.body&&e.body.error&&e.body.error.message||"",seen=e.seen||[];
+  return st===400&&/key/i.test(msg)||st===401||st===403?"La chiave Gemini non è valida. Controllala nella sezione Il mio cane."
+    :seen.some(x=>x===503||x===500||x==="lento")?"L'assistente di Google è molto occupato in questo momento (succede con il servizio gratuito). Riprova tra un minuto."
+    :seen.includes(429)||st===429?"Hai raggiunto il limite gratuito di Gemini per adesso. Riprova tra un po'.":"Non riesco a parlare con l'assistente. Controlla la connessione e riprova."}
+function miniChat(id,cfg){
+  const c=MC[id]||(MC[id]={msgs:[],busy:false});c.cfg=cfg;
+  if(!c.msgs.length)c.msgs.push({r:"a",t:cfg.hello(),local:true});
+  const host=$(cfg.host);
+  if(!host.dataset.ready){host.dataset.ready=1;
+    host.innerHTML=`<div id="${id}-key"></div><div class="msgs" id="${id}-msgs"></div><div class="sugg" id="${id}-sugg"></div><form class="chatin" id="${id}-form"><input id="${id}-in" autocomplete="off" placeholder="${esc(cfg.ph)}" aria-label="Messaggio per l'assistente"><button class="round" aria-label="Invia">${icon("send")}</button></form><p class="small muted" style="margin-top:8px">Usa Gemini di Google e riceve il profilo del cane (senza veterinario né microchip). Può sbagliare.</p>`;
+    $(id+"-form").onsubmit=e=>{e.preventDefault();miniSend(id,$(id+"-in").value)}}
+  const key=store.get("alldogs-gemini");
+  $(id+"-key").innerHTML=key?"":`<div class="note" style="margin-top:4px"><b>Per la chat serve la chiave Gemini (gratuita).</b> Creala su <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> con il tuo account Google, poi incollala qui. Resta solo su questo telefono.
+    <input class="field" id="${id}-gk" placeholder="Chiave Gemini" autocomplete="off" autocapitalize="off" spellcheck="false" style="margin-top:10px"><button class="btn pri wide" id="${id}-gks" style="margin-top:8px" type="button">Salva la chiave</button></div>`;
+  if(!key)$(id+"-gks").onclick=()=>{const v=$(id+"-gk").value.trim();if(!v){toast("Incolla la chiave");return}store.set("alldogs-gemini",v);toast("Chiave salvata");miniChat(id,cfg)};
+  miniRender(id);
+}
+function miniRender(id){
+  const c=MC[id];
+  $(id+"-msgs").innerHTML=c.msgs.map(m=>`<div class="msg ${m.r}">${esc(m.t)}</div>`).join("")+(c.busy?`<div class="msg a wait">Sto pensando…</div>`:"");
+  $(id+"-sugg").innerHTML=c.msgs.length<=1?c.cfg.sugg().map(s=>`<button class="pill" type="button">${esc(s)}</button>`).join(""):"";
+  $(id+"-sugg").querySelectorAll("button").forEach(b=>b.onclick=()=>miniSend(id,b.textContent));
+}
+async function miniSend(id,text){
+  const c=MC[id];text=text.trim();if(!text||c.busy)return;
+  const key=store.get("alldogs-gemini");if(!key){toast("Prima incolla la chiave Gemini");return}
+  c.msgs.push({r:"u",t:text});c.busy=true;$(id+"-in").value="";miniRender(id);
+  try{const o=await gemini(key,c.msgs,c.cfg.sys(),MINI_SCHEMA);c.msgs.push({r:"a",t:o.reply||"…",raw:JSON.stringify(o)})}
+  catch(e){console.warn("Gemini:",e);c.msgs.push({r:"a",t:gemErr(e),err:true})}
+  c.busy=false;miniRender(id);
+}
+const dogLine=d=>`nome ${d.name}; razza ${d.breed||"non indicata"}; età ${d.age} anni; peso ${d.weight} kg; allenamento ${d.train}; agilità ${capacity(d).agil}; pelo ${d.coat}; muso schiacciato ${d.brachy?"sì":"no"}; problemi di salute: ${pats(d).join(", ")||"nessuno indicato"}`;
+
+// ================= Addestramento =================
+// Lezioni in ordine di difficoltà. avoid: salti = esercizi con salto; zampe = pesano su spalle e anche; schiena = torsioni della schiena.
+const LV=["","Le basi","Buone maniere","Al guinzaglio","In escursione","Giochi e testa"];
+const LESSONS=[
+{id:"bravo",lv:1,t:"La parola «Bravo!»",min:3,obj:"Insegnargli che «Bravo!» vuol dire: hai fatto la cosa giusta, arriva il premio. È la base di tutte le altre lezioni.",steps:["Prepara 10 premietti piccolissimi, grandi come un'unghia.","Di' «Bravo!» con voce allegra e subito dopo dagli un premio. Non deve fare niente.","Ripeti 10 volte, con qualche secondo di pausa tra una volta e l'altra.","Rifallo in due o tre momenti diversi della giornata."],err:"Dare il premio prima della parola, o dire «Bravo» senza poi premiare: la parola perde valore.",ok:"Quando sente «Bravo!» si gira verso di te aspettando il premio."},
+{id:"nome",lv:1,t:"Rispondere al nome",min:3,obj:"Quando sente il suo nome si gira verso di te.",steps:["In una stanza tranquilla, aspetta che non ti stia guardando.","Di' il suo nome una sola volta, con voce allegra.","Appena gira la testa verso di te: «Bravo!» e premio.","Se non si gira, fai un piccolo rumore per attirarlo e riprova più vicino.","Fai 5-8 ripetizioni e smetti mentre si diverte ancora."],err:"Ripetere il nome tante volte di fila, o usarlo per sgridarlo: deve voler dire solo cose belle.",ok:"Si gira 8 volte su 10 al primo richiamo del nome, in casa."},
+{id:"guardami",lv:1,t:"Guardami",min:3,obj:"Ti guarda negli occhi per qualche secondo. Utilissimo per calmarlo quando passa un altro cane o una bici.",steps:["Tieni un premio in mano e portalo vicino ai tuoi occhi.","Appena incrocia il tuo sguardo: «Bravo!» e premio.","Quando lo fa sempre, di' «Guardami» prima di alzare la mano.","Allunga piano il tempo: 1 secondo, poi 2, poi 3 prima del «Bravo»."],err:"Fissarlo in modo duro o chinarti sopra di lui: per un cane può sembrare una minaccia. Sguardo morbido.",ok:"Ti guarda per 3 secondi quando dici «Guardami», anche fuori casa in un posto tranquillo."},
+{id:"seduto",lv:1,t:"Seduto",min:5,obj:"Si siede quando glielo chiedi.",steps:["Tieni un premio davanti al suo naso.","Alzalo piano sopra la sua testa, verso la nuca: per seguirlo con il naso si siederà.","Appena il sedere tocca terra: «Bravo!» e premio.","Dopo 5-6 volte riuscite, di' «Seduto» prima del movimento della mano.","Pian piano fai il gesto sempre più piccolo, fino alla sola parola."],err:"Spingergli giù il sedere con la mano: impara di meno e può fargli male, soprattutto se ha problemi alle anche.",ok:"Si siede alla parola, senza gesto, in 3 stanze diverse."},
+{id:"libero",lv:1,t:"La parola «Libero»",min:3,obj:"Una parola che vuol dire: l'esercizio è finito, puoi muoverti. Serve per «Resta», «Aspetta» e tutti gli esercizi da fermo.",steps:["Chiedigli «Seduto» e premialo.","Di' «Libero!» e fai un passo indietro invitandolo a muoversi. Quando si alza, festeggia con una carezza o un gioco.","Ripeti 5 volte.","Da ora ogni esercizio da fermo finisce sempre con «Libero»."],err:"Dimenticare di dire «Libero»: il cane impara a decidere da solo quando alzarsi.",ok:"Resta seduto 2-3 secondi finché non sente «Libero»."},
+{id:"terra",lv:1,t:"Terra",min:5,obj:"Si sdraia a pancia in giù quando glielo chiedi.",steps:["Parti da seduto, con un premio davanti al suo naso.","Abbassalo piano fino a terra tra le zampe anteriori, poi allontanalo un pochino lungo il pavimento.","Appena i gomiti toccano terra: «Bravo!» e premio, dato a terra tra le zampe.","Dopo 5-6 volte riuscite aggiungi la parola «Terra» prima del gesto.","Su un tappeto o sull'erba è più comodo che sul pavimento freddo."],err:"Premere sulle spalle per farlo sdraiare. Se si alza col sedere, ricomincia con più calma.",ok:"Si sdraia alla parola, senza premio in mano, in casa."},
+{id:"tocca",lv:1,t:"Tocca (la mano)",min:3,obj:"Tocca con il naso il palmo della tua mano. Serve per spostarlo senza tirarlo e come richiamo facile.",steps:["Mostra il palmo aperto a pochi centimetri dal suo naso.","Quando lo annusa e lo tocca col naso: «Bravo!» e premio, dato con l'altra mano.","Sposta la mano un po' a destra, a sinistra, più in basso.","Aggiungi la parola «Tocca» quando lo fa sempre.","Allontana la mano di un passo: deve venire lui a toccarla."],err:"Andare tu con la mano verso il suo naso: deve essere lui a venire.",ok:"Attraversa la stanza per toccarti la mano quando dici «Tocca»."},
+{id:"vieni1",lv:1,t:"Vieni (in casa)",min:5,obj:"Il primo passo del richiamo: viene da te quando lo chiami, dove ci sono poche distrazioni.",steps:["In casa, a due passi da lui, di' il suo nome e «Vieni!» con voce allegra, abbassandoti.","Quando arriva: «Bravo!», il premio più buono che hai e coccole.","Allontanati un po' di più ogni volta, poi chiamalo da un'altra stanza.","Fate giocare anche un familiare: vi chiamate il cane a turno."],err:"Chiamarlo per qualcosa che non gli piace (bagno, fine del gioco, sgridata): il richiamo deve essere sempre una festa.",ok:"Arriva di corsa da un'altra stanza 9 volte su 10."},
+{id:"resta1",lv:1,t:"Resta (pochi secondi)",min:5,obj:"Resta fermo seduto o sdraiato per qualche secondo, con te vicino.",steps:["Chiedi «Seduto», poi mostra il palmo della mano e di' «Resta».","Conta 1 secondo, «Bravo!», premio dato mentre è ancora seduto, poi «Libero».","Aumenta piano: 2 secondi, 3, 5, 10. Se si alza, torna al tempo che gli riusciva bene.","Solo quando tiene 10 secondi, fai un passo indietro e torna subito."],err:"Aumentare insieme tempo e distanza: si allena una cosa alla volta.",ok:"Resta 15 secondi con te a un passo di distanza."},
+{id:"porta",lv:2,t:"Aspetta alla porta",min:5,obj:"Non si lancia fuori quando apri la porta di casa o il cancello. Può salvargli la vita.",steps:["Con il cane al guinzaglio, metti la mano sulla maniglia. Se sta fermo: «Bravo!».","Apri di pochi centimetri. Se si muove in avanti, richiudi piano. Se resta fermo: premio.","Apri sempre un po' di più, finché la porta è aperta e lui aspetta.","Esci tu per prima o per primo, poi «Libero» e invitalo a seguirti."],err:"Usare la porta per bloccarlo con forza o schiacciarlo.",ok:"Aspetta con la porta aperta finché non senti «Libero»."},
+{id:"ciotola",lv:2,t:"Aspetta la ciotola",min:3,obj:"Aspetta calmo mentre appoggi la ciotola invece di saltare. Allena l'autocontrollo quando è molto motivato.",steps:["Con la ciotola in mano, chiedi «Seduto».","Abbassa la ciotola piano. Se si alza, rialzala senza dire niente.","Quando arriva a terra e lui è ancora seduto: «Libero!» e può mangiare.","Bastano 2-3 secondi: non farlo aspettare a lungo davanti al cibo."],err:"Farlo aspettare tanto o togliergli la ciotola mentre mangia.",ok:"Aspetta seduto finché la ciotola è a terra e sente «Libero»."},
+{id:"lascia",lv:2,t:"Lascia (molla l'oggetto)",min:5,obj:"Molla quello che ha in bocca. Serve con i giochi e quando raccoglie qualcosa di pericoloso.",steps:["Gioca con un gioco che gli piace. Mentre lo tiene in bocca, metti un premio buonissimo davanti al suo naso.","Quando apre la bocca per prenderlo: «Lascia!», «Bravo!» e premio.","Ridagli subito il gioco: così impara che mollare conviene e non vuol dire perderlo.","Ripeti 5 volte. Poi di' «Lascia» prima di mostrare il premio."],err:"Inseguirlo o strappargli le cose di bocca: imparerà a scappare o a ingoiarle in fretta.",ok:"Molla il gioco alla parola, senza vedere il premio."},
+{id:"nontoccare",lv:2,t:"Lascialo (non toccare)",min:5,obj:"Non prende qualcosa che vede a terra. Molto utile in strada, tra rifiuti e bocconi.",steps:["Metti un premio in una mano chiusa e mostragliela. Lascia che annusi e lecchi, ma non aprire.","Appena allontana il naso anche per un attimo: «Bravo!» e premio dall'altra mano.","Quando lo fa sempre, di' «Lascialo» prima di mostrare la mano.","Poi metti il premio a terra coperto dal piede, e alla fine scoperto, vicino al piede."],err:"Dargli proprio il premio che doveva lasciare: il premio arriva sempre dall'altra mano.",ok:"Lascia un premio a terra quando dici «Lascialo», in casa."},
+{id:"saluto",lv:2,t:"Saluta senza saltare",min:5,obj:"Saluta le persone con le quattro zampe a terra.",steps:["Quando torni a casa e lui salta, girati di lato e stai zitto: niente sguardi né carezze.","Appena ha le quattro zampe a terra, abbassati e salutalo con calma.","Se riparte a saltare, rialzati e girati di nuovo.","Chiedi a familiari e ospiti di fare lo stesso."],err:"Spingerlo via con le mani o le ginocchia: per lui diventa un gioco.",ok:"Ti saluta con le zampe a terra quando rientri."},
+{id:"posto",lv:2,t:"Vai al tuo posto",min:5,obj:"Va sul suo tappetino e ci resta tranquillo. Utile a tavola, quando suonano alla porta, al bar.",steps:["Metti il tappetino a terra. Ogni volta che ci mette una zampa sopra: «Bravo!» e premio sul tappetino.","Poi premia solo quando ci sale con tutte le zampe, poi quando si sdraia.","Aggiungi la parola «Posto» quando ci va da solo.","Allunga piano il tempo, lanciandogli ogni tanto un premio mentre è sdraiato."],err:"Mandarlo al posto per punizione: deve essere il suo angolo bello.",ok:"Va al tappetino alla parola e ci resta 2 minuti mentre mangi."},
+{id:"manipola",lv:2,t:"Farsi toccare zampe, orecchie e denti",min:3,obj:"Si lascia toccare tranquillo. Rende facili le visite dal veterinario, il taglio delle unghie e il controllo delle zampe dopo un'escursione.",steps:["Tocca una spalla per un secondo, «Bravo!» e premio.","Poi una zampa per un secondo, poi tieni la zampa in mano due secondi.","Fai lo stesso con orecchie, coda e bocca (solleva appena un labbro).","Sempre a piccoli passi. Se si irrigidisce o si allontana, torna a un tocco più leggero."],err:"Tenerlo fermo con la forza mentre protesta: la volta dopo avrà più paura.",ok:"Si fa guardare le quattro zampe e i denti, rilassato."},
+{id:"museruola",lv:2,t:"La museruola amica",min:3,obj:"Accetta la museruola senza stress. Può essere richiesta sui mezzi pubblici e in alcuni luoghi, e serve in caso di emergenza.",steps:["Mostra la museruola e premialo solo perché la guarda o la annusa.","Metti un premio dentro: lascia che ci infili il muso da solo per prenderlo.","Quando lo fa volentieri, tienila 1 secondo sul muso senza chiuderla, poi 2, poi 5.","Solo dopo chiudi la fibbia per pochi secondi, premiando attraverso la museruola."],err:"Metterla di forza la prima volta proprio quando serve (dal veterinario): la odierà.",ok:"Infila il muso da solo e la tiene chiusa un minuto, tranquillo."},
+{id:"guinz",lv:3,t:"Guinzaglio lento",min:8,obj:"Cammina senza tirare: il guinzaglio fa una U morbida.",steps:["In un posto tranquillo, usa un guinzaglio di 1,5-2 metri.","Ogni volta che cammina vicino a te con il guinzaglio morbido: «Bravo!» e premio vicino alla tua gamba.","Appena tira, fermati come un albero. Quando il guinzaglio si allenta, riparti.","Se tira forte, cambia direzione con calma e premialo quando ti raggiunge.","Meglio una pettorina ad H o a Y che il collare, per non pesare sul collo."],err:"Strattonare o usare collari a strozzo o elettrici: fanno male e aumentano paura e tensione.",ok:"Cammina 5 minuti in una strada tranquilla senza tirare."},
+{id:"piede",lv:3,t:"Al piede",min:5,obj:"Cammina vicino alla tua gamba per un breve tratto, quando serve davvero: incroci, marciapiedi stretti, folla.",steps:["Tieni i premi nella mano dalla sua parte.","Fai 2 passi: se è accanto alla gamba, «Bravo!» e premio vicino alla gamba.","Aumenta: 3 passi, 5, 10, poi una curva.","Di' «Piede» all'inizio e «Libero» alla fine: fuori dal piede può annusare e fare il cane."],err:"Pretendere il piede per tutta la passeggiata: è faticoso, il cane ha bisogno di annusare.",ok:"Cammina al piede per 20 passi con una curva."},
+{id:"girati",lv:3,t:"Cambiare direzione insieme",min:5,obj:"Ti segue quando giri di colpo. Serve per evitare un cane agitato, una bici, un boccone a terra.",steps:["Camminando, di' «Andiamo!» con voce allegra e gira dall'altra parte.","Quando ti segue: «Bravo!» e premio appena ti raggiunge.","Fallo in tanti punti della passeggiata, anche senza motivo.","Poi usalo quando vedi una distrazione ancora lontana."],err:"Aspettare che sia già agitato e vicinissimo alla distrazione.",ok:"Si gira con te al primo «Andiamo!» anche se qualcosa lo incuriosisce."},
+{id:"marciapiede",lv:3,t:"Fermo al bordo del marciapiede",min:5,obj:"Si ferma prima di attraversare la strada e aspetta il tuo via.",steps:["Arrivati al bordo, fermati e chiedi «Seduto» o aspetta che si fermi.","«Bravo!» e premio, poi «Andiamo» e attraversate.","Fallo a ogni incrocio, sempre uguale.","Dopo qualche settimana si fermerà da solo prima che glielo chiedi."],err:"Saltare la regola quando hai fretta: la coerenza è tutto.",ok:"Si ferma da solo al bordo in 4 incroci su 5."},
+{id:"incroci",lv:3,t:"Incrociare altri cani con calma",min:5,obj:"Passa vicino ad altri cani senza tirare né abbaiare.",steps:["Quando vedi un cane lontano, prima che il tuo reagisca, «Guardami» o «Andiamo» e premio.","Tieni una distanza a cui è ancora tranquillo: se abbaia, siete troppo vicini.","Passa di lato con una curva ampia, mettendoti tu tra lui e l'altro cane.","Settimana dopo settimana la distanza diminuisce da sola."],err:"Avvicinarsi troppo in fretta o forzare il saluto. Se ha molta paura o reagisce forte, chiedi aiuto a un educatore cinofilo.",ok:"Incrocia un cane tranquillo a 5 metri senza tirare."},
+{id:"cibostrada",lv:3,t:"Ignorare il cibo in strada",min:5,obj:"Passa vicino a cibo e rifiuti senza prenderli. Lo protegge da bocconi pericolosi.",steps:["In casa, metti qualche crocchetta a terra lungo un percorso e passaci col cane al guinzaglio.","Usa «Lascialo» quando ci passate vicino e premia con qualcosa di più buono dalla tua mano.","Poi prova in cortile e infine in strada, sempre al guinzaglio.","Tieni il guinzaglio corto vicino a cassonetti e panchine."],err:"Fidarsi troppo presto: vicino ai rifiuti tienilo sempre al guinzaglio.",ok:"Passa vicino a un premio a terra senza prenderlo, al primo «Lascialo»."},
+{id:"vieni2",lv:3,t:"Vieni con le distrazioni",min:8,obj:"Il richiamo funziona anche fuori, con odori, persone e cani. Si allena con una lunghina, mai libero all'inizio.",steps:["Usa una lunghina di 5-10 metri attaccata alla pettorina, in un prato tranquillo.","Lascia che si allontani ad annusare, poi chiamalo una sola volta con il richiamo allegro.","Quando arriva: premio speciale, poi «Libero» e torna ad annusare. Così il richiamo non vuol dire fine del divertimento.","Aumenta piano le distrazioni: prima un posto calmo, poi persone lontane, poi altri cani lontani."],err:"Chiamarlo quando sai che non verrà: ogni richiamo ignorato insegna che si può ignorare. In quel caso vai tu a prenderlo.",ok:"Torna al primo richiamo in un parco con gente intorno, 9 volte su 10."},
+{id:"resta2",lv:3,t:"Resta con distanza e durata",min:5,obj:"Resta fermo anche quando ti allontani o passa più tempo.",steps:["Parti da quello che gli riusciva bene: 10-15 secondi, vicino.","Allena la distanza: un passo indietro e torna, poi due, poi tre. Torni sempre tu da lui per premiarlo.","In un'altra sessione allena il tempo: 20, 30, 60 secondi vicino a lui.","Solo alla fine unisci le due cose, un po' alla volta."],err:"Chiamarlo a te dal «Resta»: lo confonde. Torni da lui e poi dici «Libero».",ok:"Resta un minuto con te a 5 passi di distanza."},
+{id:"piano",lv:4,t:"Piano (rallenta)",min:5,obj:"Rallenta quando glielo chiedi: in discesa, sui sassi, vicino a un dirupo o per risparmiare le forze.",steps:["Camminando, rallenta tu e di' «Piano» con voce bassa e calma.","Appena rallenta anche lui: «Bravo!» e premio vicino alla gamba.","Alterna tratti normali e tratti «piano».","Usalo in discesa e sui gradini, dove serve di più."],err:"Tirare il guinzaglio per rallentarlo.",ok:"Rallenta al primo «Piano» su un sentiero."},
+{id:"lato",lv:4,t:"Passa dall'altra parte",min:5,obj:"Cambia lato passandoti dietro. Sui sentieri stretti lo metti dal lato della montagna e non del vuoto, o lontano da chi arriva.",steps:["Con un premio in mano, guidalo dietro le tue gambe fino all'altro lato.","Appena arriva dall'altra parte: «Bravo!» e premio.","Aggiungi la parola «Dietro» prima del gesto.","Fai il gesto sempre più piccolo."],err:"Farlo passare davanti a te, dove rischi di inciampare.",ok:"Cambia lato dietro di te alla parola, camminando."},
+{id:"gradini",lv:4,t:"Gradini e sassi con calma",min:5,obj:"Sale e scende gradini e rocce senza fretta. Protegge le articolazioni ed evita cadute.",steps:["Inizia con 2-3 gradini bassi, a casa o al parco.","Un gradino alla volta: «Piano» e premio su ogni gradino, prima in salita poi in discesa.","Guinzaglio corto ma morbido, tu dal lato del vuoto.","In discesa vai ancora più piano: per lui è più faticosa e pericolosa della salita."],err:"Lasciarlo correre giù dalle scale. Se ha problemi ad articolazioni o schiena, o è molto piccolo, prendilo in braccio sui gradini alti.",ok:"Scende 10 gradini al passo, senza saltarne."},
+{id:"borraccia",lv:4,t:"Bere dalla ciotola da viaggio",min:3,obj:"Beve dalla ciotola pieghevole o dalla borraccia per cani, così non beve dalle pozzanghere.",steps:["A casa offri acqua fresca nella ciotola da viaggio, dove beve di solito.","Offrigliela dopo un gioco, quando ha sete: «Bravo!».","Portala in ogni passeggiata e offrila ogni 20-30 minuti, più spesso col caldo.","Aggiungi una parola, per esempio «Acqua»."],err:"Aspettare che abbia la lingua di fuori: l'acqua va offerta prima.",ok:"Beve dalla ciotola da viaggio quando la vede, anche fuori casa."},
+{id:"stop",lv:4,t:"Fermo a distanza",min:8,obj:"Si ferma o si sdraia anche lontano da te. È un comando di sicurezza: vicino a una strada, a un dirupo, davanti a un animale.",steps:["Parti da «Terra» con lui vicino, poi chiedilo quando è un passo davanti a te.","Lancia il premio vicino a lui, dove si trova: così impara a fermarsi lì e non a correre da te.","Allontanati piano, sempre con la lunghina.","Prova anche mentre cammina verso di te, a passo lento."],err:"Provarlo subito in un posto pericoloso. Prima deve funzionare benissimo in un prato tranquillo.",ok:"Si sdraia a 5 metri da te al primo comando, con la lunghina."},
+{id:"fischio",lv:4,t:"Richiamo con il fischietto",min:5,obj:"Un richiamo d'emergenza col fischietto: si sente lontano, anche col vento, ed è sempre uguale anche quando sei agitata o agitato.",steps:["Fischia (sempre lo stesso suono, per esempio 3 colpi corti) e subito dopo dagli un premio speciale. Non deve fare niente.","Ripeti 10 volte al giorno per una settimana.","Poi fischia quando è vicino in casa: arriverà perché sa che c'è il premio.","Poi all'aperto, con la lunghina, premiando sempre col premio più buono."],err:"Usare il fischietto per altre cose o senza premio.",ok:"Arriva di corsa al fischio da 10 metri, al parco."},
+{id:"animali",lv:4,t:"Lascia gli animali in pace",min:5,obj:"Non insegue gatti, uccelli, pecore o mucche. In montagna e in campagna è fondamentale.",steps:["Quando vedi un animale lontano, prima che lui reagisca: «Guardami» e premio.","Resta a una distanza in cui è calmo.","Premialo ogni volta che guarda l'animale e poi torna a guardare te.","Avvicinati piano solo se resta tranquillo."],err:"Lasciarlo libero vicino a greggi e mandrie: i cani da pastore le difendono e le mucche con i vitelli possono caricare.",ok:"Guarda un gatto o un uccello a 10 metri e poi torna a guardarti."},
+{id:"relax",lv:4,t:"Rilassarsi durante la sosta",min:5,obj:"Si sdraia e riposa quando vi fermate: al rifugio, al bar, nella pausa pranzo.",steps:["Porta il suo tappetino o un asciugamano (lo stesso di «Vai al tuo posto»).","Quando vi fermate, mettilo a terra e chiedi «Posto».","Premialo con calma quando si sdraia, poi dagli qualcosa da masticare a lungo.","Le prime volte fai soste brevi, in posti tranquilli."],err:"Pretendere che stia fermo dopo pochi minuti di cammino: prima si sfoga, poi riposa.",ok:"Riposa sdraiato 10 minuti durante una sosta all'aperto."},
+{id:"cerca",lv:5,t:"Cerca! (gioco di fiuto)",min:5,obj:"Trova premi nascosti con il naso. Stanca tantissimo la testa: è perfetto nei giorni di pioggia o di caldo, nei giorni di riposo e per i cani anziani.",steps:["Fallo sedere e fagli vedere che metti un premio a terra poco lontano. «Cerca!» e lascialo andare.","Poi nascondilo dietro una sedia mentre ti guarda.","Poi nascondilo quando non ti vede, in posti sempre più difficili.","Fuori casa: spargi qualche crocchetta nell'erba e di' «Cerca»."],err:"Aiutarlo troppo presto: lasciagli il tempo di usare il naso.",ok:"Trova 5 premi nascosti in una stanza senza il tuo aiuto."},
+{id:"mano",lv:5,t:"Quale mano?",min:3,obj:"Indica con il naso la mano dove c'è il premio. Un gioco di fiuto tranquillo da fare sul divano.",steps:["Metti un premio in una mano, chiudi tutte e due le mani e mostragliele.","Quando annusa o tocca quella giusta: «Bravo!» e aprila.","Se sceglie quella sbagliata, aprila vuota e riprova.","Cambia mano a caso."],err:"Lasciarlo grattare forte con le unghie: premia appena tocca.",ok:"Indovina 4 volte su 5."},
+{id:"zampa",lv:5,t:"Dai la zampa",min:3,obj:"Ti dà la zampa. Aiuta anche quando devi controllargli i polpastrelli dopo un sentiero.",steps:["Chiedi «Seduto» e tieni un premio in una mano chiusa all'altezza del suo petto.","Quando prova a prenderlo alzando la zampa: «Bravo!» e apri la mano.","Poi presenta la mano aperta: quando ci appoggia la zampa, premio.","Aggiungi la parola «Zampa»."],err:"Prendergli la zampa con la forza.",ok:"Ti dà la zampa alla parola."},
+{id:"riporto",lv:5,t:"Porta (riporto)",min:5,obj:"Ti riporta la pallina o il gioco. Un modo per farlo muovere che puoi dosare tu.",steps:["Lancia il gioco molto vicino. Quando lo prende, chiamalo allegro e fai un passo indietro.","Quando arriva, scambia il gioco con un premio («Lascia») e rilancia subito.","Allunga piano la distanza.","Poche ripetizioni: smetti prima che sia stanco."],err:"Lanci lunghi e scatti continui per tanto tempo: sforzano molto le articolazioni. Meglio lanci bassi e rasoterra.",ok:"Riporta e lascia il gioco 5 volte di fila."},
+{id:"giro",lv:5,t:"Giro (su se stesso)",min:3,avoid:["schiena"],obj:"Fa un giro su se stesso seguendo la tua mano. Un trucco divertente che scioglie i muscoli.",steps:["Con un premio vicino al suo naso, disegna un cerchio largo e lento.","Quando chiude il giro: «Bravo!» e premio.","Fai il cerchio sempre più piccolo, fino a un gesto della mano.","Aggiungi la parola «Giro» e allenalo nei due sensi."],err:"Farlo girare veloce o tante volte di fila.",ok:"Fa il giro alla parola, nei due sensi."},
+{id:"inchino",lv:5,t:"Inchino",min:3,avoid:["zampe"],obj:"Abbassa il petto tenendo il sedere in alto, come quando invita a giocare. È anche un buon allungamento dopo la passeggiata.",steps:["Con il cane in piedi, porta un premio dal naso verso terra, vicino alle zampe anteriori.","Quando abbassa il petto e il sedere è ancora su: «Bravo!» e premio, prima che si sdrai.","Se si sdraia del tutto, metti piano un braccio sotto la sua pancia per qualche ripetizione.","Aggiungi la parola «Inchino»."],err:"Tenerlo in posizione a lungo.",ok:"Si inchina alla parola."},
+{id:"salto",lv:5,t:"Salta l'ostacolo basso",min:5,avoid:["salti"],obj:"Salta un piccolo ostacolo, per esempio un manico di scopa. Utile sui sentieri per tronchi e ruscelli.",steps:["Appoggia una scopa a terra e fallo passare sopra camminando, con un premio.","Alzala appena: pochi centimetri, mai più in alto del suo polso (dove la zampa anteriore si piega).","Aggiungi la parola «Hop».","Solo su terreno morbido, mai sul pavimento scivoloso."],err:"Ostacoli alti o atterraggi su terreno duro.",ok:"Salta un ostacolo basso alla parola, su un prato."},
+{id:"riordina",lv:5,t:"Metti a posto i giochi",min:8,obj:"Prende un gioco e lo lascia nella cesta. Allena testa e collaborazione, ottimo nei giorni di pioggia.",steps:["Prima deve sapere «Porta» e «Lascia».","Mettiti accanto alla cesta: quando ti porta un gioco, tieni la mano sopra la cesta e di' «Lascia», così il gioco cade dentro. Premio.","Allontana la mano un po' alla volta, finché lascia il gioco nella cesta da solo.","Aggiungi la parola «A posto»."],err:"Fare troppo in una volta: è un esercizio lungo, si divide in tanti giorni.",ok:"Mette 3 giochi nella cesta di fila."},
+{id:"rotola",lv:5,t:"Rotola",min:5,avoid:["zampe","schiena"],obj:"Si gira sulla schiena e torna giù dall'altra parte. Un trucco per cani in forma con la schiena sana.",steps:["Parti da «Terra». Porta un premio dal naso verso la sua spalla: si girerà su un fianco. Premio.","Continua il movimento verso la schiena: si rotolerà. Premio.","Solo su una superficie morbida.","Aggiungi la parola «Rotola»."],err:"Forzarlo a girarsi o farlo sul pavimento duro.",ok:"Rotola alla parola, su un tappeto."}
+];
+function lessonOK(L,k){
+  const a=L.avoid||[];
+  if(a.includes("salti")&&(k.joint||k.senior||k.puppy||k.longback||k.giant||k.heart))return false;
+  if(a.includes("zampe")&&(k.joint||k.senior||k.longback||k.giant))return false;
+  if(a.includes("schiena")&&(k.joint||k.longback))return false;
+  return true;
+}
+function trAdvice(d,k){
+  const nm=d.name||"il tuo cane",t=[];
+  if(k.young)t.push(`${nm} è un cucciolo: sessioni cortissime, 2-3 minuti, anche 3-4 volte al giorno. Si stanca presto e impara giocando.`);
+  else if(k.senior)t.push(`${nm} è anziano: sessioni brevi e tranquille, 5 minuti, su un tappeto. Impara benissimo anche adesso, solo con più calma.`);
+  else t.push(`Bastano 5-10 minuti al giorno, anche divisi in due momenti. Meglio poco e spesso che una lezione lunga.`);
+  t.push("Premi piccolissimi e buoni: pezzetti di carne cotta, di formaggio o crocchette speciali. Smetti sempre quando si diverte ancora.");
+  if(k.p.peso||k.p.diab)t.push(k.p.diab?"Ha il diabete: usa come premi le sue crocchette, prese dalla razione del giorno, e chiedi al veterinario quali premi può avere.":"È in sovrappeso: usa come premi le sue crocchette, prese dalla razione del giorno.");
+  if(k.small)t.push("È piccolo: abbassati alla sua altezza e usa premi ancora più piccoli.");
+  if(k.p.epi)t.push("Soffre di epilessia: sessioni calme, senza troppa eccitazione, e lontano dalle ore più calde.");
+  if(k.brachy)t.push("Ha il muso schiacciato: allenatevi al fresco e fate pause se respira forte.");
+  if(k.energy&&!k.senior)t.push("È di una razza che ama lavorare: l'addestramento lo stanca quanto una corsa e lo rende più sereno.");
+  return t;
+}
+const TRK="alldogs-train";
+let TRS=Object.assign({st:{},day:null},store.get(TRK)||{}); // st[id] = {s: giorno in cui l'ha vista, ok: imparata}
+const saveTR=()=>store.set(TRK,TRS);
+const trList=()=>{const k=dogKind(dog());return LESSONS.filter(L=>lessonOK(L,k))};
+// la lezione di oggi: ogni giorno una nuova, nell'ordine di difficoltà; finite le nuove, quelle ancora da ripassare
+function todayLesson(){
+  const L=trList(),today=dKey(Date.now());
+  if(TRS.day&&TRS.day.d===today){const x=L.find(l=>l.id===TRS.day.id);if(x)return x}
+  const nx=L.find(l=>!TRS.st[l.id])||L.filter(l=>!TRS.st[l.id].ok).sort((a,b)=>(TRS.st[a.id].s<TRS.st[b.id].s?-1:1))[0]||L[Math.floor(Date.now()/DAY)%L.length];
+  TRS.day={d:today,id:nx.id};if(!TRS.st[nx.id])TRS.st[nx.id]={s:today,ok:false};saveTR();return nx;
+}
+function lessonHTML(L,open,big){
+  const s0=TRS.st[L.id],s=s0&&(s0.ok||s0.s!==dKey(Date.now()))?s0:null,ck=s&&s.ok?`<span class="ck ok" aria-label="Imparata">✓</span>`:s?`<span class="ck seen" aria-label="Da ripassare">↻</span>`:`<span class="ck" aria-hidden="true"></span>`;
+  return `<details class="lesson${big?" big":""}"${open?" open":""}><summary>${ck}<span><b>${esc(L.t)}</b><small>${LV[L.lv]} · ${L.min} minuti${s&&s.ok?" · imparata":s?" · da ripassare":""}</small></span><i>›</i></summary><div class="lb">
+    <p>${esc(L.obj)}</p><ol>${L.steps.map(x=>`<li>${esc(x)}</li>`).join("")}</ol>
+    <p style="margin-top:10px" class="small"><b class="c1">Da evitare:</b> ${esc(L.err)}</p>
+    <p style="margin-top:6px" class="small"><b class="c0">È imparato quando:</b> ${esc(L.ok)}</p>
+    <div class="row" style="margin-top:12px;flex-wrap:wrap">${s&&s.ok?`<button class="btn sm" data-lk="${L.id}" data-v="0">Da ripassare</button>`:`<button class="btn sm pri" data-lk="${L.id}" data-v="1">✓ L'ha imparato</button>`}<button class="btn sm" data-ask="${L.id}">Chiedi all'educatore</button></div></div></details>`;
+}
+function showTrain(){
+  const d=dog(),k=dogKind(d),L=trList(),T=todayLesson(),nm=dn();
+  const done=L.filter(l=>TRS.st[l.id]&&TRS.st[l.id].ok).length,skip=LESSONS.length-L.length;
+  const rev=L.filter(l=>TRS.st[l.id]&&!TRS.st[l.id].ok&&l.id!==T.id).sort((a,b)=>(TRS.st[a.id].s<TRS.st[b.id].s?-1:1)).slice(0,3);
+  const why=[k.joint&&"i problemi alle articolazioni",k.senior&&"l'età",k.puppy&&"la crescita",k.longback&&"la schiena lunga",k.giant&&"la taglia",k.heart&&"il cuore e il respiro"].filter(Boolean);
+  $("tr-main").innerHTML=`<p class="muted" style="margin-top:6px">Lezioni scelte per ${nm}, dalle più facili alle più difficili. Ogni giorno ne trovi una nuova.</p>
+    <div class="box" style="margin-top:14px"><div class="gl" style="margin-top:0"><span>Imparate</span><b>${done} di ${L.length}</b></div><div class="prog"><i style="width:${Math.round(done/L.length*100)}%"></i></div>
+    <ul class="plain small" style="margin-top:12px">${trAdvice(d,k).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
+    ${skip?`<p class="small muted" style="margin-top:8px">Ho tolto ${skip} ${skip===1?"esercizio":"esercizi"} con salti, torsioni o peso sulle zampe, non adatti a ${nm} per ${why.join(" e ")||"il suo profilo"}.</p>`:""}</div>
+    <div class="block"><h2>Lezione di oggi</h2>${lessonHTML(T,true,true)}<p class="small muted" style="margin-top:8px">Non c'è fretta: se non la impara oggi la ritrovi in «Da ripassare». Domani arriva una lezione nuova.</p></div>
+    ${rev.length?`<div class="block"><h2>Da ripassare</h2>${rev.map(l=>lessonHTML(l)).join("")}</div>`:""}
+    <div class="block"><h2>Tutte le lezioni</h2>${[1,2,3,4,5].map(v=>{const ls=L.filter(l=>l.lv===v);return ls.length?`<div class="lvl"><p class="flabel" style="margin-top:0">Livello ${v} · ${LV[v]}</p>${ls.map(l=>lessonHTML(l)).join("")}</div>`:""}).join("")}</div>`;
+  $("tr-main").querySelectorAll("[data-lk]").forEach(b=>b.onclick=()=>{const id=b.dataset.lk;TRS.st[id]=Object.assign(TRS.st[id]||{s:dKey(Date.now())},{ok:b.dataset.v==="1"});saveTR();
+    toast(b.dataset.v==="1"?`Bravissimo ${dog().name||""}!`.trim():"Lo ritrovi tra quelle da ripassare");showTrain()});
+  $("tr-main").querySelectorAll("[data-ask]").forEach(b=>b.onclick=()=>{const l=LESSONS.find(x=>x.id===b.dataset.ask);$("tr-chat").scrollIntoView({behavior:"smooth",block:"start"});$("tr-in").value=`Come faccio a insegnare «${l.t}» a ${dog().name}? `;$("tr-in").focus()});
+  miniChat("tr",{host:"tr-chat",ph:"Chiedi come insegnare qualcosa",
+    hello:()=>`Ciao! Sono l'educatore di AllDogs. Chiedimi come insegnare un comando a ${dog().name||"il tuo cane"}, o cosa fare se una lezione non funziona.`,
+    sugg:()=>[`Non riesce a imparare «${todayLesson().t}»`,"Tira molto al guinzaglio","Come insegno il richiamo?"],
+    sys:()=>{const d=dog(),T=todayLesson(),L=trList();
+      return `Sei l'educatore cinofilo di AllDogs, un'app per chi vive e cammina con il proprio cane in Italia. Parli in italiano semplice, frasi brevi, tono gentile e incoraggiante.
+Profilo del cane: ${dogLine(d)}.
+Lezione di oggi nell'app: ${T.t} (${T.obj}).
+Lezioni imparate: ${L.filter(l=>TRS.st[l.id]&&TRS.st[l.id].ok).map(l=>l.t).join(", ")||"nessuna ancora"}.
+Esercizi che l'app ha tolto perché non adatti a questo cane: ${LESSONS.filter(l=>!L.includes(l)).map(l=>l.t).join(", ")||"nessuno"}.
+Regole:
+- Solo metodi gentili con rinforzo positivo (premi, gioco, voce). Mai punizioni, strattoni, collari a strozzo, elettrici o a punte, mai urla.
+- Adatta sempre gli esercizi al cane: età, taglia, razza, salute. Niente salti, torsioni o peso sulle zampe se ha problemi ad articolazioni, schiena, se è anziano, cucciolo o gigante. Sessioni brevi.
+- Spiega a passi numerati e piccoli, con cosa evitare e quando l'esercizio è imparato.
+- Se descrive aggressività, morsi, paure forti, ansia da separazione grave o un cambiamento improvviso di comportamento, consiglia con gentilezza un educatore cinofilo qualificato e il veterinario (il dolore può cambiare il comportamento).
+- Niente diagnosi né farmaci: per la salute rimanda al veterinario.
+- reply: massimo 8 frasi o 6 passi brevi.`}});
+}
+
+// ================= Obiettivi =================
+const GK="alldogs-goal";
+let GOAL=store.get(GK);
+const DOWN=["domenica","lunedì","martedì","mercoledì","giovedì","venerdì","sabato"];
+const SESS={lunga:{t:"Passeggiata lunga",f:1,d:"La più importante della settimana: allena alla distanza. Al suo ritmo, con pause e acqua."},
+  normale:{t:"Passeggiata normale",f:.6,d:"Al suo passo, con tempo per annusare."},
+  fiuto:{t:"Passeggiata corta e giochi di fiuto",f:.4,d:"Una passeggiata breve e 10 minuti di «Cerca!»: stanca la testa e fa riposare le zampe."},
+  riposo:{t:"Recupero",f:.25,d:"Solo uscite tranquille per i bisogni e per annusare. Il riposo fa parte dell'allenamento: è lì che i muscoli si rinforzano."}};
+const WEEK_TPL=["lunga","riposo","normale","fiuto","normale","riposo","fiuto"]; // dal giorno della lunga in avanti
+const actsIn=(a,b)=>S.acts.filter(x=>x.t>=a&&x.t<b);
+const bestIn=(a,b)=>actsIn(a,b).reduce((m,x)=>Math.max(m,x.dist/1000),0);
+const kmIn=(a,b)=>actsIn(a,b).reduce((m,x)=>m+x.dist/1000,0);
+// quanto può crescere la passeggiata lunga ogni settimana (prudente; 0 = niente programma)
+function goalRate(d,k){
+  if(k.p.conv||k.puppy)return 0;
+  if(k.heart)return .05;
+  if(k.senior||k.brachy||k.giant||k.joint||k.p.peso||k.p.diab||k.p.epi||k.p.altro)return .07;
+  if(d.train==="molto"&&k.energy)return .15;
+  return k.energy||d.train==="molto"?.12:.10;
+}
+// la passeggiata lunga di ogni settimana fino all'obiettivo; ogni 4ª settimana non si aumenta (consolidamento)
+function goalPlan(g,r){
+  const w=[];let lv=g.from;
+  for(let i=0;i<80;i++){const cons=i%4===3,L=cons?lv:Math.min(g.target,r1(Math.max(lv*(1+r),lv+.1)));w.push({L,cons});lv=L;if(L>=g.target&&!cons)break}
+  return w;
+}
+function goalNow(g,d,k){
+  const r=Math.min(g.r,goalRate(d,k)),plan=goalPlan(g,r||.05),m0=monday(g.start),mw=monday(Date.now());
+  const wi=Math.max(0,Math.round((mw-m0)/DAY/7)),pw=plan[Math.min(wi,plan.length-1)];
+  const prev=actsIn(addDays(mw,-14),mw),prevBest=bestIn(addDays(mw,-14),mw);
+  let L=pw.L,note="";
+  if(wi>0&&g.start<addDays(mw,-7)&&!prev.length){L=g.from;note=`Non vedo passeggiate salvate nelle ultime due settimane: si riparte dalla distanza iniziale. Se cammini senza «Avvia percorso», aggiungi le passeggiate qui sotto.`}
+  else if(wi>0&&prevBest<plan[Math.min(wi-1,plan.length-1)].L*.8){L=Math.min(pw.L,Math.max(g.from,r1(prevBest*(1+r))));note="Nelle ultime settimane la passeggiata lunga è stata più corta del previsto: questa settimana si sale più piano."}
+  const last=plan.length-1,end=addDays(m0,last*7+((g.longDow+6)%7));
+  return {r,plan,wi,L,cons:pw.cons&&!note,note,end};
+}
+function fitTips(d,k){
+  const t=["Riscaldamento: i primi 5-10 minuti al passo lento, lasciandolo annusare. Alla fine altri 5 minuti tranquilli.",
+    "Aumenta una cosa alla volta: distanza, salita o velocità. Mai tutte insieme.",
+    "Erba e terra battuta pesano meno sulle articolazioni dell'asfalto e allenano l'equilibrio.",
+    "Nei giorni leggeri fai giochi di fiuto: stancano la testa senza pesare su zampe e cuore."];
+  if(!k.brachy&&!k.heart)t.push("Il nuoto in acqua calma, dove è permesso, è un ottimo allenamento che non pesa sulle articolazioni.");
+  if(k.brachy)t.push("Ha il muso schiacciato: allenatevi solo nelle ore fresche, a passo tranquillo, e fermatevi appena il respiro diventa rumoroso.");
+  if(k.giant||d.weight>=25)t.push("Per i cani grandi: niente passeggiata lunga subito dopo il pasto, aspetta almeno 1-2 ore (rischio di torsione dello stomaco).");
+  if(k.longback)t.push("Ha la schiena lunga: evita scale ripide e salti, preferisci percorsi in piano.");
+  if(k.sight)t.push("I levrieri sono velocisti: brevi corse in un'area recintata vanno bene, ma la resistenza si costruisce con molta calma.");
+  if(k.energy&&!k.senior)t.push("È di una razza che ha bisogno di lavorare: aggiungi lezioni di addestramento e giochi di fiuto.");
+  if(k.senior)t.push("È anziano: meglio più uscite brevi che una lunga. Il giorno dopo guarda se è rigido o zoppica.");
+  if(k.small)t.push("È piccolo: per ogni tuo passo lui ne fa tre o quattro, quindi 1 km per lui vale molto di più.");
+  if(k.p.peso)t.push("È in sovrappeso: il movimento aiuta, ma il peso si perde soprattutto con la dieta. Chiedi al veterinario le dosi giuste.");
+  if(k.p.diab)t.push("Ha il diabete: muovetevi più o meno sempre alla stessa ora e segui quello che ti ha detto il veterinario per pasti e premi.");
+  if(k.p.epi)t.push("Soffre di epilessia: evita il caldo e gli sforzi massimi, e non andare da sola o da solo in posti isolati.");
+  t.push("Dopo le uscite lunghe controlla i polpastrelli. D'estate tocca l'asfalto col dorso della mano: se scotta per te, scotta anche per lui.");
+  return t;
+}
+const STOP_SIGNS="Fermati e accorcia se ansima molto, rallenta tanto, si siede o si sdraia spesso, zoppica, ha la lingua viola o molto scura, inciampa. Il giorno dopo: riposo. Se un segno non passa in fretta, chiama il veterinario.";
+function goalForm(d,k){
+  const best=r1(bestIn(Date.now()-30*DAY,Date.now()+DAY)),want=dKey(addDays(Date.now(),30));
+  return `<p class="muted" style="margin-top:6px">Un programma per far camminare ${dn()} un po' di più, piano piano, partendo da quello che fa adesso.</p>
+  <div class="box" style="margin-top:14px"><div class="form">
+    <label class="w">Quanti km riesce a fare oggi in una passeggiata, senza stancarsi troppo?<input id="g-from" type="number" inputmode="decimal" min="0.3" max="40" step="0.1" value="${best||""}" placeholder="Es. 3"></label>
+    <label>Obiettivo (km)<input id="g-to" type="number" inputmode="decimal" min="0.5" max="40" step="0.5" placeholder="Es. 5"></label>
+    <label>Entro il<input id="g-date" type="date" value="${want}"></label>
+    <label class="w">Giorno della passeggiata lunga<select id="g-dow">${[6,0,5,1,2,3,4].map(i=>`<option value="${i}">${DOWN[i]}</option>`).join("")}</select></label>
+  </div>${best?`<p class="small muted" style="margin-top:8px">La passeggiata più lunga salvata nell'ultimo mese è di ${kmN(best)} km.</p>`:""}
+  ${k.heart||k.joint||k.p.altro||k.p.diab||k.p.epi?`<div class="note" style="margin-top:12px">Per ${dn()} hai segnato dei problemi di salute (${esc(pats(d).join(", "))}): <b>prima di iniziare un programma di allenamento parlane con il veterinario</b>. L'app userà aumenti più piccoli.</div>`:""}
+  <p class="err" id="g-err" hidden style="margin-top:12px"></p>
+  <button class="btn pri wide" id="g-make" style="margin-top:14px">${icon("target")}Crea il programma</button></div>
+  <div class="block"><h2>Come si allena bene un cane</h2><ul class="plain">${fitTips(d,k).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`;
+}
+function showGoals(){
+  const d=dog(),k=dogKind(d),nm=dn(),box=$("ob-main"),rate=goalRate(d,k);
+  if(k.puppy){const mins=Math.max(10,Math.round(d.age*12)*5);
+    box.innerHTML=`<div class="note" style="margin-top:14px"><b>${nm} è ancora in crescita: niente programmi di resistenza per ora.</b><p style="margin-top:6px">Le ossa e le articolazioni dei cuccioli si stanno ancora formando. Una regola prudente usata da molti veterinari: circa <b>5 minuti di passeggiata per ogni mese di età</b>, una o due volte al giorno. Per ${nm} vuol dire circa <b>${mins} minuti</b> a uscita, più il gioco libero.</p><p style="margin-top:6px">Intanto è il momento perfetto per l'<a href="#addestramento">Addestramento</a>. Quando sarà adulto, qui potrai creare il suo programma.</p></div>
+    <div class="block"><h2>Come si allena bene un cane</h2><ul class="plain">${fitTips(d,k).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`;
+  }else if(k.p.conv){box.innerHTML=`<div class="note" style="margin-top:14px"><b>${nm} è in convalescenza.</b> Niente programmi di allenamento finché il veterinario non dà il via libera. Quando sarà guarito, togli la spunta «Convalescenza» in <a href="#cane">Il mio cane</a>.</div>`}
+  else if(!GOAL){box.innerHTML=goalForm(d,k);
+    $("g-make").onclick=()=>{
+      const from=parseFloat($("g-from").value.replace(",",".")),to=parseFloat($("g-to").value.replace(",",".")),wd=$("g-date").value,err=$("g-err"),max=capacity(Object.assign({},d,{train:"molto"})).km;
+      const bad=t=>{err.hidden=false;err.textContent=t};
+      if(!(from>=.3&&from<=40))return bad("Scrivi quanti km fa oggi (per esempio 3).");
+      if(!(to>from))return bad("L'obiettivo deve essere più lungo della distanza di oggi.");
+      if(to>max)return bad(`Per ${d.name} l'app consiglia di non superare circa ${kmN(max)} km in una passeggiata, anche quando sarà ben allenato. Scegli un obiettivo fino a ${kmN(max)} km.`);
+      GOAL={from:r1(from),target:r1(to),start:day0(Date.now()),want:wd?new Date(wd+"T12:00").getTime():null,longDow:+$("g-dow").value,r:rate,created:Date.now()};
+      store.set(GK,GOAL);toast("Programma creato");showGoals()};
+  }else showPlan(d,k);
+  miniChat("ob",{host:"ob-chat",ph:"Chiedi qualcosa sul suo allenamento",
+    hello:()=>`Ciao! Sono l'allenatore di AllDogs. Chiedimi come allenare ${dog().name||"il tuo cane"} nel modo giusto, o come cambiare il programma.`,
+    sugg:()=>GOAL?["Oggi è stanco, cosa faccio?","Fa caldo: come cambio la passeggiata?","Quali giochi lo allenano?"]:["Come lo alleno a camminare di più?","Quanti km può fare un cane come lui?","Quali giochi lo allenano?"],
+    sys:goalSys});
+}
+function showPlan(d,k){
+  const g=GOAL,nm=dn(),G=goalNow(g,d,k),now=Date.now(),t0=day0(now),mw=monday(now);
+  const off=(new Date(now).getDay()-g.longDow+7)%7,kind=WEEK_TPL[off],S0=SESS[kind];
+  const kmFor=kd=>r1(Math.max(.3,G.L*SESS[kd].f)),todayKm=kmFor(kind),mins=Math.max(5,Math.round(todayKm*pace()/5)*5);
+  const doneToday=kmIn(t0,t0+DAY),weekKm=kmIn(mw,addDays(mw,7)),weekBest=bestIn(mw,addDays(mw,7));
+  const days=[0,1,2,3,4,5,6].map(i=>{const t=addDays(mw,i),dw=new Date(t).getDay(),kd=WEEK_TPL[(dw-g.longDow+7)%7];return {t,kd,km:kmFor(kd),done:kmIn(t,t+DAY)}});
+  const weekPlan=days.reduce((a,x)=>a+x.km,0),recent=bestIn(addDays(now,-14),now+DAY),reached=recent>=g.target;
+  const pct=Math.max(0,Math.min(100,Math.round((recent-g.from)/(g.target-g.from)*100)));
+  const bar=(a,b)=>`<div class="prog"><i style="width:${Math.min(100,Math.round(a/Math.max(.1,b)*100))}%"></i></div>`;
+  const late=g.want&&G.end>g.want+3*DAY,early=g.want&&G.end<g.want-7*DAY;
+  $("ob-main").innerHTML=`<p class="muted" style="margin-top:6px">Da ${kmN(g.from)} a <b style="color:var(--ink)">${kmN(g.target)} km</b> in una passeggiata, con aumenti di circa il ${Math.round(G.r*100)}% a settimana. Settimana ${G.wi+1} di circa ${G.plan.length}.</p>
+    ${reached?`<div class="today" style="margin-top:14px"><h2>Obiettivo raggiunto!</h2><p>${nm} ha fatto ${kmN(r1(recent))} km. Per mantenerlo basta continuare con una passeggiata lunga a settimana. ${d.train!=="molto"?"Se ora cammina spesso, aggiorna «Allenamento» in Il mio cane.":""} Quando vuoi, crea un obiettivo nuovo.</p></div>`:""}
+    ${late?`<div class="note" style="margin-top:14px">Volevi arrivarci entro il ${fmtDay(g.want)}. Con aumenti prudenti per ${nm} è più sicuro verso il <b>${fmtDay(G.end)}</b>: il programma segue questa data. Andare più veloce aumenta il rischio di farsi male.</div>`:early?`<div class="note" style="margin-top:14px">Con questo ritmo ci arriverà verso il ${fmtDay(G.end)}, prima della data che volevi. Non c'è fretta: il programma resta graduale.</div>`:""}
+    ${G.note?`<div class="note" style="margin-top:12px">${esc(G.note)}</div>`:""}
+    <div class="box" style="margin-top:14px">
+      <p class="small muted">Oggi, ${DOWN[new Date(now).getDay()]}</p><h2 style="margin-top:2px">${S0.t}</h2>
+      <p style="margin-top:4px">${kind==="riposo"?"Uscite tranquille, in tutto circa "+kmN(todayKm)+" km":"Circa <b>"+kmN(todayKm)+" km</b>, più o meno "+fmtDur(mins*60000)+" al passo di "+nm}. <span class="muted">${S0.d}</span></p>
+      <div class="gl"><span>Fatti oggi</span><b>${kmN(r1(doneToday))} di ${kmN(todayKm)} km</b></div>${bar(doneToday,todayKm)}
+      ${G.cons?`<p class="small muted" style="margin-top:10px">Questa è una settimana di consolidamento: la lunga resta uguale alla settimana scorsa, per dare tempo ai muscoli.</p>`:""}
+    </div>
+    <div class="box" style="margin-top:12px"><h2>Questa settimana</h2>
+      <div class="gl"><span>Passeggiata lunga (${kmN(G.L)} km)</span><b>${weekBest>=G.L*.95?`<span class="c0">✓ fatta</span>`:kmN(r1(weekBest))+" km"}</b></div>${bar(weekBest,G.L)}
+      <div class="gl"><span>Km della settimana</span><b>${kmN(r1(weekKm))} di ${kmN(r1(weekPlan))}</b></div>${bar(weekKm,weekPlan)}
+      <ul class="wk" style="margin-top:12px">${days.map(x=>x.t<g.start?`<li class="muted"><span>${DOWN[new Date(x.t).getDay()]}</span><span>prima dell'inizio${x.done>0?" · "+kmN(r1(x.done))+" km fatti":""}</span><span></span></li>`:`<li class="${x.t===t0?"today":""}"><span>${DOWN[new Date(x.t).getDay()]}</span><span>${SESS[x.kd].t}<span class="muted"> · ${kmN(x.km)} km</span></span><span>${x.done>=x.km*.8?`<span class="c0">✓</span>`:x.done>0?`<span class="muted">${kmN(r1(x.done))}</span>`:""}</span></li>`).join("")}</ul>
+    </div>
+    <div class="box" style="margin-top:12px"><h2>Verso l'obiettivo</h2>
+      <div class="gl"><span>Passeggiata più lunga, ultime 2 settimane</span><b>${kmN(r1(recent))} di ${kmN(g.target)} km</b></div><div class="prog"><i style="width:${pct}%"></i></div>
+      <ul class="wk small" style="margin-top:12px">${G.plan.map((w,i)=>`<li class="${i===G.wi?"today":""}"><span>Settimana ${i+1}</span><span>Lunga di ${kmN(w.L)} km${w.cons?' <span class="muted">· consolidamento</span>':""}</span><span class="muted">${fmtDay(addDays(monday(g.start),i*7))}</span></li>`).join("")}</ul>
+    </div>
+    <div class="block"><h2>Hai camminato senza l'app?</h2><p class="small muted">Aggiungi qui la passeggiata, così il programma ne tiene conto.</p>
+      <div class="form" style="margin-top:10px"><label>Km<input id="m-km" type="number" inputmode="decimal" min="0.1" max="60" step="0.1" placeholder="Es. 2,5"></label><label>Minuti<input id="m-min" type="number" inputmode="numeric" min="3" max="600" placeholder="Es. 45"></label><label class="w">Giorno<input id="m-day" type="date" value="${dKey(now)}" max="${dKey(now)}"></label></div>
+      <button class="btn wide" id="m-add" style="margin-top:10px">Aggiungi la passeggiata</button></div>
+    <div class="block"><h2>Quando fermarsi</h2><p>${esc(STOP_SIGNS)}</p></div>
+    <div class="block"><h2>Come si allena bene un cane</h2><ul class="plain">${fitTips(d,k).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
+    <button class="btn wide" id="g-del" style="margin-top:20px">${reached?"Crea un obiettivo nuovo":"Cambia o elimina l'obiettivo"}</button>`;
+  $("m-add").onclick=()=>{
+    const kmv=parseFloat($("m-km").value.replace(",",".")),mn=parseInt($("m-min").value,10),dy=$("m-day").value;
+    if(!(kmv>=.1&&kmv<=60)){toast("Scrivi i km");return}
+    if(!(mn>=3&&mn<=600)){toast("Scrivi quanti minuti");return}
+    const t=dy?new Date(dy+"T"+(dy===dKey(now)?new Date(now-mn*60000).toTimeString().slice(0,5):"10:00")).getTime():now-mn*60000;
+    S.acts.push({t,name:"Passeggiata aggiunta a mano",kind:"manual",id:null,dur:mn*60000,dist:Math.round(kmv*1000),plan:Math.round(kmv*1000),up:0,gps:false});
+    S.acts.sort((a,b)=>b.t-a.t);store.set("alldogs-acts",S.acts);toast("Passeggiata aggiunta");showGoals()};
+  $("g-del").onclick=()=>{if(!reached&&!confirm("Vuoi eliminare questo obiettivo e crearne uno nuovo? Le passeggiate salvate restano."))return;GOAL=null;store.del(GK);showGoals()};
+}
+function goalSys(){
+  const d=dog(),k=dogKind(d),cap=capacity(d),g=GOAL;let plan="nessun obiettivo ancora";
+  if(g&&!k.puppy&&!k.p.conv){const G=goalNow(g,d,k),off=(new Date().getDay()-g.longDow+7)%7;
+    plan=`da ${g.from} km a ${g.target} km in una passeggiata; aumenti di circa ${Math.round(G.r*100)}% a settimana; settimana ${G.wi+1} di ${G.plan.length}; passeggiata lunga di questa settimana ${G.L} km il ${DOWN[g.longDow]}; oggi: ${SESS[WEEK_TPL[off]].t} di circa ${r1(Math.max(.3,G.L*SESS[WEEK_TPL[off]].f))} km; arrivo previsto ${fmtDay(G.end)}.`}
+  const last=S.acts.slice(0,10).map(x=>`${fmtDay(x.t)}: ${km(x.dist)} km in ${fmtDur(x.dur)}`).join("; ")||"nessuna";
+  return `Sei l'allenatore di AllDogs, un'app per passeggiate ed escursioni col cane in Italia. Parli in italiano semplice, frasi brevi, tono gentile.
+Il tuo compito: aiutare a migliorare piano piano la resistenza e la forma fisica del cane, in modo prudente e adatto a razza, età, taglia e salute.
+Profilo del cane: ${dogLine(d)}.
+Limite prudente attuale dell'app: circa ${kmN(cap.km)} km e ${cap.up} m di salita in una passeggiata; oltre ${cap.heat}° percepiti fa troppo caldo per lui.
+Andatura: ${paceInfo()?`circa ${Math.round(pace())} minuti per km (misurata)`:`non ancora misurata (media ${DEF_PACE} min/km)`}.
+Programma attuale: ${plan}
+Ultime passeggiate: ${last}.
+Regole:
+- Il cane viene prima di tutto: mai aumenti bruschi (al massimo il 10-15% a settimana per un cane sano, meno per anziani, giganti, muso schiacciato o con problemi di salute), giorni di riposo, riscaldamento e defaticamento.
+- Cuccioli e cani giovani di taglia grande: niente allenamento di resistenza, corse lunghe o salti.
+- Se il cane ha problemi di salute, ricorda di parlarne col veterinario prima di aumentare lo sforzo. Niente diagnosi né farmaci.
+- Se l'utente descrive segni preoccupanti (zoppia, affanno forte, svenimento, lingua viola, vomito, collasso) digli di fermarsi e chiamare subito il veterinario.
+- Considera il caldo: con il caldo si accorcia e si esce all'alba o alla sera.
+- Non garantire mai nulla: sono consigli prudenti.
+- reply: massimo 7 frasi.`;
+}
+// Esplora: in evidenza la lezione di oggi e la passeggiata di oggi del programma
+function homeExtra(){
+  if(!S.dog){$("home-extra").innerHTML="";return}
+  const d=dog(),k=dogKind(d),T=todayLesson();let h="";
+  if(GOAL&&!k.puppy&&!k.p.conv){const G=goalNow(GOAL,d,k),kd=WEEK_TPL[(new Date().getDay()-GOAL.longDow+7)%7];
+    if(G.r)h+=`<a class="hx" href="#obiettivi">${icon("target")}<span>Obiettivo di oggi: <b>${SESS[kd].t.toLowerCase()}</b>, circa ${kmN(r1(Math.max(.3,G.L*SESS[kd].f)))} km</span><i>›</i></a>`}
+  h+=`<a class="hx" href="#addestramento">${icon("cap")}<span>Lezione di oggi: <b>${esc(T.t)}</b>${TRS.st[T.id]&&TRS.st[T.id].ok?' <span class="c0">✓</span>':""}</span><i>›</i></a>`;
+  $("home-extra").innerHTML=h;
 }
 
 // ================= In cammino (Avvia percorso) =================
@@ -2247,7 +2662,7 @@ $("dog-save").onclick=()=>{
   d.patOther=d.pat.altro?$("pat-other").value.trim():"";
   d.health={};HF.forEach(([k,id])=>{const v=$(id).value.trim();if(v)d.health[k]=v});
   d.health.vax=[...$("vax").querySelectorAll(".vax")].map(r=>{const i=r.querySelectorAll("input");return {n:i[0].value.trim(),d:i[1].value}}).filter(v=>v.n||v.d);
-  const first=!S.dog;S.dog=d;store.set("alldogs-dog",d);toast("Profilo salvato");S.chat=[];
+  const first=!S.dog;S.dog=d;store.set("alldogs-dog",d);toast("Profilo salvato");S.chat=[];for(const c in MC)MC[c].msgs=[];
   if(first)location.hash="esplora";else showDog();
 };
 $("keys-save").onclick=()=>{
