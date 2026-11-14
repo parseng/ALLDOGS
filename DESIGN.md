@@ -52,6 +52,7 @@ Sulle schede dei sentieri la durata calcolata per il cane sta in un cartellino a
 - **Mappa a tutto schermo del sentiero**: in basso una scheda con nome (toccandolo si torna alla scheda), km, salita, discesa, tempo con il cane in arancio, grafico del dislivello, e i pulsanti Scarica e Avvia percorso.
 - **In cammino, la mappa**: schermata sempre scura (token del tema scuro), mappa a tutto schermo da navigazione notturna con i palazzi in 3D, inclinata e che gira con la direzione di marcia; freccia blu per la posizione; in alto la prossima svolta e i messaggi in riquadri galleggianti; a sinistra la bussola (tocco: nord in alto o mappa che gira), a destra mappe e centra.
 - **In cammino**: in basso solo tempo e km, grandi (numeri fino a 56 px, gli unici oltre le grandezze sopra). Toccandoli si apre il resto: sei numeri (tempo, distanza, mancano, andatura, velocità, passi del cane), meteo, grafico del dislivello con il punto dove siete, SOS e i pulsanti Pausa e Chiudi attività.
+- **Tendine dal basso**: si alzano e si abbassano trascinandole o toccando la lineetta in alto; le finestre lunghe scorrono e hanno sempre la X in alto a destra. Le impostazioni si aprono con i tre puntini.
 - **Meteo**: riquadro con icona, gradi percepiti, giudizio per il cane e la striscia delle ore buone (verde, ocra, rosso); i dettagli si aprono toccandolo.
 
 ## Testi

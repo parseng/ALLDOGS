@@ -155,10 +155,15 @@ body > #mapwrap{display:none}
 #hostTrail{height:300px;border-radius:0;border:0}
 #hostTrail .overlay-top{justify-content:space-between}
 .tsheet{display:none}
-#hostTrail.full .tsheet{display:block;position:absolute;left:0;right:0;bottom:0;z-index:8;background:var(--surface);color:var(--ink);border-radius:22px 22px 0 0;padding:8px 18px 16px;box-shadow:0 -6px 22px rgba(0,0,0,.25);max-height:62%;overflow-y:auto}
+#hostTrail.full .tsheet{display:block;position:absolute;left:0;right:0;bottom:0;z-index:8;background:var(--surface);color:var(--ink);border-radius:22px 22px 0 0;padding:2px 18px 16px;box-shadow:0 -6px 22px rgba(0,0,0,.25);max-height:62%;overflow-y:auto}
 #hostTrail.full .kmscale{bottom:calc(var(--tsh,0px) + 12px)}
 #hostTrail.full .mapboxgl-ctrl-bottom-left,#hostTrail.full .mapboxgl-ctrl-bottom-right{bottom:var(--tsh,0px)}
-.tsheet::before{content:"";display:block;width:44px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 10px}
+.grab{display:block;width:100%;height:24px;border:0;background:none;padding:0;cursor:pointer;touch-action:none}
+.grab::before{content:"";display:block;width:44px;height:5px;border-radius:3px;background:var(--line);margin:4px auto 0}
+.tsheet{touch-action:pan-y}
+.tsheet.min .ts-more{display:none}
+.tsheet.min .ts-hd .round{display:none}
+.tsheet.min .ts-name h2{font-size:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ts-hd{display:flex;align-items:flex-start;gap:12px}
 .ts-name{flex:1;min-width:0;border:0;background:none;padding:0;color:var(--ink);text-align:left;cursor:pointer;font:inherit}
 .ts-name h2{font:700 27px/1.15 var(--display)}
@@ -169,7 +174,7 @@ body > #mapwrap{display:none}
 .ts-st svg{width:22px;height:22px;color:var(--muted)}
 .ts-st .dg,.ts-st .dg svg{color:var(--dog)}
 .ts-row{display:flex;gap:10px;margin-top:14px}
-.ts-row .btn{flex:1;min-height:54px;font-size:18px;white-space:nowrap;padding-left:10px;padding-right:10px}
+.ts-row .btn{flex:1;min-height:46px;font-size:16px;white-space:nowrap;padding:8px 10px}
 .ts-row .btn.pri{flex:1.35}
 .sheet{position:relative;z-index:2;margin-top:-18px;background:var(--bg);border-radius:22px 22px 0 0;padding:22px max(16px,env(safe-area-inset-left,0px)) 0 max(16px,env(safe-area-inset-right,0px))}
 .verdict{display:inline-flex;align-items:center;gap:8px;font:700 16px/1 var(--display);padding:9px 14px;border-radius:10px;margin-top:12px}
@@ -434,11 +439,14 @@ button.tag{font:inherit;font-size:15px;color:var(--ink);cursor:pointer}
 #s-vai .mapctl .round svg,.nav-fl .round svg{width:24px;height:24px}
 #s-vai .kmscale{top:calc(var(--ntop,120px) + 8px);bottom:auto;left:14px;right:auto}
 #s-vai .mapboxgl-ctrl-bottom-left,#s-vai .mapboxgl-ctrl-bottom-right{bottom:calc(var(--nbh,160px) + 4px)}
+#s-vai.nbopen .nav-fl,#s-vai.nbopen .mapctl,#s-vai.nbopen .kmscale{display:none}
+#s-vai .nav-bot{max-height:66vh}
 .nav-fl{position:absolute;left:12px;bottom:calc(var(--nbh,160px) + 80px);z-index:6;display:flex;flex-direction:column;gap:10px}
 .nav-fl .round svg{width:30px!important;height:30px!important;transition:transform .2s}
 #nav-comp text{font:700 9px/1 var(--display)}
 #nav-comp[aria-pressed=true]{background:#2f7bff}
-.nb-head{margin:2px 0 6px}
+.nb-head{display:flex;gap:12px;align-items:center;margin:2px 0 6px}
+.nb-head .round{width:46px;height:46px}
 .nb-head h3{font-size:22px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nav-top{padding:calc(env(safe-area-inset-top,0px) + 10px) 14px 10px;background:var(--surface);border-bottom:1px solid var(--line)}
 .nav-top h3{font-size:22px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -475,7 +483,8 @@ button.tag{font:inherit;font-size:15px;color:var(--ink);cursor:pointer}
 .nb-row .btn{min-height:52px;font-size:18px}
 
 .sheetbg{position:fixed;inset:0;z-index:960;background:rgba(10,14,28,.55);display:grid;place-items:end center;padding:14px}
-.sheetbg .box{width:100%;max-width:520px;padding:18px;margin-bottom:env(safe-area-inset-bottom,0px)}
+.sheetbg .box{width:100%;max-width:520px;padding:18px;margin-bottom:env(safe-area-inset-bottom,0px);max-height:calc(100dvh - 40px - env(safe-area-inset-top,0px));overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.shx{position:sticky;top:0;float:right;z-index:3;width:46px;height:46px;margin:-4px -4px 6px 10px;box-shadow:0 2px 10px rgba(0,0,0,.25)}
 .sheetbg label{display:flex;gap:10px;align-items:center;padding:8px 0;font-size:15px}
 .sheetbg input{width:20px;height:20px;flex:none}
 #nav-pill{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--tab) + env(safe-area-inset-bottom,0px) + 10px);z-index:890;box-shadow:0 4px 14px rgba(0,0,0,.3);white-space:nowrap}
@@ -779,6 +788,7 @@ body{font-size:17px;line-height:1.5}
     <symbol id="i-dn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 9v9H9"/></symbol>
     <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
     <symbol id="i-chevr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></symbol>
+    <symbol id="i-dots" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2.1"/><circle cx="12" cy="12" r="2.1"/><circle cx="19" cy="12" r="2.1"/></symbol>
     <symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></symbol>
     <symbol id="i-bag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 8a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8Z"/><path d="M9 5V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1M9 13h6v3H9z"/></symbol>
     <symbol id="i-aid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="3"/><path d="M9 6V4h6v2M12 10v6M9 13h6"/></symbol>
@@ -956,7 +966,7 @@ body{font-size:17px;line-height:1.5}
     <button class="nb-grab" id="nb-grab" aria-label="Mostra o nascondi tutti i dati"></button>
     <button class="nb-mini" id="nb-mini" aria-label="Mostra tutti i dati"><div><b data-nv="time">0:00</b><span class="pz" id="nb-pz"></span></div><i class="sep"></i><div><b data-nv="km">0,00</b><small>km</small></div><span class="round"><svg><use href="#i-chevup"/></svg></span></button>
     <div class="nb-more">
-      <div class="nb-head"><p class="small muted" id="nav-kicker"></p><h3 id="nav-title"></h3></div>
+      <div class="nb-head"><div style="min-width:0;flex:1"><p class="small muted" id="nav-kicker"></p><h3 id="nav-title"></h3></div><button class="round" id="nb-close" aria-label="Abbassa la tendina"><svg><use href="#i-chevdn"/></svg></button></div>
       <div class="nb-grid">
         <div><b data-nv="time">0:00</b><span>Tempo</span></div>
         <div><b><i data-nv="km" style="font-style:normal">0,00</i><small>km</small></b><span>Distanza</span></div>
@@ -968,7 +978,7 @@ body{font-size:17px;line-height:1.5}
       <p class="muted" id="nav-info" style="margin-top:12px"></p>
       <p id="nav-wx" style="margin-top:6px"></p>
       <div class="nb-chart" id="nb-chart"></div>
-      <div class="nb-row"><button class="round" id="nav-sos" aria-label="Emergenza">SOS</button><button class="round" id="nav-set" aria-label="Impostazioni di navigazione"><svg><use href="#i-gear"/></svg></button><button class="round" id="nav-share" aria-label="Condividi la posizione in tempo reale"><svg><use href="#i-share"/></svg></button></div>
+      <div class="nb-row"><button class="round" id="nav-sos" aria-label="Emergenza">SOS</button><button class="round" id="nav-set" aria-label="Impostazioni di navigazione"><svg><use href="#i-dots"/></svg></button><button class="round" id="nav-share" aria-label="Condividi la posizione in tempo reale"><svg><use href="#i-share"/></svg></button></div>
       <div class="nb-row"><button class="btn" id="nav-pause">Pausa</button><button class="btn pri" id="nav-end">Chiudi attività</button></div>
     </div>
   </div>
@@ -1946,7 +1956,7 @@ function bindTools(root){
   root.querySelectorAll("[data-surf]").forEach(b=>b.onclick=()=>{setSurf(true);if(curHost)curHost.scrollIntoView({behavior:"smooth",block:"start"});toast("Fondo colorato sulla mappa")});
 }
 // finestra a comparsa generica (legenda)
-function openSheet(html){$("sheet-box").innerHTML=html+`<button class="btn wide" id="sheet-x" style="margin-top:18px">Chiudi</button>`;$("sheet").hidden=false;$("sheet-x").onclick=()=>$("sheet").hidden=true}
+function openSheet(html){$("sheet-box").innerHTML=`<button class="round shx" id="sheet-xx" aria-label="Chiudi">${icon("x")}</button>`+html+`<button class="btn wide" id="sheet-x" style="margin-top:18px">Chiudi</button>`;$("sheet").hidden=false;$("sheet-box").scrollTop=0;$("sheet-x").onclick=$("sheet-xx").onclick=()=>$("sheet").hidden=true}
 $("sheet").onclick=e=>{if(e.target===$("sheet"))$("sheet").hidden=true};
 function showLegend(){
   const ln=(c,dash,w)=>`<svg viewBox="0 0 46 18"><rect width="46" height="18" rx="4" fill="#eef0e8"/><line x1="4" x2="42" y1="9" y2="9" stroke="${c}" stroke-width="${w||2.5}" stroke-linecap="round"${dash?` stroke-dasharray="${dash}"`:""}/></svg>`;
@@ -3604,19 +3614,26 @@ async function offDelete(key){
   try{await caches.delete("ad-off-"+key)}catch(e){}
   delete OFF[key];store.set(OFF_KEY,OFF);
 }
+// trascinare una tendina in basso la abbassa, in alto la alza
+function swipe(el,down,up){let y0=null,t0=0;
+  el.addEventListener("touchstart",e=>{y0=(el.scrollTop<=0||!el.contains(e.target))?e.touches[0].clientY:null;t0=Date.now()},{passive:true});
+  el.addEventListener("touchend",e=>{if(y0==null)return;const dy=e.changedTouches[0].clientY-y0;y0=null;if(Date.now()-t0>900)return;if(dy>45&&el.scrollTop<=0)down();else if(dy<-45)up()},{passive:true});}
+swipe($("tsheet"),()=>tsMin(true),()=>tsMin(false));
 // Scheda in basso sulla mappa a tutto schermo del sentiero: nome, numeri, dislivello, Scarica e Avvia
 function paintTS(tr){
   const ts=$("tsheet"),e=elev[tr.id],d=dog(),res=verdict(item(tr),d,S.day),o=navObjTrail(tr),key=offKeyOf(o),has=!!OFF[key];
   let dn2=null;if(e&&e.p&&e.p.length>2){let up=0,dw=0;for(let i=1;i<e.p.length;i++){const x=e.p[i]-e.p[i-1];if(x>0)up+=x;else dw-=x}dn2=tr.loop!==false?e.up:Math.round(dw*(up?e.up/up:1))}
-  ts.innerHTML=`<div class="ts-hd"><button class="ts-name" id="ts-name"><h2>${esc(tr.name)}${icon("chevr")}</h2></button><button class="round" id="ts-x" aria-label="Chiudi la mappa">${icon("x")}</button></div>
-    <div class="ts-st"><span>${icon("route")}${km(tr.len)} km</span>${e?`<span>${icon("up")}${e.up} m</span>`:""}${dn2!=null?`<span>${icon("dn")}${dn2} m</span>`:""}<span class="dg">${icon("clock")}${fmtH(res.hours)} con ${dn()}</span></div>
+  ts.innerHTML=`<button class="grab" id="ts-grab" aria-label="Alza o abbassa la scheda"></button><div class="ts-hd"><button class="ts-name" id="ts-name"><h2>${esc(tr.name)}${icon("chevr")}</h2></button><button class="round" id="ts-x" aria-label="Chiudi la mappa">${icon("x")}</button></div>
+    <div class="ts-more"><div class="ts-st"><span>${icon("route")}${km(tr.len)} km</span>${e?`<span>${icon("up")}${e.up} m</span>`:""}${dn2!=null?`<span>${icon("dn")}${dn2} m</span>`:""}<span class="dg">${icon("clock")}${fmtH(res.hours)} con ${dn()}</span></div>
     ${e&&e.p?`<div style="margin-top:6px">${elevChart(e.p,tr.len,d,{bare:1})}</div>`:""}
-    <div class="ts-row"><button class="btn" data-off="${key}">${icon("down")}${offBusy[key]?"Scarico…":has?"Scaricato":"Scarica"}</button><button class="btn pri" id="ts-go">${icon("play")}Avvia percorso</button></div>`;
+    <div class="ts-row"><button class="btn" data-off="${key}">${icon("down")}${offBusy[key]?"Scarico…":has?"Scaricato":"Scarica"}</button><button class="btn pri" id="ts-go">${icon("play")}Avvia percorso</button></div></div>`;
+  $("ts-grab").onclick=()=>tsMin(!ts.classList.contains("min"));
   $("ts-name").onclick=$("ts-x").onclick=()=>setFull(false);
   $("ts-go").onclick=()=>startNav(navObjTrail(tr));
   bindOff(ts,()=>navObjTrail(tr));
   tsSize();
 }
+function tsMin(on){$("tsheet").classList.toggle("min",on);tsSize()}
 function tsSize(){const h=$("hostTrail");h.style.setProperty("--tsh",(h.classList.contains("full")?$("tsheet").offsetHeight:0)+"px")}
 // oggetto per la navigazione a partire da un sentiero
 function navObjTrail(tr){const ft=FT[tr.id],e=elev[tr.id];return {name:tr.name,kind:"trail",id:tr.id,ways:tr.ways,path:tr.path,len:tr.len,up:e?e.up:0,stops:[],water:ft?ft.w:[],scale:tr.scale,loop:tr.loop,dogs:tr.dogs,prof:e&&e.p||null}}
@@ -3738,8 +3755,8 @@ function stepList(turns,stops,total,prog,loop){
 }
 function stepsSheet(){
   if(!nav)return;
-  $("nav-sheet-box").innerHTML=`<h2>Indicazioni passo-passo</h2><p class="small muted" style="margin:2px 0 8px">${nav.o.turns&&nav.o.turns.length?"Indicazioni ricavate dal calcolo del percorso sulle strade.":"Ricavate dalla forma del tracciato e dagli incroci con gli altri sentieri della zona: segui sempre anche i segnavia."}</p>${stepList(nav.turns,nav.o.stops,nav.total,nav.prog,nav.o.loop)}<button class="btn wide" id="ns-x" style="margin-top:14px">Chiudi</button>`;
-  $("nav-sheet").hidden=false;$("ns-x").onclick=()=>$("nav-sheet").hidden=true;
+  $("nav-sheet-box").innerHTML=`<button class="round shx" id="ns-xx" aria-label="Chiudi">${icon("x")}</button><h2>Indicazioni passo-passo</h2><p class="small muted" style="margin:2px 0 8px">${nav.o.turns&&nav.o.turns.length?"Indicazioni ricavate dal calcolo del percorso sulle strade.":"Ricavate dalla forma del tracciato e dagli incroci con gli altri sentieri della zona: segui sempre anche i segnavia."}</p>${stepList(nav.turns,nav.o.stops,nav.total,nav.prog,nav.o.loop)}<button class="btn wide" id="ns-x" style="margin-top:14px">Chiudi</button>`;
+  $("nav-sheet").hidden=false;$("ns-x").onclick=$("ns-xx").onclick=()=>$("nav-sheet").hidden=true;$("nav-sheet-box").scrollTop=0;
   const nx=$("nav-sheet-box").querySelector("li.next");if(nx)nx.scrollIntoView({block:"center"});
 }
 $("nav-turn").onclick=stepsSheet;
@@ -3765,7 +3782,7 @@ function navElapsed(){return nav.run+(nav.paused?0:Date.now()-nav.since)}
 function startNav(o){
   if(nav){if(!confirm("C'è già una passeggiata in corso. Vuoi chiuderla senza salvarla e iniziarne una nuova?"))return;stopNav()}
   nav={o,t0:Date.now(),run:0,since:Date.now(),paused:false,dist:0,track:[],idx:0,prog:0,gps:"wait",last:null,lastT:0,pos:null,water:0,off:null,tip:null};
-  navPrep();navFollow=true;saveNav();$("nav-bot").classList.remove("open");location.hash="vai";
+  navPrep();navFollow=true;saveNav();$("nav-bot").classList.remove("open");$("s-vai").classList.remove("nbopen");location.hash="vai";
 }
 function saveNav(){if(!nav)return;navSaveT=Date.now();store.set(NAV_KEY,{o:nav.o,t0:nav.t0,run:navElapsed(),at:Date.now(),paused:nav.paused,dist:nav.dist,track:nav.track,idx:nav.idx,prog:nav.prog,share:nav.share||null,water:nav.water})}
 function restoreNav(){
@@ -3931,8 +3948,10 @@ function paintNav(){
   const m=$("nav-msg");if(m.dataset.h!==msg){m.dataset.h=msg;m.innerHTML=msg}m.className="nav-msg "+cls;
   $("nav-pause").textContent=nav.paused?"Riprendi":"Pausa";
 }
-function navOpen(on){$("nav-bot").classList.toggle("open",on);$("nb-mini").setAttribute("aria-expanded",on);$("nb-chart").dataset.k="";paintNav();navSizes()}
+function navOpen(on){$("nav-bot").classList.toggle("open",on);$("s-vai").classList.toggle("nbopen",on);$("nb-mini").setAttribute("aria-expanded",on);$("nb-chart").dataset.k="";paintNav();navSizes()}
 $("nb-mini").onclick=()=>navOpen(true);
+$("nb-close").onclick=()=>navOpen(false);
+swipe($("nav-bot"),()=>navOpen(false),()=>navOpen(true));
 $("nav-comp").onclick=()=>{navHeadUp=!navHeadUp;store.set("alldogs-headup",navHeadUp);navFollow=true;if(nav&&nav.pos)navCam(500);else if(M)M.easeTo({bearing:0});toast(navHeadUp?"La mappa gira con voi":"Nord in alto");navCompass()};
 function navSizes(){const s=$("s-vai");s.style.setProperty("--nbh",$("nav-bot").offsetHeight+"px");s.style.setProperty("--ntop",$("nav-top").offsetHeight+"px")}
 if(window.ResizeObserver){const ro=new ResizeObserver(()=>{navSizes();if(nav&&navFollow)navCam(300)});ro.observe($("nav-bot"));ro.observe($("nav-top"))}
