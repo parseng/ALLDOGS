@@ -23,13 +23,14 @@
   --ok:#1f8a4c; --ok-bg:#dff3e6; --warn:#a85f00; --warn-bg:#fdeed3; --no:#c0271d; --no-bg:#fbe2df; --wait:#6b7280; --wait-bg:#eceef2;
   --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
   --body:"Figtree","Segoe UI",system-ui,sans-serif;
+  --steep:#e8640c;
   --tab:64px; --r:16px;
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){:root{
   --bg:#0e1220; --surface:#181d2e; --ink:#eef0f7; --muted:#9aa3b8; --line:#2a3146;
   --accent:#8aa5ff; --accent-ink:#0e1220; --accent-soft:#1f2a4d;
-  --ok:#74d69b; --ok-bg:#173324; --warn:#f3b65c; --warn-bg:#3b2c12; --no:#f59088; --no-bg:#401d1a; --wait:#a3a9b6; --wait-bg:#252a36;
+  --ok:#74d69b; --ok-bg:#173324; --warn:#f3b65c; --warn-bg:#3b2c12; --no:#f59088; --no-bg:#401d1a; --wait:#a3a9b6; --wait-bg:#252a36; --steep:#ff9a52;
   color-scheme:dark;
 }}
 *{box-sizing:border-box}
@@ -427,20 +428,9 @@ button.tag{font:inherit;font-size:14px;color:var(--ink);cursor:pointer}
 .toast.on{display:block}
 .mapboxgl-ctrl-attrib{font-size:10px}
 
-/* menu a sinistra, obiettivi, addestramento */
+/* obiettivi, addestramento */
 .hd{display:flex;align-items:center;gap:12px}
 .hd h1{min-width:0}
-.drawer-bg{position:fixed;inset:0;z-index:990;background:rgba(10,14,28,.5)}
-.drawer{position:fixed;top:0;bottom:0;left:0;z-index:1000;width:min(300px,84vw);background:var(--surface);box-shadow:8px 0 30px rgba(0,0,0,.25);padding:calc(env(safe-area-inset-top,0px) + 14px) 12px 20px max(12px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:6px;transform:translateX(-104%);visibility:hidden;transition:transform .22s ease,visibility .22s}
-.drawer.on{transform:none;visibility:visible}
-.drawer .dtop{display:flex;align-items:center;gap:10px;padding:0 4px 12px;border-bottom:1px solid var(--line);margin-bottom:6px}
-.drawer .dtop b{font:800 22px/1 var(--display);flex:1}
-.drawer a{display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;text-decoration:none;color:var(--ink)}
-.drawer a svg{width:26px;height:26px;flex:none;color:var(--accent)}
-.drawer a b{display:block;font-size:16px}
-.drawer a small{display:block;color:var(--muted);font-size:13px}
-.drawer a.on{background:var(--accent-soft)}
-@media (prefers-reduced-motion:reduce){.drawer{transition:none}}
 .prog{height:10px;border-radius:5px;background:var(--line);overflow:hidden;margin-top:6px}
 .prog i{display:block;height:100%;background:var(--ok);border-radius:5px}
 .gl{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-top:14px;font-size:14.5px}
@@ -486,6 +476,98 @@ h2 .dot{width:12px;height:12px;margin-right:8px}
 .opt-b b{display:block;font-size:15px}
 .opt-b small{display:block;color:var(--muted);font-size:13px}
 .opt-b.on{border-color:var(--accent);background:var(--accent-soft)}
+
+/* ===== Passo 1: menu nuovo, assistente, riquadri apri/chiudi, meteo ===== */
+body.noscroll{overflow:hidden}
+.ehd{display:flex;align-items:center;gap:12px}
+/* filtri su una sola riga che scorre */
+.frow{margin-top:12px}
+.frow .dd{flex:none;display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:0 12px;height:41px;font-size:15px;font-weight:500;white-space:nowrap}
+.frow .dd b{font-weight:500}
+.frow .dd.on{border-color:var(--accent);background:var(--accent-soft)}
+.frow .dd .art{border-radius:6px}
+.frow .dd .ddn{width:22px;height:22px;font-size:12px}
+.frow .dd>i{font-style:normal;color:var(--muted);font-size:12px}
+/* barra in basso: la scheda del cane */
+#tabs a.tdog .tav{width:26px;height:26px;border-radius:50%;background:var(--accent-soft) center/cover;color:var(--accent);display:grid;place-items:center;font:800 13px/1 var(--display);box-shadow:0 0 0 1.5px currentColor}
+#tabs a.tdog.on .tav{box-shadow:0 0 0 2px var(--accent)}
+#tabs a .tnm{max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Allenati: due linguette */
+.subnav{margin-top:14px}
+.seg a{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 0;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;text-decoration:none;color:var(--ink)}
+.seg a[aria-current=page]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+/* Attività: menu a tendina */
+.vpick{margin-top:14px}
+.vpick select{appearance:none;-webkit-appearance:none;width:100%;border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:12px 40px 12px 14px;font-size:16px;font-weight:700;color:var(--ink);
+  background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);background-position:calc(100% - 20px) 52%,calc(100% - 14px) 52%;background-size:6px 6px;background-repeat:no-repeat}
+/* pagina del cane */
+.hub{display:flex;flex-direction:column;gap:8px;margin-top:18px}
+.hrow{display:flex;align-items:center;gap:12px;width:100%;padding:11px 12px;border-radius:14px;border:1px solid var(--line);background:var(--surface);text-decoration:none;color:var(--ink);text-align:left;font:inherit;cursor:pointer}
+.hrow .hi{width:38px;height:38px;border-radius:11px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;flex:none}
+.hrow .hi svg{width:20px;height:20px}
+.hrow .ht{flex:1;min-width:0}.hrow b{display:block;font-size:16px}
+.hrow small{display:block;color:var(--muted);font-size:13px}
+.hrow>i{font-style:normal;color:var(--muted);font-size:20px}
+.hrow.sos .hi{background:var(--no-bg);color:var(--no)}
+.hgrp{font-size:13px;font-weight:700;color:var(--muted);margin:10px 2px 0}
+/* riquadri che si aprono e si chiudono */
+.fold{margin-top:12px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.fold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:13px 14px}
+.fold>summary::-webkit-details-marker{display:none}
+.fold>summary span{flex:1;min-width:0}
+.fold>summary b{display:block;font:600 17px/1.25 var(--display)}
+.fold>summary small{display:block;color:var(--muted);font-size:13px;margin-top:1px}
+.fold>summary>i{font-style:normal;color:var(--muted);font-size:20px;transition:transform .2s}
+.fold[open]>summary>i{transform:rotate(90deg)}
+.foldb{padding:0 14px 14px}
+.foldb .lesson{background:var(--bg)}
+.fold.onb{border:0;background:none}.fold.onb>summary{display:none}.fold.onb .foldb{padding:0}
+#s-cane .fold{margin-top:14px}
+/* strumenti della scheda sentiero: una fila di icone col nome sotto */
+.tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:10px 6px;margin-top:16px}
+.tool{display:flex;flex-direction:column;align-items:center;gap:5px;border:0;background:none;padding:0;font:inherit;font-size:12.5px;font-weight:600;line-height:1.2;color:var(--ink);text-align:center;cursor:pointer}
+.tool span{width:48px;height:48px;border-radius:15px;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;color:var(--accent)}
+.tool span svg{width:22px;height:22px}
+.tool.on span{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+.tool:active span{transform:scale(.95)}
+/* assistente */
+.fab{position:fixed;right:max(14px,env(safe-area-inset-right,0px));bottom:calc(var(--tab) + env(safe-area-inset-bottom,0px) + 14px);z-index:895;display:flex;align-items:center;gap:8px;border:0;border-radius:999px;padding:6px 16px 6px 6px;background:var(--ink);color:var(--bg);font:inherit;font-weight:700;font-size:15px;box-shadow:0 6px 20px rgba(0,0,0,.28);cursor:pointer}
+.fab-i{width:40px;height:40px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;flex:none}
+.fab-i svg{width:26px;height:26px}
+.fab:active{transform:scale(.96)}
+#s-crea,#s-obiettivi,#s-addestramento{padding-bottom:calc(var(--tab) + env(safe-area-inset-bottom,0px) + 90px)}
+.aisheet{position:fixed;inset:0;z-index:970;background:rgba(10,14,28,.4);display:flex;align-items:flex-end;justify-content:center}
+.aibox{width:100%;max-width:560px;height:min(82vh,720px);display:flex;flex-direction:column;background:var(--bg);border-radius:24px 24px 0 0;box-shadow:0 -10px 34px rgba(0,0,0,.25);animation:msup .22s ease-out;padding-bottom:env(safe-area-inset-bottom,0px)}
+.aihd{display:flex;align-items:center;gap:12px;padding:14px 16px 12px;border-bottom:1px solid var(--line)}
+.aihd h2{font-size:19px}
+.aibody{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:4px 16px 16px}
+.aibody .chatin{position:sticky;bottom:0;background:var(--bg);padding:10px 0 4px;margin-top:6px}
+.ainote{margin-top:8px}
+/* meteo di oggi */
+.wx{margin-top:14px;border-radius:var(--r);background:var(--surface);border:1px solid var(--line);padding:4px 14px 12px}
+.wx-top{display:flex;align-items:center;gap:12px;width:100%;border:0;background:none;padding:10px 0 8px;text-align:left;font:inherit;color:var(--ink);cursor:pointer}
+.wx-ic{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;flex:none;background:var(--ok-bg);color:var(--ok)}
+.wx.s1 .wx-ic{background:var(--warn-bg);color:var(--warn)} .wx.s2 .wx-ic{background:var(--no-bg);color:var(--no)}
+.wx-ic svg{width:28px;height:28px}
+.wx-t{flex:none;display:flex;flex-direction:column}
+.wx-t b{font:800 30px/1 var(--display);letter-spacing:-.02em}
+.wx-t small{font-size:12px;color:var(--muted);margin-top:3px}
+.wx-h{flex:1;min-width:0;display:flex;flex-direction:column}
+.wx-h b{font-size:15.5px;line-height:1.25}
+.wx-h small{font-size:13px;color:var(--muted);margin-top:2px}
+.wx-top .chev{font-style:normal;color:var(--muted);font-size:20px;transition:transform .2s}
+.wx-top[aria-expanded=true] .chev{transform:rotate(90deg)}
+.wx-strip{display:flex;gap:2px;margin-top:4px}
+.wx-strip i{flex:1;height:14px;border-radius:4px;background:var(--ok);position:relative}
+.wx-strip i.s1{background:var(--warn)} .wx-strip i.s2{background:var(--no)} .wx-strip i.past{opacity:.28}
+.wx-strip i.now{height:22px;margin-top:-4px;box-shadow:0 0 0 2px var(--surface),0 0 0 3.5px var(--ink)}
+.wx-lab{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px;font-variant-numeric:tabular-nums}
+.wx-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.wchip{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;padding:5px 10px 5px 8px;border-radius:999px;background:var(--bg);color:var(--ink)}
+.wchip svg{width:15px;height:15px;color:var(--muted)}
+.wchip.p0 svg{color:var(--ok)} .wchip.p1{background:var(--warn-bg);color:var(--warn)} .wchip.p1 svg{color:var(--warn)} .wchip.p2{background:var(--no-bg);color:var(--no)} .wchip.p2 svg{color:var(--no)}
+.wx-more{margin-top:4px}
+.haz svg{color:var(--accent)}
 </style>
 </head>
 <body>
@@ -497,6 +579,10 @@ h2 .dot{width:12px;height:12px;margin-right:8px}
     <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
     <symbol id="i-act" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 3 8-8"/><path d="M15 7h5v5"/></symbol>
     <symbol id="i-paw" viewBox="0 0 24 24" fill="currentColor"><ellipse cx="6" cy="10.5" rx="2" ry="2.6"/><ellipse cx="10" cy="6.5" rx="2" ry="2.7"/><ellipse cx="14.5" cy="6.5" rx="2" ry="2.7"/><ellipse cx="18.5" cy="10.5" rx="2" ry="2.6"/><path d="M12.2 11.5c-3 0-5.7 3.3-5.7 5.7 0 1.7 1.4 2.6 3 2.3 1-.2 1.7-.6 2.7-.6s1.7.4 2.7.6c1.6.3 3-.6 3-2.3 0-2.4-2.7-5.7-5.7-5.7Z"/></symbol>
+    <symbol id="i-route" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M8.2 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.8"/></symbol>
+    <symbol id="i-dogface" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7.2 6.6C5.4 4.6 2.6 4.9 2.6 8c0 2.3 1.3 4.6 3.2 5.2"/><path d="M16.8 6.6c1.8-2 4.6-1.7 4.6 1.4 0 2.3-1.3 4.6-3.2 5.2"/><path d="M6 10c0-3.1 2.7-4.9 6-4.9s6 1.8 6 4.9v3.6c0 3.6-2.7 6.4-6 6.4s-6-2.8-6-6.4z"/><circle cx="9.6" cy="11.2" r=".95" fill="currentColor" stroke="none"/><circle cx="14.4" cy="11.2" r=".95" fill="currentColor" stroke="none"/><path d="M10.7 14.4h2.6L12 15.9z" fill="currentColor"/><path d="M12 15.9v1.3"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A16 16 0 0 1 4 5a1 1 0 0 1 1-1Z"/></symbol>
     <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></symbol>
     <symbol id="i-map" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M9 4 3 6.5v13.5l6-2.5 6 2.5 6-2.5V4l-6 2.5L9 4ZM9 4v13.5M15 6.5V20"/></symbol>
     <symbol id="i-layers" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/></symbol>
@@ -547,33 +633,34 @@ h2 .dot{width:12px;height:12px;margin-right:8px}
 
 <!-- ESPLORA -->
 <section class="screen" id="s-esplora">
-  <div class="row"><button class="round mbtn" data-menu aria-label="Apri il menu"><svg><use href="#i-menu"/></svg></button><div class="sp" style="min-width:0"><p class="muted small" id="where">Italia</p><h1 id="hello">Dove andiamo oggi?</h1></div><a class="avatar sm" id="home-av" href="#cane" aria-label="Il mio cane"></a></div>
-  <div id="today"></div>
-  <div id="home-extra"></div>
-  <div class="maphost" id="hostExplore"><div class="peek" id="peek"></div></div>
+  <div class="ehd"><div class="sp" style="min-width:0"><p class="muted small" id="where">Italia</p><h1 id="hello">Dove andiamo oggi?</h1></div><a class="avatar sm" id="home-av" href="#cane" aria-label="Il mio cane"></a></div>
   <div class="search" style="margin-top:14px"><svg width="22" height="22"><use href="#i-search"/></svg><input id="q" type="search" placeholder="Cerca un sentiero o una zona" aria-label="Cerca un sentiero o una zona"></div>
   <div class="hscroll" id="place-row" hidden></div>
   <div class="hscroll" id="near-row" hidden></div>
-  <div class="hscroll">
+  <div id="today"></div>
+  <div id="home-extra"></div>
+  <div class="maphost" id="hostExplore"><div class="peek" id="peek"></div></div>
+  <div class="hscroll frow">
     <select id="f-day" aria-label="Giorno"></select>
-    <select id="f-fit" aria-label="Verdetto"><option value="all">Tutti i verdetti</option><option value="0">Solo fattibili</option><option value="01">Fattibili e con prudenza</option></select>
+    <select id="f-fit" aria-label="Adatti al cane"><option value="all">Per il cane: tutti</option><option value="0">Adatti al cane</option><option value="01">Adatti o con prudenza</option></select>
     <select id="f-len" aria-label="Lunghezza"><option value="all">Lunghezza</option><option value="0-5">Fino a 5 km</option><option value="5-10">Da 5 a 10 km</option><option value="10-99">Più di 10 km</option></select>
     <select id="f-up" aria-label="Dislivello"><option value="all">Dislivello</option><option value="0-150">Fino a 150 m</option><option value="150-400">Da 150 a 400 m</option><option value="400-800">Da 400 a 800 m</option><option value="800-99999">Oltre 800 m</option></select>
+    <button class="dd" id="dd-act" aria-expanded="false"></button>
+    <button class="dd" id="dd-feat" aria-expanded="false"></button>
     <select id="f-eff" aria-label="Impegno per il cane"><option value="all">Impegno per il cane</option><option value="0">Facile per lui</option><option value="1">Media per lui</option><option value="2">Difficile per lui</option></select>
-    <select id="f-dif" aria-label="Difficoltà CAI (per persone)"><option value="all">Difficoltà CAI (persone)</option><option value="T">T · turistico</option><option value="E">E · escursionistico</option><option value="EE">EE · esperti</option></select>
+    <select id="f-dif" aria-label="Difficoltà CAI (per persone)"><option value="all">Difficoltà CAI (persone)</option><option value="T">T, turistico</option><option value="E">E, escursionistico</option><option value="EE">EE, per esperti</option></select>
     <select id="f-zone" aria-label="Zona"><option value="all">Tutte le zone</option></select>
   </div>
-  <div class="ddrow"><button class="dd" id="dd-act" aria-expanded="false"></button><button class="dd" id="dd-feat" aria-expanded="false"></button></div>
   <div class="ddpanel" id="f-act" hidden></div>
   <div class="ddpanel" id="f-feat" hidden></div>
   <p class="small muted" id="feat-status" style="margin-top:6px"></p>
+  <div id="reco-box">
+    <div class="count"><h2>Sentieri consigliati</h2><span class="muted small">i posti famosi qui vicino</span></div>
+    <div class="carousel" id="reco"></div>
+  </div>
   <div id="parks-box" hidden>
     <div class="count"><h2>Parchi per una passeggiata</h2><span class="muted small">tocca per creare un giro lì</span></div>
     <div class="carousel" id="parks"></div>
-  </div>
-  <div id="reco-box">
-    <div class="count"><h2>Consigliati</h2><span class="muted small">i posti famosi qui vicino</span></div>
-    <div class="carousel" id="reco"></div>
   </div>
   <div class="count"><h2 id="count">Sentieri</h2><span class="muted small" id="status"></span></div>
   <button class="btn sm" id="reset" hidden style="margin-bottom:12px">Azzera i filtri</button>
@@ -589,27 +676,19 @@ h2 .dot{width:12px;height:12px;margin-right:8px}
   </div>
   <div class="sheet" id="det"></div>
   <div class="pad-bar"></div>
-  <div class="bar"><button class="btn pri" id="bar-start"><svg><use href="#i-play"/></svg>Avvia percorso</button><button class="btn" id="bar-save"><svg><use href="#i-heart"/></svg><span>Salva</span></button><a class="btn" id="bar-go" target="_blank" rel="noopener"><svg><use href="#i-nav"/></svg>Portami lì</a></div>
+  <div class="bar"><button class="btn pri" id="bar-start"><svg><use href="#i-play"/></svg>Avvia percorso</button><a class="btn" id="bar-go" target="_blank" rel="noopener"><svg><use href="#i-nav"/></svg>Portami lì</a></div>
 </section>
 
 <!-- CREA GIRO -->
 <section class="screen" id="s-crea">
-  <div class="hd"><button class="round mbtn" data-menu aria-label="Apri il menu"><svg><use href="#i-menu"/></svg></button><h1>Crea un giro</h1></div>
-  <div class="seg three" id="crea-mode" style="margin-top:14px">
-    <button data-mode="chat"><svg><use href="#i-chat"/></svg>Chat</button>
+  <div class="hd"><h1>Crea un giro</h1></div>
+  <div class="seg two" id="crea-mode" style="margin-top:14px">
     <button data-mode="auto"><svg><use href="#i-bolt"/></svg>Automatico</button>
     <button data-mode="man"><svg><use href="#i-hand"/></svg>Manuale</button>
   </div>
   <p class="muted" id="crea-sub" style="margin-top:10px"></p>
   <div class="maphost" id="hostCrea"></div>
   <div class="row" style="margin-top:10px;flex-wrap:wrap"><button class="btn sm" id="new-loc"><svg><use href="#i-nav"/></svg>Parto da dove sono</button><span class="muted small" id="start-hint">oppure tocca la mappa per spostare la partenza</span></div>
-  <div id="p-chat" hidden>
-    <div id="chat-key"></div>
-    <div class="msgs" id="msgs"></div>
-    <div class="sugg" id="sugg"></div>
-    <form class="chatin" id="chat-form"><input id="chat-in" autocomplete="off" placeholder="Scrivi che giro vuoi fare" aria-label="Messaggio per l'assistente"><button class="round" aria-label="Invia"><svg><use href="#i-send"/></svg></button></form>
-    <p class="small muted" style="margin-top:8px">L'assistente usa Gemini di Google. Riceve il profilo del tuo cane (senza nome del veterinario né microchip) e il meteo. Può sbagliare: il percorso finale lo calcola l'app con i limiti del cane.</p>
-  </div>
   <div id="p-auto" hidden>
     <div class="block" style="margin-top:18px" id="auto-why"></div>
     <button class="btn pri wide" id="auto-go" style="margin-top:14px"><svg><use href="#i-bolt"/></svg>Crea il giro con un tocco</button>
@@ -631,33 +710,36 @@ h2 .dot{width:12px;height:12px;margin-right:8px}
   <div id="gen-out" class="stack" style="margin-top:16px"></div>
 </section>
 
-<!-- SALVATI -->
-<section class="screen" id="s-salvati">
-  <div class="hd"><button class="round mbtn" data-menu aria-label="Apri il menu"><svg><use href="#i-menu"/></svg></button><h1>Salvati</h1></div>
-  <div class="block" id="off-block" hidden><h2>Scaricati per l'uso senza internet</h2><p class="small muted" style="margin:-4px 0 10px" id="off-sum"></p><div id="saved-off"></div></div>
-  <div class="block"><h2>I miei giri</h2><div id="saved-routes"></div></div>
-  <div class="block"><h2>Sentieri</h2><div id="saved-trails"></div></div>
-</section>
-
 <!-- ATTIVITÀ -->
 <section class="screen" id="s-attivita">
-  <div class="hd"><button class="round mbtn" data-menu aria-label="Apri il menu"><svg><use href="#i-menu"/></svg></button><h1>Attività</h1></div>
-  <div class="box" id="pace-box" style="margin-top:16px"></div>
-  <div class="block"><h2>Diario delle uscite</h2><div id="act-list" class="stack"></div></div>
-  <div class="box" id="steps-box" style="margin-top:22px"></div>
+  <div class="hd"><h1>Attività</h1></div>
+  <div class="vpick"><select id="act-view" aria-label="Cosa vuoi vedere"><option value="diary">Le uscite</option><option value="saved">Percorsi salvati</option><option value="off">Mappe scaricate</option></select></div>
+  <div id="av-diary">
+    <div class="box" id="pace-box" style="margin-top:16px"></div>
+    <div class="block"><h2>Diario delle uscite</h2><div id="act-list" class="stack"></div></div>
+    <div class="box" id="steps-box" style="margin-top:22px"></div>
+  </div>
+  <div id="av-saved" hidden>
+    <div class="block"><h2>I miei giri</h2><div id="saved-routes"></div></div>
+    <div class="block"><h2>Sentieri</h2><div id="saved-trails"></div></div>
+  </div>
+  <div id="av-off" hidden>
+    <div class="block" id="off-block" hidden><h2>Scaricati per l'uso senza internet</h2><p class="small muted" style="margin:-4px 0 10px" id="off-sum"></p><div id="saved-off"></div></div>
+    <p class="muted block" id="off-empty">Nessuna mappa scaricata. Apri un sentiero e tocca <b>Offline</b>: percorso e mappa restano nel telefono e funzionano anche senza campo.</p>
+  </div>
 </section>
 
 <!-- OBIETTIVI: programma di allenamento graduale -->
 <section class="screen" id="s-obiettivi">
-  <div class="hd"><button class="round mbtn" data-menu aria-label="Apri il menu"><svg><use href="#i-menu"/></svg></button><h1>Obiettivi</h1></div>
+  <div class="hd"><h1>Allenati</h1></div>
+  <div class="seg two subnav"><a href="#obiettivi" data-sub="obiettivi">Obiettivi</a><a href="#addestramento" data-sub="addestramento">Addestramento</a></div>
   <div id="ob-main"></div>
-  <div class="block"><h2>Chiedi all'allenatore</h2><div id="ob-chat"></div></div>
   <p class="small muted" style="margin-top:22px">Il programma è un <b>consiglio prudente, non una garanzia</b>. Osserva sempre il tuo cane e fermati ai primi segni di stanchezza, affanno o zoppia. Non sostituisce il veterinario.</p>
 </section>
 
 <!-- SALUTE: peso, movimento, obiettivi consigliati -->
 <section class="screen" id="s-salute">
-  <div class="hd"><button class="round mbtn" data-menu aria-label="Apri il menu"><svg><use href="#i-menu"/></svg></button><h1>Salute</h1></div>
+  <div class="hd"><a class="round" href="#cane" aria-label="Indietro"><svg><use href="#i-back"/></svg></a><h1>Salute</h1></div>
   <div id="he-rem"></div>
   <div id="he-main"></div>
   <p class="small muted" style="margin-top:22px">Sono <b>indicazioni prudenti, non una visita</b>. Peso giusto, dieta e attività adatte le decide il veterinario, che conosce il tuo cane.</p>
@@ -665,28 +747,28 @@ h2 .dot{width:12px;height:12px;margin-right:8px}
 
 <!-- ADDESTRAMENTO: una lezione al giorno -->
 <section class="screen" id="s-addestramento">
-  <div class="hd"><button class="round mbtn" data-menu aria-label="Apri il menu"><svg><use href="#i-menu"/></svg></button><h1>Addestramento</h1></div>
+  <div class="hd"><h1>Allenati</h1></div>
+  <div class="seg two subnav"><a href="#obiettivi" data-sub="obiettivi">Obiettivi</a><a href="#addestramento" data-sub="addestramento">Addestramento</a></div>
   <div id="tr-main"></div>
-  <div class="block"><h2>Chiedi all'educatore</h2><div id="tr-chat"></div></div>
   <p class="small muted" style="margin-top:22px">Solo metodi gentili, con premi e mai punizioni. Per paure forti, aggressività o problemi seri chiedi a un educatore cinofilo o a un veterinario esperto di comportamento.</p>
 </section>
 
 <!-- ZAINO PRONTO -->
 <section class="screen" id="s-zaino">
-  <div class="hd"><button class="round mbtn" data-menu aria-label="Apri il menu"><svg><use href="#i-menu"/></svg></button><h1>Zaino pronto</h1></div>
+  <div class="hd"><a class="round" href="#cane" aria-label="Indietro"><svg><use href="#i-back"/></svg></a><h1>Zaino pronto</h1></div>
   <div id="zn-main"></div>
 </section>
 
 <!-- PRONTO SOCCORSO -->
 <section class="screen" id="s-soccorso">
-  <div class="hd"><button class="round mbtn" data-menu aria-label="Apri il menu"><svg><use href="#i-menu"/></svg></button><h1>Pronto soccorso</h1></div>
+  <div class="hd"><a class="round" href="#cane" aria-label="Indietro"><svg><use href="#i-back"/></svg></a><h1>Pronto soccorso</h1></div>
   <div id="ps-main" style="margin-top:14px"></div>
   <p class="small muted" style="margin-top:22px">Sono <b>primi aiuti in attesa del veterinario</b>, non una cura. In ogni dubbio chiama subito il veterinario.</p>
 </section>
 
 <!-- REGOLE DEL POSTO -->
 <section class="screen" id="s-regole">
-  <div class="hd"><button class="round mbtn" data-menu aria-label="Apri il menu"><svg><use href="#i-menu"/></svg></button><h1>Regole del posto</h1></div>
+  <div class="hd"><a class="round" href="#cane" aria-label="Indietro"><svg><use href="#i-back"/></svg></a><h1>Regole del posto</h1></div>
   <div id="rg-main"></div>
 </section>
 
@@ -706,10 +788,20 @@ h2 .dot{width:12px;height:12px;margin-right:8px}
 <!-- CANE -->
 <section class="screen" id="s-cane">
   <div id="onb" hidden><h1>Parlami del tuo cane</h1><p class="muted" style="margin:8px 0 18px">Mi serve per dirti quali sentieri sono adatti a lui e quali no.</p></div>
-  <div class="row" id="dog-head"><button class="round mbtn" data-menu aria-label="Apri il menu" style="align-self:flex-start"><svg><use href="#i-menu"/></svg></button><div class="avatar" id="avatar" role="button" tabindex="0" aria-label="Cambia la foto del cane">L</div><div><h1 id="dog-title">Il mio cane</h1><p class="muted" id="dog-cap"></p>
+  <div class="row" id="dog-head"><div class="avatar" id="avatar" role="button" tabindex="0" aria-label="Cambia la foto del cane">L</div><div><h1 id="dog-title">Il mio cane</h1><p class="muted" id="dog-cap"></p>
     <div class="row" style="margin-top:8px"><button class="btn sm" id="photo-btn" type="button">Aggiungi una foto</button><button class="btn sm" id="photo-del" type="button" hidden>Togli la foto</button></div><input type="file" id="photo-in" accept="image/*" hidden></div></div>
   <p class="small" id="dog-alert" style="margin-top:10px"></p>
-  <div class="form" style="margin-top:20px">
+  <nav class="hub" id="dog-hub" aria-label="Sezioni del cane">
+    <a class="hrow sos" href="#soccorso"><span class="hi"><svg><use href="#i-aid"/></svg></span><span class="ht"><b>Pronto soccorso</b><small>Cosa fare subito, in attesa del veterinario</small></span><i>›</i></a>
+    <button class="hrow sos" id="dog-sos" type="button"><span class="hi"><svg><use href="#i-phone"/></svg></span><span class="ht"><b>Emergenza</b><small>Chiama il veterinario e manda dove sei</small></span><i>›</i></button>
+    <p class="hgrp">La sua salute</p>
+    <a class="hrow" href="#salute"><span class="hi"><svg><use href="#i-pulse"/></svg></span><span class="ht"><b>Salute e peso</b><small>Prova delle costole, movimento giusto, promemoria</small></span><i>›</i></a>
+    <p class="hgrp">Prima di uscire</p>
+    <a class="hrow" href="#zaino"><span class="hi"><svg><use href="#i-bag"/></svg></span><span class="ht"><b>Zaino pronto</b><small>Cosa portare, con il meteo di oggi</small></span><i>›</i></a>
+    <a class="hrow" href="#regole"><span class="hi"><svg><use href="#i-book"/></svg></span><span class="ht"><b>Regole del posto</b><small>Guinzaglio, spiagge, parchi, pascoli</small></span><i>›</i></a>
+  </nav>
+  <details class="fold" id="fold-dog"><summary><span><b id="fold-dog-t">I suoi dati</b><small>Età, peso, allenamento, salute e libretto</small></span><i>›</i></summary><div class="foldb">
+  <div class="form" style="margin-top:6px">
     <label>Nome<input id="d-name" autocomplete="off"></label>
     <label>Razza<input id="d-breed" autocomplete="off" placeholder="Es. Labrador, meticcio"></label>
     <label>Età (anni)<input id="d-age" type="number" inputmode="decimal" min="0" max="25" step="0.5"></label>
@@ -737,8 +829,8 @@ h2 .dot{width:12px;height:12px;margin-right:8px}
     </div>
   </div>
   <button class="btn pri wide" id="dog-save" style="margin-top:18px">Salva</button>
-  <button class="btn wide" id="dog-sos" style="margin-top:10px" type="button">Emergenza: veterinario e posizione</button>
-  <div id="settings">
+  </div></details>
+  <details class="fold" id="settings"><summary><span><b>Impostazioni</b><small>Chiavi dei servizi e avvertenze</small></span><i>›</i></summary><div class="foldb">
     <div class="block"><h2>Chiavi dei servizi</h2>
       <p class="muted small" style="margin-bottom:10px"><b>Giri ad anello</b>: OpenRouteService, gratuito. Registrati su <a href="https://openrouteservice.org/dev/#/signup" target="_blank" rel="noopener">openrouteservice.org</a>, copia la chiave e incollala qui.</p>
       <input class="field" id="ors-key" placeholder="Chiave OpenRouteService" autocomplete="off" autocapitalize="off" spellcheck="false">
@@ -751,7 +843,7 @@ h2 .dot{width:12px;height:12px;margin-right:8px}
       <p>Il verdetto è un <b>consiglio prudente, non una garanzia</b>. Osserva sempre il tuo cane, fermati ai primi segni di stanchezza o affanno. L'app <b>non sostituisce il veterinario</b>: per qualsiasi dubbio sulla salute chiedi a lui.</p>
       <p style="margin-top:10px">Sentieri © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> (ODbL) · Mappe © <a href="https://www.mapbox.com/about/maps/" target="_blank" rel="noopener">Mapbox</a> · Meteo e quote <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> · Percorsi <a href="https://openrouteservice.org" target="_blank" rel="noopener">OpenRouteService</a> · Chat Gemini (Google) · Meteo di riserva <a href="https://www.met.no/en" target="_blank" rel="noopener">MET Norway</a> · Radar pioggia RainViewer · Mappa topografica OpenTopoMap · Sentinel-2 cloudless 2024 di <a href="https://s2maps.eu" target="_blank" rel="noopener">EOX</a> (dati Copernicus modificati) · Neve, nuvole e vegetazione NASA GIBS</p>
     </div>
-  </div>
+  </div></details>
 </section>
 
 <!-- SEGUI: chi riceve il link vede la passeggiata in tempo reale -->
@@ -763,22 +855,27 @@ h2 .dot{width:12px;height:12px;margin-right:8px}
 
 <nav id="tabs" aria-label="Sezioni"><div>
   <a href="#esplora" data-t="esplora"><svg><use href="#i-search"/></svg>Esplora</a>
-  <a href="#salvati" data-t="salvati"><svg><use href="#i-heart"/></svg>Salvati</a>
+  <a href="#attivita" data-t="attivita"><svg><use href="#i-route"/></svg>Attività</a>
   <a href="#crea" data-t="crea" class="main"><span><svg><use href="#i-plus"/></svg></span>Crea giro</a>
-  <a href="#attivita" data-t="attivita"><svg><use href="#i-act"/></svg>Attività</a>
-  <a href="#cane" data-t="cane"><svg><use href="#i-paw"/></svg>Il mio cane</a>
+  <a href="#allenati" data-t="allenati"><svg><use href="#i-act"/></svg>Allenati</a>
+  <a href="#cane" data-t="cane" class="tdog"><span class="tav" id="tab-av"></span><span class="tnm" id="tab-name">Il mio cane</span></a>
 </div></nav>
 <a class="btn pri sm" id="nav-pill" href="#vai" hidden><svg><use href="#i-play"/></svg>Passeggiata in corso · torna alla mappa</a>
-<div class="drawer-bg" id="drawer-bg" hidden></div>
-<aside class="drawer" id="drawer" aria-label="Menu">
-  <div class="dtop"><b>AllDogs</b><button class="round" id="drawer-x" aria-label="Chiudi il menu">✕</button></div>
-  <a href="#obiettivi" data-d="obiettivi"><svg><use href="#i-target"/></svg><span><b>Obiettivi</b><small>Allenamento graduale su misura</small></span></a>
-  <a href="#salute" data-d="salute"><svg><use href="#i-pulse"/></svg><span><b>Salute</b><small>Peso, movimento e obiettivi consigliati</small></span></a>
-  <a href="#zaino" data-d="zaino"><svg><use href="#i-bag"/></svg><span><b>Zaino pronto</b><small>Cosa portare, col meteo di oggi</small></span></a>
-  <a href="#soccorso" data-d="soccorso"><svg><use href="#i-aid"/></svg><span><b>Pronto soccorso</b><small>Cosa fare subito in emergenza</small></span></a>
-  <a href="#regole" data-d="regole"><svg><use href="#i-book"/></svg><span><b>Regole del posto</b><small>Guinzaglio, spiagge, parchi, pascoli</small></span></a>
-  <a href="#addestramento" data-d="addestramento"><svg><use href="#i-cap"/></svg><span><b>Addestramento</b><small>Una lezione nuova ogni giorno</small></span></a>
-</aside>
+<button class="fab" id="fab" type="button" hidden><span class="fab-i"><svg><use href="#i-dogface"/></svg></span><b>Chiedi</b></button>
+<div class="aisheet" id="ai" hidden><div class="aibox" role="dialog" aria-labelledby="ai-t">
+  <div class="aihd"><span class="fab-i"><svg><use href="#i-dogface"/></svg></span><div class="sp" style="min-width:0"><h2 id="ai-t">Chiedi all'assistente</h2><p class="small muted" id="ai-sub"></p></div><button class="round" id="ai-x" type="button" aria-label="Chiudi"><svg><use href="#i-x"/></svg></button></div>
+  <div class="aibody">
+  <div id="ai-crea" hidden>
+    <div id="chat-key"></div>
+    <div class="msgs" id="msgs"></div>
+    <div class="sugg" id="sugg"></div>
+    <form class="chatin" id="chat-form"><input id="chat-in" autocomplete="off" placeholder="Scrivi che giro vuoi fare" aria-label="Messaggio per l'assistente"><button class="round" aria-label="Invia"><svg><use href="#i-send"/></svg></button></form>
+    <p class="small muted ainote">L'assistente usa Gemini di Google. Riceve il profilo del tuo cane (senza nome del veterinario né microchip) e il meteo. Può sbagliare: il percorso finale lo calcola l'app con i limiti del cane.</p>
+  </div>
+  <div id="ob-chat" hidden></div>
+  <div id="tr-chat" hidden></div>
+  </div>
+</div></div>
 <!-- Menu "Mappe": schede con anteprima -->
 <div class="msheet" id="layers" hidden><div class="msbox" role="dialog" aria-label="Mappe">
   <div class="mshd"><h2>Mappe</h2><button class="round" id="layers-x" aria-label="Chiudi">✕</button></div>
@@ -899,7 +996,7 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 // ================= Stato =================
 const S={dog:store.get("alldogs-dog"),saved:store.get("alldogs-saved")||[],routes:store.get("alldogs-routes")||[],trails:[],day:0,limit:20,sel:null,wxFail:false,
   mins:40,start:store.get("alldogs-start")||[40.8359,14.2488],gen:null,genIdx:0,ready:false,featReady:false,act:null,feat:[],near:null,
-  mode:store.get("alldogs-creamode")||"chat",chat:[],busy:false,acts:store.get("alldogs-acts")||[],
+  mode:(m=>!m||m==="chat"?"auto":m)(store.get("alldogs-creamode")),chat:[],busy:false,acts:store.get("alldogs-acts")||[],
   manKind:store.get("alldogs-mankind")||"auto",draw:{pts:[],route:null,busy:false,msg:"",req:0},
   // zona della mappa che si sta guardando: c = centro, z = zoom, b = [[sud,ovest],[nord,est]]
   view:(v=>v&&v.c&&v.b&&v.z?v:{c:[40.75,14.35],z:9,b:[[40.5,13.85],[41.02,14.85]]})(store.get("alldogs-view")),far:false};
@@ -1245,7 +1342,7 @@ function initMap(){
     styleNow=wantStyle();M=new mapboxgl.Map({container:"map",style:STYLES[styleNow],center:ll(S.view.c),zoom:S.view.z,attributionControl:false,pitchWithRotate:true});
   }catch(e){$("map").innerHTML=`<div class="mapnote">Questo telefono non riesce a mostrare la mappa (serve WebGL).</div>`;M=null;return}
   M.addControl(new mapboxgl.AttributionControl({compact:true,customAttribution:"Sentieri © OpenStreetMap contributors"}),"bottom-left");
-  M.on("style.load",()=>{styleOK=true;addLayers();if(map3d)terrain(true);applyScene()});
+  M.on("style.load",()=>{styleOK=true;itLabels();addLayers();if(map3d)terrain(true);applyScene()});
   M.on("error",e=>console.warn("Mapbox:",e&&e.error&&e.error.message));
   M.on("mouseenter","ad-trails-hit",()=>M.getCanvas().style.cursor="pointer");M.on("mouseleave","ad-trails-hit",()=>M.getCanvas().style.cursor="");
   M.on("moveend",()=>{clearTimeout(vxT);vxT=setTimeout(vxView,600)});
@@ -1274,6 +1371,12 @@ function kmScale(){if(ksRaf)return;ksRaf=requestAnimationFrame(()=>{ksRaf=0;if(!
   const e=Math.pow(10,Math.floor(Math.log10(max))),n=[5,2,1].map(x=>x*e).find(x=>x<=max)||e,px=Math.round(n/mpp);
   const f=v=>v>=1000?String(+(v/1000).toFixed(2)).replace(".",",")+" km":Math.round(v)+" m";
   const el=$("kmscale");el.style.width=px+"px";$("ks-m").textContent=f(n/2);$("ks-e").textContent=f(n)})}
+// Nomi sulla mappa in italiano ("Napoli", non "Naples"): le mappe Mapbox hanno il campo name_it
+function itLabels(){if(!M)return;try{for(const l of M.getStyle().layers){if(l.type!=="symbol")continue;
+  const tf=M.getLayoutProperty(l.id,"text-field");if(!tf||typeof tf!=="object")continue;let s=JSON.stringify(tf);if(!s.includes('"name'))continue;
+  s=s.replace(/"name_(?:en|zh-Hans|zh-Hant|es|fr|de|ru|pt|ja|ko|vi|ar)"/g,'"name_it"');
+  if(!s.includes("name_it"))s=s.split('["get","name"]').join('["coalesce",["get","name_it"],["get","name"]]');
+  M.setLayoutProperty(l.id,"text-field",JSON.parse(s))}}catch(e){console.warn("etichette",e)}}
 function setInteractive(on){if(!M)return;HANDLERS.forEach(h=>M[h]&&(on?M[h].enable():M[h].disable()))}
 function fixSatellite(){
   const L=M.getStyle().layers,ras=L.find(l=>l.type==="raster");if(!ras||M.getSource("sat2"))return;
@@ -1662,11 +1765,15 @@ $("m-loc").onclick=async()=>{
   try{const p=await getPos();showMe(p);if(scene.mode==="crea")setStart(p);else M.flyTo({center:ll(p),zoom:Math.max(M.getZoom(),13)})}catch(e){toast("Non riesco a leggere la posizione")}};
 
 // ================= Navigazione =================
-const SCREENS=["esplora","sentiero","crea","salvati","attivita","cane","vai","segui","obiettivi","addestramento","salute","zaino","soccorso","regole"];
+let curScr="esplora";
+const TABOF={sentiero:"esplora",obiettivi:"allenati",addestramento:"allenati",salute:"cane",zaino:"cane",soccorso:"cane",regole:"cane"};
+const SCREENS=["esplora","sentiero","crea","attivita","cane","vai","segui","obiettivi","addestramento","salute","zaino","soccorso","regole"];
 let lastList=0;
 function route(){
   let h=location.hash.slice(1)||"esplora";
   if(!S.dog&&h!=="cane"&&!h.startsWith("segui-")){location.replace("#cane");return}
+  if(h==="allenati"){location.replace("#"+(store.get("alldogs-allenati")||"obiettivi"));return}
+  if(h==="salvati"){S.actView="saved";location.replace("#attivita");return}
   let scr=h,arg=null;
   if(h.startsWith("s-")){scr="sentiero";arg=+h.slice(2)}
   if(h.startsWith("segui-")){scr="segui";arg=h.slice(6).replace(/[^a-zA-Z0-9_-]/g,"")}
@@ -1674,10 +1781,11 @@ function route(){
   if(scr==="vai"&&!nav&&!restoreNav()){location.replace("#esplora");return}
   $("nav-pill").hidden=!nav||scr==="vai";
   document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on",s.id==="s-"+scr));
-  document.querySelectorAll("#tabs a").forEach(a=>a.classList.toggle("on",a.dataset.t===(scr==="sentiero"?"esplora":scr)));
-  $("tabs").classList.toggle("hide",!S.dog);
-  openMenu(false);document.querySelectorAll(".mbtn").forEach(b=>b.hidden=!S.dog);
-  document.querySelectorAll("#drawer a").forEach(a=>a.classList.toggle("on",a.dataset.d===scr));
+  curScr=scr;
+  document.querySelectorAll("#tabs a").forEach(a=>{const on=a.dataset.t===(TABOF[scr]||scr);a.classList.toggle("on",on);if(on)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
+  $("tabs").classList.toggle("hide",!S.dog);syncTabDog();
+  if(scr==="obiettivi"||scr==="addestramento"){store.set("alldogs-allenati",scr);document.querySelectorAll(".subnav a").forEach(a=>a.setAttribute("aria-current",a.dataset.sub===scr?"page":"false"))}
+  closeAI();$("fab").hidden=!S.dog||!AIP[scr];
   document.querySelectorAll(".maphost.full").forEach(h=>h.classList.remove("full"));
   end3d();$("layers").hidden=true;
   if(scr==="esplora"){
@@ -1687,9 +1795,8 @@ function route(){
   else window.scrollTo(0,0);
   if(scr==="sentiero")showTrail(arg);
   if(scr==="crea")showCrea();
-  if(scr==="salvati")showSaved();
   if(scr==="cane")showDog();
-  if(scr==="attivita")showAct();
+  if(scr==="attivita")showActView();
   if(scr==="obiettivi")showGoals();
   if(scr==="addestramento")showTrain();
   if(scr==="salute"){showHealth();renderRem()}
@@ -1781,8 +1888,8 @@ function renderParks(){
 let ddOpen=null;
 function renderPills(){
   const a=ACTS.find(x=>x[0]===S.act),nf=S.feat.length,f1=nf===1?FEATS.find(x=>x[0]===S.feat[0]):null;
-  $("dd-act").innerHTML=`${a?artSvg(a[0],26):`<span class="ddi">${icon("paw")}</span>`}<span><small>Attività</small><b>${a?a[1]:"Tutte"}</b></span><i>▾</i>`;
-  $("dd-feat").innerHTML=`${f1?artSvg(f1[0],26):nf?`<span class="ddn">${nf}</span>`:`<span class="ddi">${icon("search")}</span>`}<span><small>Particolarità</small><b>${f1?f1[1]:nf?nf+" scelte":"Tutte"}</b></span><i>▾</i>`;
+  $("dd-act").innerHTML=`${a?artSvg(a[0],22):""}<b>${a?a[1]:"Attività"}</b><i>▾</i>`;
+  $("dd-feat").innerHTML=`${f1?artSvg(f1[0],22):nf?`<span class="ddn">${nf}</span>`:""}<b>${f1?f1[1]:"Particolarità"}</b><i>▾</i>`;
   $("dd-act").classList.toggle("on",!!a);$("dd-feat").classList.toggle("on",!!nf);
   $("dd-act").setAttribute("aria-expanded",ddOpen==="act");$("dd-feat").setAttribute("aria-expanded",ddOpen==="feat");
   $("f-act").hidden=ddOpen!=="act";$("f-feat").hidden=ddOpen!=="feat";
@@ -1798,7 +1905,8 @@ function renderPills(){
 }
 $("dd-act").onclick=()=>{ddOpen=ddOpen==="act"?null:"act";renderPills()};
 $("dd-feat").onclick=()=>{ddOpen=ddOpen==="feat"?null:"feat";renderPills()};
-function renderList(){
+function fitLabels(){const n=dog().name||"il cane",o=$("f-fit").options;o[0].text=`Per ${n}: tutti`;o[1].text=`Adatti a ${n}`;o[2].text=`Adatti a ${n} o con prudenza`}
+function renderList(){fitLabels();
   $("hello").textContent=`Dove andiamo con ${dog().name||"il tuo cane"}?`;
   renderToday();
   renderPills();
@@ -1853,7 +1961,7 @@ function weatherHTML(res){
     <div class="now"><b>${Math.round(d.temperature_2m_max[i])}°</b><div><div><b>${wxText(d.weather_code[i])}</b> · minima ${Math.round(d.temperature_2m_min[i])}°</div><div class="muted small">Pioggia ${d.precipitation_probability_max[i]??0}% · alba ${w.srT} · tramonto ${w.ssT}</div></div></div>
     <p class="small muted" style="margin-bottom:6px">Temperatura percepita ora per ora, giudicata per ${dn()}</p>
     <div class="hours">${w.H.slice(6,22).map(x=>`<div class="${x.f<=lim?"v0":x.f<=lim+4?"v1":"v2"}"><small>${x.h}</small>${Math.round(x.f)}°</div>`).join("")}</div>
-    <p class="small muted" style="margin-top:6px">Verde: fresco · arancione: caldo, con prudenza · rosso: troppo caldo.</p>`;
+    <div class="legend"><span><i class="dot b0"></i>Fresco</span><span><i class="dot b1"></i>Caldo, con prudenza</span><span><i class="dot b2"></i>Troppo caldo</span></div>`;
 }
 function detailHTML(o){
   const d=dog(),res=verdict(o.it,d,S.day),st=steps(o.it.len,d);
@@ -1889,17 +1997,29 @@ function hazards(ctx){const m=new Date().getMonth()+1;return HAZ.filter(h=>h.m.i
 function hazSheet(list){openSheet(`<h2>Attenzione in questo periodo</h2>${list.map(h=>`<div class="hz"><b>${h.t}</b><p>${h.d}</p></div>`).join("")}<p class="small muted" style="margin-top:10px">Sono consigli generali di prudenza: non sostituiscono il veterinario.</p>`)}
 // ---- Oggi con il cane: com'è adesso e quali sono le ore buone per uscire, giudicate sui limiti del cane ----
 function renderToday(){
-  const box=$("today"),d=dog(),cap=capacity(d),w=dayWx(S.view.c,0);
-  const hz=hazards({}),hzBtn=hz.length?`<button class="haz" id="haz-btn"><b>!</b><span>In questo periodo: ${hz.map(h=>h.t.toLowerCase()).join(", ")}</span>›</button>`:"";
-  if(!w){box.innerHTML=hzBtn}
+  const box=$("today"),d=dog(),cap=capacity(d),w=dayWx(S.view.c,0),hz=hazards({});
+  const hzBtn=hz.length?`<button class="haz" id="haz-btn">${icon("bell")}<span>In questo periodo: ${hz.map(h=>h.t.toLowerCase()).join(", ")}</span>›</button>`:"";
+  if(!w){box.innerHTML=hz.length?`<div class="wx">${hzBtn}</div>`:""}
   else{
     const hr=new Date().getHours(),now=w.H[hr],lim=cap.heat,good=h=>w.H[h]&&w.H[h].f<=lim&&w.H[h].rain<60,wins=[];let a=null;
     for(let h=Math.max(hr,5);h<=22;h++){if(good(h)){if(a==null)a=h}else if(a!=null){wins.push([a,h]);a=null}}if(a!=null)wins.push([a,23]);
     const st=now.f>lim+4?2:now.f>lim||now.rain>=60?1:0,night=hr>=22||hr<5;
-    const head=st===2?`Adesso fa troppo caldo per ${dn()}`:now.rain>=60?"Adesso è probabile la pioggia":st===1?`Adesso fa caldo per ${dn()}: solo un giro breve`:night?`Temperatura buona per ${dn()}`:`Adesso è un buon momento per uscire con ${dn()}`;
-    const best=!wins.length?(night?"":"Oggi non ci sono più ore davvero adatte: solo uscite brevi."):wins[0][0]<=hr&&wins[0][1]>=23?"Va bene per tutto il resto della giornata.":"Ore buone oggi: "+wins.slice(0,3).map(x=>x[0]<=hr?`fino alle ${x[1]}:00`:x[1]>=23?`dalle ${x[0]}:00 in poi`:`${x[0]}:00–${x[1]}:00`).join(", ")+".";
-    const pw=pawInfo(w,hr,d);
-    box.innerHTML=`<div class="today s${st}"><div class="row"><b class="big">${Math.round(now.f)}°</b><div class="sp"><b>${head}</b><p class="small">${best} Pioggia ${now.rain}%.</p></div></div>${pw?`<p class="paw p${pw.lvl}">${icon("paw")}<span><b>Zampe:</b> ${pw.t.join(" ")}</span></p>`:""}<button class="haz" id="when-btn">${icon("sun")}<span>Quando uscire oggi e domani, ora per ora</span>›</button>${hzBtn}</div>`;
+    const head=st===2?`Troppo caldo per ${dn()}`:now.rain>=60?"Probabile pioggia":st===1?`Caldo: solo un giro breve`:night?`Temperatura buona per ${dn()}`:`Buon momento per uscire`;
+    const best=!wins.length?(night?"":"Oggi non ci sono più ore davvero adatte: solo uscite brevi."):wins[0][0]<=hr&&wins[0][1]>=23?"Va bene per tutto il resto della giornata.":"Ore buone: "+wins.slice(0,3).map(x=>x[0]<=hr?`fino alle ${x[1]}`:x[1]>=23?`dalle ${x[0]} in poi`:`${x[0]}–${x[1]}`).join(", ")+".";
+    const pw=pawInfo(w,hr,d),cells=[];
+    for(let h=6;h<=22;h++){const x=w.H[h];if(!x)continue;const s=x.f>lim+4?2:x.f>lim||x.rain>=60?1:0;
+      cells.push(`<i class="s${s}${h<hr?" past":""}${h===hr?" now":""}" title="Ore ${h}: ${Math.round(x.f)}°, pioggia ${x.rain}%"></i>`)}
+    const chips=(pw?`<span class="wchip p${pw.lvl}">${icon("paw")}${["Zampe ok","Asfalto caldo","Asfalto che scotta"][pw.lvl]||"Zampe"}</span>`:"")
+      +`<span class="wchip">${icon("rain")}Pioggia ${now.rain}%</span>`
+      +(hz.length?`<span class="wchip p1">${icon("bell")}${hz.length===1?"1 avviso":hz.length+" avvisi"}</span>`:"");
+    box.innerHTML=`<div class="wx s${st}"><button class="wx-top" id="wx-tog" aria-expanded="${!!S.wxOpen}" aria-controls="wx-more">
+      <span class="wx-ic">${icon(wxIcon(now.c))}</span><span class="wx-t"><b>${Math.round(now.f)}°</b><small>${wxText(now.c)}</small></span>
+      <span class="wx-h"><b>${head}</b><small>${best||"Pioggia "+now.rain+"%"}</small></span><i class="chev">›</i></button>
+      <div class="wx-strip" role="img" aria-label="Ore adatte a ${dn()} oggi, dalle 6 alle 22">${cells.join("")}</div>
+      <div class="wx-lab" aria-hidden="true"><span>6</span><span>10</span><span>14</span><span>18</span><span>22</span></div>
+      <div class="wx-chips">${chips}</div>
+      <div class="wx-more" id="wx-more"${S.wxOpen?"":" hidden"}>${pw?`<p class="paw p${pw.lvl}">${icon("paw")}<span><b>Zampe:</b> ${pw.t.join(" ")}</span></p>`:""}<button class="haz" id="when-btn">${icon("sun")}<span>Quando uscire oggi e domani, ora per ora</span>›</button>${hzBtn}</div></div>`;
+    $("wx-tog").onclick=()=>{S.wxOpen=!S.wxOpen;$("wx-more").hidden=!S.wxOpen;$("wx-tog").setAttribute("aria-expanded",S.wxOpen)};
   }
   const b=$("haz-btn");if(b)b.onclick=()=>hazSheet(hz);
   const wb=$("when-btn");if(wb)wb.onclick=whenSheet;
@@ -1934,7 +2054,7 @@ function elevChart(p,len,d){
   let steep="",sl=0;
   for(let i=1;i<n;i++)if(Math.abs(p[i]-p[i-1])/step*100>=lim){sl+=step;steep+=`<path d="M${x(i-1).toFixed(1)},${H-B}L${x(i-1).toFixed(1)},${y(p[i-1]).toFixed(1)}L${x(i).toFixed(1)},${y(p[i]).toFixed(1)}L${x(i).toFixed(1)},${H-B}Z"/>`}
   const line=p.map((v,i)=>(i?"L":"M")+x(i).toFixed(1)+","+y(v).toFixed(1)).join("");
-  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Grafico del dislivello: da ${mn} a ${mx} metri"><path d="${line}L${x(n-1)},${H-B}L${L},${H-B}Z" fill="var(--accent-soft)"/><g fill="var(--warn)" opacity=".8">${steep}</g>
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Grafico del dislivello: da ${mn} a ${mx} metri"><path d="${line}L${x(n-1)},${H-B}L${L},${H-B}Z" fill="var(--accent-soft)"/><g fill="var(--steep)" opacity=".85">${steep}</g>
     <path d="${line}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/><line x1="${L}" x2="${W-R}" y1="${H-B}" y2="${H-B}" stroke="var(--line)"/>
     <text x="${W-R+5}" y="${y(mx)+4}">${mx} m</text>${mx-mn>=rg*.3?`<text x="${W-R+5}" y="${y(mn)+2}">${mn} m</text>`:""}
     <text x="${L}" y="${H-6}">0 km</text><text x="${(L+W-R)/2}" y="${H-6}" text-anchor="middle">${km(len/2)} km</text><text x="${W-R}" y="${H-6}" text-anchor="end">${km(len)} km</text></svg>
@@ -1958,8 +2078,7 @@ function surfBlock(sh,d){
   if(sh.u>=.5)notes.push("Per buona parte del percorso il fondo non è scritto nei dati: verificalo sul posto.");
   return `<div class="surf">${SFK.map(k=>`<i style="width:${(sh[k]*100).toFixed(1)}%;background:${SFC[k]}"></i>`).join("")}</div>
     <p class="small" style="margin-top:6px">${SFK.filter(k=>sh[k]>=.005).map(k=>`<span style="white-space:nowrap"><i class="sw" style="background:${SFC[k]}"></i>${SFL[k]} ${Math.round(sh[k]*100)}%</span>`).join(" &nbsp; ")}</p>
-    ${notes.length?`<ul class="plain small" style="margin-top:8px">${notes.map(x=>`<li>${x}</li>`).join("")}</ul>`:""}
-    <button class="btn sm" data-surf style="margin-top:10px">${icon("surf")}Colora il fondo sulla mappa</button>`;
+    ${notes.length?`<ul class="plain small" style="margin-top:8px">${notes.map(x=>`<li>${x}</li>`).join("")}</ul>`:""}`;
 }
 // Recensione del percorso, pensata per il cane. Per ora resta sul telefono: per mostrarla agli altri utenti serve un archivio online.
 const REV_TAGS=[["ombra","Ombra buona"],["acqua","Acqua trovata"],["zampe","Fondo buono per le zampe"],["tranq","Tranquillo"],["liberi","Cani liberi o bestiame"],["vetri","Rifiuti o vetri"],["scivola","Scivoloso"],["caldo","Troppo esposto al sole"]];
@@ -1998,7 +2117,7 @@ async function showTrail(id){
     const shade=!f?"…":f.wood>=.6?"Tanta (bosco)":f.wood>=.3?"In parte":"Poca";
     const sh=surfShare(tr),dom=sh&&SFK.slice().sort((a,b)=>sh[b]-sh[a])[0];
     $("det").innerHTML=detailHTML({title:tr.name,ft:f,prof:elev[id]&&elev[id].p,
-      tools:`<div class="row" style="margin-top:14px;flex-wrap:wrap"><button class="btn sm" data-3d>${icon("layers")}Anteprima 3D</button>${sh?`<button class="btn sm" data-surf>${icon("surf")}Colora il fondo</button>`:""}<button class="btn sm" data-edit>${icon("edit")}Modifica percorso</button><button class="btn sm" data-pack>${icon("bag")}Zaino pronto</button><button class="btn sm" data-steps>${icon("list")}Indicazioni passo-passo</button>${offButton(navObjTrail(tr))}</div>`,sub:[tr.type==="walk"?"Giro in città ad anello":"",esc(tr.zone),tr.ref?"sentiero n. "+esc(tr.ref):"",tr.cai?"CAI":"",tr.scale?"difficoltà "+tr.scale:""].filter(Boolean).join(" · "),it:item(tr),
+      tools:`<div class="tools">${toolB("data-3d","layers","Anteprima 3D")}${sh?toolB("data-surf","surf","Colora il fondo"):""}${toolB("data-steps","list","Indicazioni")}${toolB("data-pack","bag","Zaino")}${toolB("data-edit","edit","Modifica")}${offButton(navObjTrail(tr))}</div>`,sub:[tr.type==="walk"?"Giro in città ad anello":"",esc(tr.zone),tr.ref?"sentiero n. "+esc(tr.ref):"",tr.cai?"CAI":"",tr.scale?"difficoltà "+tr.scale:""].filter(Boolean).join(" · "),it:item(tr),
       sections:`${tr.d?`<div class="block"><h2>Descrizione</h2><p>${esc(tr.d)}</p></div>`:""}${(hz=>hz.length?`<div class="block"><h2>Attenzione in questo periodo</h2><div class="tags">${hz.map(h=>`<span class="tag">${h.t}</span>`).join("")}</div><button class="btn sm" data-haz style="margin-top:10px">Leggi i consigli</button></div>`:"")(trailHaz(tr))}${sh?`<div class="block"><h2>Fondo del percorso</h2>${surfBlock(sh,dog())}</div>`:""}<div class="block"><h2>Particolarità</h2>${tags}<p class="small muted" style="margin-top:8px">Ricavate in automatico da OpenStreetMap: fiumi e torrenti che il sentiero costeggia, laghi e spiagge che raggiunge, cascate, cime, panorami e luoghi storici che si incontrano lungo il tracciato.</p></div>
       <div class="block"><h2>Scheda per il cane</h2><div class="tiles"><div class="tile"><span>Acqua lungo il percorso</span><b>${water}</b></div><div class="tile"><span>Ombra (stima)</span><b>${shade}</b></div><div class="tile"><span>Fondo prevalente</span><b>${sh?SFL[dom]:"Da verificare"}</b></div>${tr.type==="walk"?`<div class="tile"><span>Nel verde</span><b>${Math.round((tr.green||0)*100)}% del giro</b></div>`:`<div class="tile"><span>Punti critici</span><b>Da verificare</b></div>`}</div>
       <p class="small muted" style="margin-top:8px">${f&&f.w.length?"Le fontanelle sono i punti blu sulla mappa. ":""}Acqua e ombra sono stime dai dati di OpenStreetMap: verificale sul posto. Il sentiero non è ancora stato provato con un cane.</p></div>${trailRules(tr)}`})+
@@ -2016,11 +2135,11 @@ async function showTrail(id){
 }
 function syncSave(){
   let on=false;if(cur&&cur.type==="trail")on=S.saved.includes(cur.tr.id);
-  $("det-save").classList.toggle("saved",on);$("bar-save").querySelector("span").textContent=on?"Salvato":"Salva";
+  $("det-save").classList.toggle("saved",on);$("det-save").setAttribute("aria-label",on?"Togli dai salvati":"Salva");
 }
 $("det-back").onclick=()=>{if($("hostTrail").classList.contains("full"))setFull(false);else if(history.length>1)history.back();else location.hash="esplora"};
 $("bar-start").onclick=()=>{if(!cur||cur.type!=="trail")return;startNav(navObjTrail(cur.tr))};
-$("det-save").onclick=$("bar-save").onclick=()=>{if(cur&&cur.type==="trail"){toggleSave(cur.tr.id);syncSave()}};
+$("det-save").onclick=()=>{if(cur&&cur.type==="trail"){toggleSave(cur.tr.id);syncSave()}};
 
 // ================= Crea un giro =================
 const SURF_HARD=[1,3,4,5,14];
@@ -2034,9 +2153,10 @@ function showCrea(){
   document.querySelectorAll("#crea-mode button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.mode===S.mode));
   $("crea-sub").textContent=SUB[S.mode];
   $("start-hint").textContent=S.mode==="man"&&S.manKind==="draw"?"oppure tocca la mappa per aggiungere i punti, uno dopo l'altro":"oppure tocca la mappa per spostare la partenza";
-  ["chat","auto","man"].forEach(m=>$("p-"+m).hidden=S.mode!==m);
+  if(S.mode==="chat")S.mode="auto";
+  ["auto","man"].forEach(m=>$("p-"+m).hidden=S.mode!==m);
   loadWeather([S.start]).then(()=>{rules();autoWhy()}).catch(()=>{});
-  if(S.mode==="man")showMan();if(S.mode==="chat")showChat();if(S.mode==="auto")autoWhy();
+  if(S.mode==="man")showMan();if(S.mode==="auto")autoWhy();
 }
 document.querySelectorAll("#crea-mode button").forEach(b=>b.onclick=()=>{S.mode=b.dataset.mode;store.set("alldogs-creamode",S.mode);showCrea()});
 $("new-loc").onclick=async()=>{try{const p=await getPos();showMe(p);if(drawing()){M&&M.easeTo({center:ll(p),zoom:Math.max(M.getZoom(),15)});addPt(p)}else setStart(p)}catch(e){toast("Non riesco a leggere la posizione: tocca la mappa")}};
@@ -2323,7 +2443,7 @@ function chatTrailCard(id){
   const res=verdict(Object.assign(item(tr),{start:wx[wxKey(tr.start)]?tr.start:S.start}),dog(),0),e=elev[tr.id];
   return `<button type="button" class="box chatcard" data-tr="${id}"><img alt="" loading="lazy" src="${staticImg(tr.path,200,150)}" onerror="this.remove()"><span><b>${esc(tr.name)}</b><small>${res.v<0?"":`<i class="dot b${res.v}"></i>${VLABEL[res.v]} · `}${km(tr.len)} km${e?" · ↑ "+e.up+" m":""} · ${fmtH(res.hours)}${tr.zone?" · "+esc(tr.zone):""}</small></span><i>›</i></button>`;
 }
-function renderChat(){
+function renderChat(){setTimeout(aiBottom,0);
   $("msgs").innerHTML=S.chat.map(m=>`<div class="msg ${m.r}${m.err?" err":""}">${esc(m.t)}</div>`+(m.sug&&m.sug.length?m.sug.map(chatTrailCard).join(""):"")).join("")+(S.busy?`<div class="msg a wait">Sto pensando…</div>`:"");
   $("msgs").querySelectorAll("[data-tr]").forEach(b=>b.onclick=()=>{rememberCell(TR.get(+b.dataset.tr));location.hash="s-"+b.dataset.tr});
   const sug=["Consigliami un sentiero qui vicino","Mezz'ora tranquilla nel verde","Giro breve con giochi di fiuto"];
@@ -2339,7 +2459,7 @@ async function chatSend(text){
     const o=await gemini(key);S.busy=false;
     const ok=new Set((S.cand||[]).map(c=>c.id)),sug=[...new Set((o.suggest||[]).map(Number))].filter(id=>ok.has(id)&&TR.has(id)).slice(0,3); // solo sentieri veri della lista
     S.chat.push({r:"a",t:o.reply||"…",raw:JSON.stringify(o),sug});renderChat();
-    if(o.create&&!sug.length){
+    if(o.create&&!sug.length){closeAI();
       const mins=Math.max(10,Math.min(180,+o.minutes||40));
       generate({mins,prefs:{green:!!o.prefer_green,quiet:!!o.prefer_quiet,avoidSteps:!!o.avoid_steps||capacity(dog()).agil==="bassa"},aiStops:o.stops,aiCmds:(o.commands||[]).slice(0,6),source:"chat"});
     }
@@ -2363,13 +2483,20 @@ function showSaved(){
   const miss=S.saved.filter(id=>!TR.has(id)&&!showSaved.tried.has(id));
   if(miss.length){miss.forEach(id=>showSaved.tried.add(id));
     Promise.all(miss.map(id=>findTrail(id).catch(()=>null))).then(()=>{const st=S.saved.map(id=>TR.get(id)).filter(Boolean).map(t=>t.start);
-      return loadWeather(st).catch(()=>{})}).then(()=>{if(location.hash==="#salvati")showSaved()})}
+      return loadWeather(st).catch(()=>{})}).then(()=>{if(curScr==="attivita")showSaved()})}
   const rows=S.saved.map(id=>TR.get(id)).filter(Boolean);
   $("saved-trails").innerHTML=rows.length?rows.map(tr=>cardHTML(tr,verdict(item(tr),d,S.day))).join(""):`<p class="muted">${miss.length?"Sto caricando…":"Tocca il cuore su un sentiero per ritrovarlo qui."}</p>`;
   bindCards($("saved-trails"));
 }
 
 // ================= Attività =================
+// Una sola scheda: il diario delle uscite, e dal menu a tendina i percorsi salvati e le mappe scaricate
+function showActView(){
+  const v=S.actView||"diary";$("act-view").value=v;
+  ["diary","saved","off"].forEach(k=>$("av-"+k).hidden=k!==v);
+  showAct();showSaved();
+}
+$("act-view").onchange=()=>{S.actView=$("act-view").value;showActView();window.scrollTo(0,0)};
 function showAct(){
   const d=dog(),pi=paceInfo(),A=S.acts,s=steps(5000,d);
   const tot=A.reduce((a,x)=>({km:a.km+x.dist/1000,ms:a.ms+x.dur}),{km:0,ms:0});
@@ -2395,11 +2522,21 @@ function showAct(){
   $("steps-box").innerHTML=`<h2>Quanti passi fa ${dn()}?</h2><p style="margin-top:8px">In una passeggiata di 5 km tu fai circa <b>${s.me.toLocaleString("it-IT")}</b> passi, ${dn()} circa <b>${s.dog.toLocaleString("it-IT")}</b>.</p><p class="small muted" style="margin-top:6px">${myStride()!==.75?`Il tuo passo misurato è di circa ${Math.round(myStride()*100)} cm, ricavato dai passi di Salute che hai scritto.`:"Per te uso un passo medio di 75 cm: scrivendo i passi dell'app Salute nelle passeggiate, l'app impara il tuo."} Per ${dn()} è una stima dalla taglia.</p>`;
 }
 
-// ================= Menu a sinistra =================
-function openMenu(o){$("drawer").classList.toggle("on",!!o);$("drawer-bg").hidden=!o}
-document.addEventListener("click",e=>{if(e.target.closest("[data-menu]"))openMenu(true)});
-$("drawer-bg").onclick=$("drawer-x").onclick=()=>openMenu(false);
-document.addEventListener("keydown",e=>{if(e.key==="Escape")openMenu(false)});
+// ================= Assistente: bottone "Chiedi" in basso a destra =================
+// Un solo assistente, con lo stesso aspetto; cambia ruolo in base alla pagina.
+const AIP={crea:["ai-crea","Ti consiglia un sentiero o crea un giro su misura per "],obiettivi:["ob-chat","L'allenatore: come allenare bene "],addestramento:["tr-chat","L'educatore: come insegnare un comando a "]};
+function aiBottom(){const m=document.querySelector("#ai .aibody");if(m&&!$("ai").hidden)m.scrollTop=m.scrollHeight}
+function openAI(){const p=AIP[curScr];if(!p)return;
+  Object.values(AIP).forEach(x=>$(x[0]).hidden=x[0]!==p[0]);
+  $("ai-sub").textContent=p[1]+(dog().name||"il tuo cane");$("ai").hidden=false;document.body.classList.add("noscroll");
+  if(curScr==="crea")showChat();setTimeout(aiBottom,30)}
+function closeAI(){$("ai").hidden=true;document.body.classList.remove("noscroll")}
+$("fab").onclick=openAI;$("ai-x").onclick=closeAI;$("ai").onclick=e=>{if(e.target.id==="ai")closeAI()};
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("ai").hidden)closeAI()});
+// la scheda del cane nella barra in basso porta il suo nome e la sua foto
+function syncTabDog(){const d=S.dog,ph=store.get("alldogs-photo"),av=$("tab-av");
+  $("tab-name").textContent=d&&d.name?d.name:"Il mio cane";av.style.backgroundImage=ph?`url(${ph})`:"";
+  av.textContent=ph||!d?"":(d.name||"?").trim().charAt(0).toUpperCase()}
 
 // ================= Date e profilo =================
 const DAY=864e5;
@@ -2423,6 +2560,7 @@ function dogKind(d){
 // ================= Mini chat con l'AI (Obiettivi, Addestramento) =================
 const MINI_SCHEMA={type:"OBJECT",properties:{reply:{type:"STRING",description:"Risposta all'utente, in italiano semplice"}},required:["reply"]};
 const MC={};
+const fold=(t,sub,body,open)=>`<details class="fold"${open?" open":""}><summary><span><b>${t}</b>${sub?`<small>${sub}</small>`:""}</span><i>›</i></summary><div class="foldb">${body}</div></details>`;
 function gemErr(e){const st=e.status,msg=e.body&&e.body.error&&e.body.error.message||"",seen=e.seen||[];
   return st===400&&/key/i.test(msg)||st===401||st===403?"La chiave Gemini non è valida. Controllala nella sezione Il mio cane."
     :seen.some(x=>x===503||x===500||x==="lento")?"L'assistente di Google è molto occupato in questo momento (succede con il servizio gratuito). Riprova tra un minuto."
@@ -2441,7 +2579,7 @@ function miniChat(id,cfg){
   miniRender(id);
 }
 function miniRender(id){
-  const c=MC[id];
+  const c=MC[id];setTimeout(aiBottom,0);
   $(id+"-msgs").innerHTML=c.msgs.map(m=>`<div class="msg ${m.r}">${esc(m.t)}</div>`).join("")+(c.busy?`<div class="msg a wait">Sto pensando…</div>`:"");
   $(id+"-sugg").innerHTML=c.msgs.length<=1?c.cfg.sugg().map(s=>`<button class="pill" type="button">${esc(s)}</button>`).join(""):"";
   $(id+"-sugg").querySelectorAll("button").forEach(b=>b.onclick=()=>miniSend(id,b.textContent));
@@ -2550,15 +2688,15 @@ function showTrain(){
   const why=[k.joint&&"i problemi alle articolazioni",k.senior&&"l'età",k.puppy&&"la crescita",k.longback&&"la schiena lunga",k.giant&&"la taglia",k.heart&&"il cuore e il respiro"].filter(Boolean);
   $("tr-main").innerHTML=`<p class="muted" style="margin-top:6px">Lezioni scelte per ${nm}, dalle più facili alle più difficili. Ogni giorno ne trovi una nuova.</p>
     <div class="box" style="margin-top:14px"><div class="gl" style="margin-top:0"><span>Imparate</span><b>${done} di ${L.length}</b></div><div class="prog"><i style="width:${Math.round(done/L.length*100)}%"></i></div>
-    <ul class="plain small" style="margin-top:12px">${trAdvice(d,k).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
-    ${skip?`<p class="small muted" style="margin-top:8px">Ho tolto ${skip} ${skip===1?"esercizio":"esercizi"} con salti, torsioni o peso sulle zampe, non adatti a ${nm} per ${why.join(" e ")||"il suo profilo"}.</p>`:""}</div>
+</div>${fold("Come fare le lezioni","Pochi minuti al giorno, con i premi giusti",`<ul class="plain small">${trAdvice(d,k).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
+    ${skip?`<p class="small muted" style="margin-top:8px">Ho tolto ${skip} ${skip===1?"esercizio":"esercizi"} con salti, torsioni o peso sulle zampe, non adatti a ${nm} per ${why.join(" e ")||"il suo profilo"}.</p>`:""}`)}
     <div class="block"><h2>Lezione di oggi</h2>${lessonHTML(T,true,true)}<p class="small muted" style="margin-top:8px">Non c'è fretta: se non la impara oggi la ritrovi in «Da ripassare». Domani arriva una lezione nuova.</p></div>
-    ${rev.length?`<div class="block"><h2>Da ripassare</h2>${rev.map(l=>lessonHTML(l)).join("")}</div>`:""}
-    <div class="block"><h2>Tutte le lezioni</h2>${[1,2,3,4,5].map(v=>{const ls=L.filter(l=>l.lv===v);return ls.length?`<div class="lvl"><p class="flabel" style="margin-top:0">Livello ${v} · ${LV[v]}</p>${ls.map(l=>lessonHTML(l)).join("")}</div>`:""}).join("")}</div>`;
+    ${rev.length?fold("Da ripassare",rev.length===1?"1 lezione":rev.length+" lezioni",rev.map(l=>lessonHTML(l)).join("")):""}
+    ${fold("Tutte le lezioni",L.length+" lezioni, dalle più facili alle più difficili",`${[1,2,3,4,5].map(v=>{const ls=L.filter(l=>l.lv===v);return ls.length?`<div class="lvl"><p class="flabel" style="margin-top:0">Livello ${v} · ${LV[v]}</p>${ls.map(l=>lessonHTML(l)).join("")}</div>`:""}).join("")}`)}`;
   if(window.AllDogsAnim)AllDogsAnim.mount($("tr-main"),dog().name);
   $("tr-main").querySelectorAll("[data-lk]").forEach(b=>b.onclick=()=>{const id=b.dataset.lk;TRS.st[id]=Object.assign(TRS.st[id]||{s:dKey(Date.now())},{ok:b.dataset.v==="1"});saveTR();
     toast(b.dataset.v==="1"?`Bravissimo ${dog().name||""}!`.trim():"Lo ritrovi tra quelle da ripassare");showTrain()});
-  $("tr-main").querySelectorAll("[data-ask]").forEach(b=>b.onclick=()=>{const l=LESSONS.find(x=>x.id===b.dataset.ask);$("tr-chat").scrollIntoView({behavior:"smooth",block:"start"});$("tr-in").value=`Come faccio a insegnare «${l.t}» a ${dog().name}? `;$("tr-in").focus()});
+  $("tr-main").querySelectorAll("[data-ask]").forEach(b=>b.onclick=()=>{const l=LESSONS.find(x=>x.id===b.dataset.ask);openAI();$("tr-in").value=`Come faccio a insegnare «${l.t}» a ${dog().name}? `;$("tr-in").focus()});
   miniChat("tr",{host:"tr-chat",ph:"Chiedi come insegnare qualcosa",
     hello:()=>`Ciao! Sono l'educatore di AllDogs. Chiedimi come insegnare un comando a ${dog().name||"il tuo cane"}, o cosa fare se una lezione non funziona.`,
     sugg:()=>[`Non riesce a imparare «${todayLesson().t}»`,"Tira molto al guinzaglio","Come insegno il richiamo?"],
@@ -2660,13 +2798,13 @@ function goalForm(d,k,dr){
   <p class="err" id="g-err" hidden style="margin-top:12px"></p>
   <button class="btn pri wide" id="g-make" style="margin-top:14px">${icon("target")}Crea il calendario</button>
   ${GOAL?`<button class="btn wide" id="g-cancel" style="margin-top:8px">Annulla, tengo l'obiettivo attuale</button>`:""}</div>
-  <div class="block"><h2>Come si allena bene un cane</h2><ul class="plain">${fitTips(d,k).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`;
+  ${fold("Come si allena bene un cane","Consigli pratici per "+dn(),`<ul class="plain">${fitTips(d,k).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`)}`;
 }
 function showGoals(){
   const d=dog(),k=dogKind(d),nm=dn(),box=$("ob-main"),rate=goalRate(d,k);
   if(k.puppy){const mins=Math.max(10,Math.round(d.age*12)*5);
     box.innerHTML=`<div class="note" style="margin-top:14px"><b>${nm} è ancora in crescita: niente programmi di resistenza per ora.</b><p style="margin-top:6px">Le ossa e le articolazioni dei cuccioli si stanno ancora formando. Una regola prudente usata da molti veterinari: circa <b>5 minuti di passeggiata per ogni mese di età</b>, una o due volte al giorno. Per ${nm} vuol dire circa <b>${mins} minuti</b> a uscita, più il gioco libero.</p><p style="margin-top:6px">Intanto è il momento perfetto per l'<a href="#addestramento">Addestramento</a>. Quando sarà adulto, qui potrai creare il suo calendario.</p></div>
-    <div class="block"><h2>Come si allena bene un cane</h2><ul class="plain">${fitTips(d,k).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`;
+    ${fold("Come si allena bene un cane","Consigli pratici per "+dn(),`<ul class="plain">${fitTips(d,k).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`)}`;
   }else if(k.p.conv){box.innerHTML=`<div class="note" style="margin-top:14px"><b>${nm} è in convalescenza.</b> Niente programmi di allenamento finché il veterinario non dà il via libera. Quando sarà guarito, togli la spunta «Convalescenza» in <a href="#cane">Il mio cane</a>.</div>`}
   else if(!GOAL||S.goalDraft||S.goalEdit){const dr=S.goalDraft;box.innerHTML=goalForm(d,k,dr);
     if(dr&&dr.dow!=null)$("g-dow").value=dr.dow;else if(GOAL)$("g-dow").value=GOAL.longDow;
@@ -2725,15 +2863,14 @@ function showPlan(d,k){
       ${calHTML(G)}
       <div id="cal-day" style="margin-top:14px;border-top:1px solid var(--line);padding-top:12px">${sel&&sel.t!==t0?dayBox(sel):`<p class="small muted">Tocca un altro giorno per vedere cosa fare.</p>`}</div>
     </div>
-    <div class="box" style="margin-top:12px"><h2>Verso l'obiettivo</h2>
+    ${fold("Verso l'obiettivo","La passeggiata più lunga delle ultime 2 settimane",`
       <div class="gl"><span>Passeggiata più lunga, ultime 2 settimane</span><b>${kmN(r1(G.recent))} di ${kmN(g.target)} km</b></div><div class="prog"><i style="width:${pct}%"></i></div>
-      <ul class="wk small" style="margin-top:12px">${G.longs.map((w,i)=>`<li class="${w.t<t0?"muted":""}"><span>${fmtDay(w.t)}</span><span>Lunga di ${kmN(w.L)} km${w.cons?' <span class="muted">· consolidamento</span>':""}</span><span>${w.t<=t0&&bestIn(addDays(w.t,-2),addDays(w.t,3))>=w.L*.9?'<span class="c0">✓</span>':""}</span></li>`).join("")}</ul>
-    </div>
-    <div class="block"><h2>Hai camminato senza l'app?</h2><p class="small muted">Aggiungi qui la passeggiata, così il calendario la conta.</p>
+      <ul class="wk small" style="margin-top:12px">${G.longs.map((w,i)=>`<li class="${w.t<t0?"muted":""}"><span>${fmtDay(w.t)}</span><span>Lunga di ${kmN(w.L)} km${w.cons?' <span class="muted">· consolidamento</span>':""}</span><span>${w.t<=t0&&bestIn(addDays(w.t,-2),addDays(w.t,3))>=w.L*.9?'<span class="c0">✓</span>':""}</span></li>`).join("")}</ul>`)}
+    ${fold("Hai camminato senza l'app?","Aggiungi la passeggiata, così il calendario la conta",`
       <div class="form" style="margin-top:10px"><label>Km<input id="m-km" type="number" inputmode="decimal" min="0.1" max="60" step="0.1" placeholder="Es. 2,5"></label><label>Minuti<input id="m-min" type="number" inputmode="numeric" min="3" max="600" placeholder="Es. 45"></label><label class="w">Giorno<input id="m-day" type="date" value="${dKey(now)}" max="${dKey(now)}"></label></div>
-      <button class="btn wide" id="m-add" style="margin-top:10px">Aggiungi la passeggiata</button></div>
-    <div class="block"><h2>Quando fermarsi</h2><p>${esc(STOP_SIGNS)}</p></div>
-    <div class="block"><h2>Come si allena bene un cane</h2><ul class="plain">${fitTips(d,k).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
+      <button class="btn wide" id="m-add" style="margin-top:10px">Aggiungi la passeggiata</button>`)}
+    ${fold("Quando fermarsi","I segni di stanchezza da non ignorare",`<p>${esc(STOP_SIGNS)}</p>`)}
+    ${fold("Come si allena bene un cane","Consigli pratici per "+dn(),`<ul class="plain">${fitTips(d,k).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`)}
     <div class="row" style="margin-top:20px;flex-wrap:wrap"><button class="btn" id="g-new">Nuovo obiettivo</button><button class="btn" id="g-del">Elimina l'obiettivo</button></div>`;
   $("ob-main").querySelectorAll("[data-cd]").forEach(b=>b.onclick=()=>{calSel=+b.dataset.cd;
     $("ob-main").querySelectorAll(".cd.sel").forEach(x=>x.classList.remove("sel"));b.classList.add("sel");
@@ -2869,13 +3006,8 @@ function showHealth(){
 // Esplora: in evidenza la lezione di oggi e la passeggiata di oggi del calendario
 function homeExtra(){
   if(!S.dog){$("home-extra").innerHTML="";return}
-  const d=dog(),k=dogKind(d),T=todayLesson();let h="";
-  if(GOAL&&!k.puppy&&!k.p.conv){const x=goalNow(GOAL,d,k).today;
-    if(x)h+=`<a class="hx" href="#obiettivi">${icon("target")}<span>Obiettivo di oggi: <b>${SESS[x.kd].t.toLowerCase()}</b>${x.kd==="riposo"?"":`, circa ${kmN(x.km)} km`}</span><i>›</i></a>`}
   const due=remList().filter(r=>r.dd<=7);
-  if(due.length)h=`<a class="hx${due[0].dd<=0?" late":""}" href="#salute">${icon("bell")}<span>Promemoria: <b>${esc(due[0].n)}</b> ${remWhen(due[0].dd,due[0].d)}${due.length>1?` e altri ${due.length-1}`:""}</span><i>›</i></a>`+h;
-  h+=`<a class="hx" href="#addestramento">${icon("cap")}<span>Lezione di oggi: <b>${esc(T.t)}</b>${TRS.st[T.id]&&TRS.st[T.id].ok?' <span class="c0">✓</span>':""}</span><i>›</i></a>`;
-  $("home-extra").innerHTML=h;
+  $("home-extra").innerHTML=due.length?`<a class="hx${due[0].dd<=0?" late":""}" href="#salute">${icon("bell")}<span>Promemoria: <b>${esc(due[0].n)}</b> ${remWhen(due[0].dd,due[0].d)}${due.length>1?` e altri ${due.length-1}`:""}</span><i>›</i></a>`:"";
 }
 
 // ================= Zampe e orario migliore =================
@@ -3210,7 +3342,7 @@ async function offDownload(o,onp){
     if(o.kind==="trail")no.ways=o.ways;
     OFF[key]={t:Date.now(),name:o.name,len:o.len,kind:o.kind,id:o.id||null,cell:o.kind==="trail"?(cellOf[o.id]||null):null,tiles:T.length-fail,mb:Math.round(bytes/1048576*10)/10,o:no};
     store.set(OFF_KEY,OFF);
-    toast(`Scaricato: ${o.name}. Lo trovi anche in Salvati e funziona senza internet`);
+    toast(`Scaricato: ${o.name}. Lo trovi in Attività, tra le mappe scaricate`);
   }catch(e){console.warn(e);toast("Download non riuscito: controlla la connessione e riprova")}
   finally{delete offBusy[key]}
 }
@@ -3221,9 +3353,10 @@ async function offDelete(key){
 // oggetto per la navigazione a partire da un sentiero
 function navObjTrail(tr){const ft=FT[tr.id],e=elev[tr.id];return {name:tr.name,kind:"trail",id:tr.id,ways:tr.ways,path:tr.path,len:tr.len,up:e?e.up:0,stops:[],water:ft?ft.w:[],scale:tr.scale,loop:tr.loop,dogs:tr.dogs}}
 // pulsante "Scarica" nella scheda del sentiero
+const toolB=(a,ic,l)=>`<button class="tool" type="button" ${a}><span>${icon(ic)}</span>${l}</button>`;
 function offButton(o){
   const key=offKeyOf(o),has=!!OFF[key];
-  return `<button class="btn sm" data-off="${key}">${icon("down")}${offBusy[key]?"Scarico…":has?"Scaricato ✓":"Scarica per usarlo offline"}</button>`;
+  return `<button class="tool${has?" on":""}" type="button" data-off="${key}"><span>${icon("down")}</span>${offBusy[key]?"Scarico…":has?"Scaricato":"Offline"}</button>`;
 }
 function bindOff(box,getO){
   box.querySelectorAll("[data-off]").forEach(b=>b.onclick=async()=>{
@@ -3239,7 +3372,7 @@ function bindOff(box,getO){
       await offDownload(o,f=>{const i=$("off-bar")&&$("off-bar").firstChild;if(i)i.style.width=Math.round(f*100)+"%";if($("off-pc"))$("off-pc").textContent=`Mappa: ${Math.round(f*100)}%`});
       if(OFF[key]){$("sheet").hidden=true}else if($("off-go")){$("off-go").disabled=false;$("off-go").textContent="Riprova"}
       b.innerHTML=icon("down")+(OFF[key]?"Scaricato ✓":"Scarica per usarlo offline");
-      if(location.hash==="#salvati")showSaved();
+      if(curScr==="attivita")showSaved();
     };
   });
 }
@@ -3249,12 +3382,12 @@ function offSheet(key){
     <div class="stack" style="margin-top:14px"><button class="btn pri wide" id="off-nav">${icon("nav")}Inizia la passeggiata</button>${x.kind==="trail"?`<button class="btn wide" id="off-open">Apri la scheda del sentiero</button>`:""}<button class="btn wide" id="off-upd">${icon("down")}Aggiorna la mappa</button><button class="btn wide" id="off-del">Elimina dal telefono</button></div>`);
   $("off-nav").onclick=()=>{$("sheet").hidden=true;startNav(x.o)};
   if($("off-open"))$("off-open").onclick=()=>{$("sheet").hidden=true;if(x.cell){cellOf[x.id]=x.cell;store.set("alldogs-cellof",cellOf)}location.hash="s-"+x.id};
-  $("off-upd").onclick=async()=>{$("off-upd").disabled=true;$("off-upd").textContent="Aggiorno…";await caches.delete("ad-off-"+key).catch(()=>0);await offDownload(x.o,f=>{if($("off-upd"))$("off-upd").textContent=`Aggiorno… ${Math.round(f*100)}%`});$("sheet").hidden=true;if(location.hash==="#salvati")showSaved()};
-  $("off-del").onclick=async()=>{if(!confirm("Elimino dal telefono il percorso e la mappa scaricati? Il sentiero resta tra i salvati, se c'era."))return;await offDelete(key);$("sheet").hidden=true;toast("Eliminato dal telefono");if(location.hash==="#salvati")showSaved();if(cur&&cur.type==="trail"&&offKeyOf(cur.tr)===key&&location.hash==="#s-"+cur.tr.id)showTrail(cur.tr.id)};
+  $("off-upd").onclick=async()=>{$("off-upd").disabled=true;$("off-upd").textContent="Aggiorno…";await caches.delete("ad-off-"+key).catch(()=>0);await offDownload(x.o,f=>{if($("off-upd"))$("off-upd").textContent=`Aggiorno… ${Math.round(f*100)}%`});$("sheet").hidden=true;if(curScr==="attivita")showSaved()};
+  $("off-del").onclick=async()=>{if(!confirm("Elimino dal telefono il percorso e la mappa scaricati? Il sentiero resta tra i salvati, se c'era."))return;await offDelete(key);$("sheet").hidden=true;toast("Eliminato dal telefono");if(curScr==="attivita")showSaved();if(cur&&cur.type==="trail"&&offKeyOf(cur.tr)===key&&location.hash==="#s-"+cur.tr.id)showTrail(cur.tr.id)};
 }
 function offList(){
   const ks=Object.keys(OFF).sort((a,b)=>OFF[b].t-OFF[a].t);
-  $("off-block").hidden=!ks.length;if(!ks.length)return;
+  $("off-block").hidden=!ks.length;$("off-empty").hidden=!!ks.length;if(!ks.length)return;
   const mb=ks.reduce((a,k)=>a+(OFF[k].mb||0),0);
   $("off-sum").textContent=`${ks.length===1?"1 percorso":ks.length+" percorsi"} · ${Math.round(mb*10)/10} MB nel telefono. Tocca per iniziare o eliminare.`;
   $("saved-off").innerHTML=ks.map(k=>{const x=OFF[k];return `<article class="tcard" data-offk="${k}"><div class="img">${svgThumb(x.o.path)}</div><h3>${esc(x.name)}</h3><p class="sub">${icon("down",14)} Funziona senza internet · ${x.mb} MB</p><p class="meta">${km(x.len)} km${x.o.up?" · ↑ "+x.o.up+" m":""}</p></article>`}).join("");
@@ -3612,7 +3745,7 @@ function healthAlerts(d){
   return out.join("<br>");
 }
 // Foto profilo del cane: ritagliata quadrata e rimpicciolita, salvata solo su questo telefono
-function syncPhoto(){const ph=store.get("alldogs-photo"),a=$("avatar");a.style.backgroundImage=ph?`url(${ph})`:"";a.style.color=ph?"transparent":"";$("photo-btn").textContent=ph?"Cambia foto":"Aggiungi una foto";$("photo-del").hidden=!ph}
+function syncPhoto(){syncTabDog();const ph=store.get("alldogs-photo"),a=$("avatar");a.style.backgroundImage=ph?`url(${ph})`:"";a.style.color=ph?"transparent":"";$("photo-btn").textContent=ph?"Cambia foto":"Aggiungi una foto";$("photo-del").hidden=!ph}
 $("photo-btn").onclick=$("avatar").onclick=()=>$("photo-in").click();
 $("photo-in").onchange=e=>{
   const fl=e.target.files[0];e.target.value="";if(!fl)return;
@@ -3628,6 +3761,7 @@ function showDog(){
   syncPhoto();
   const first=!S.dog,d=dog();
   $("onb").hidden=!first;$("dog-head").style.display=first?"none":"flex";$("settings").style.display=first?"none":"block";
+  $("dog-hub").hidden=first;$("fold-dog").classList.toggle("onb",first);if(first)$("fold-dog").open=true;$("fold-dog-t").textContent=first?"":"I dati di "+(d.name||"del cane");
   $("dog-save").textContent=first?"Inizia":"Salva";
   DF.forEach(f=>{const el=$("d-"+f);if(el.type==="checkbox")el.checked=!!d[f];else el.value=first&&["name","breed","age","weight"].includes(f)?"":d[f]});
   $("pat").querySelectorAll("input").forEach(i=>i.checked=!first&&!!(d.pat&&d.pat[i.dataset.p]));
@@ -3727,7 +3861,7 @@ async function bootData(){
   catch(e){bootData.busy=false;$("list").innerHTML=`<div class="err">${navigator.onLine?"Non riesco a caricare i sentieri. Controlla la connessione e ricarica la pagina.":"Sei senza internet. Puoi usare i sentieri che hai scaricato: li trovi in <a href=\"#salvati\">Salvati</a>."}</div>`;$("status").textContent="";return}
   bootData.busy=false;S.ready=true;S.featReady=true;$("status").textContent="";
   await refreshView();
-  if(location.hash==="#salvati")showSaved();
+  if(curScr==="attivita")showSaved();
 }
 boot();
 </script>
