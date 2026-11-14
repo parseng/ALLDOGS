@@ -233,6 +233,21 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
 #hostFollow{flex:1;min-height:0;border-radius:0;border:0}
 #hostFollow #m-full{display:none}
 
+/* oggi con il cane, pericoli di stagione, emergenza */
+.avatar.sm{width:46px;height:46px;font-size:20px;text-decoration:none}
+.today{margin-top:14px;border-radius:var(--r);padding:14px;background:linear-gradient(135deg,var(--ok-bg),var(--surface));border:1px solid var(--line)}
+.today.s1{background:linear-gradient(135deg,var(--warn-bg),var(--surface))}
+.today.s2{background:linear-gradient(135deg,var(--no-bg),var(--surface))}
+.today .big{font:800 34px/1 var(--display);min-width:58px}
+.today p{margin-top:3px}
+.haz{display:flex;align-items:center;gap:8px;width:100%;margin-top:10px;padding:9px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-size:14px;text-align:left}
+.haz b{color:var(--warn)}
+.haz span{flex:1;min-width:0}
+.hz{padding:12px 0;border-bottom:1px solid var(--line)}
+.hz:last-of-type{border-bottom:0}
+.hz p{margin-top:4px;font-size:14.5px}
+#nav-sos{background:var(--no);border-color:var(--no);color:#fff;font-weight:800;font-size:12px}
+
 /* in cammino */
 .mapclear{position:absolute;left:10px;top:10px;z-index:6;box-shadow:0 2px 10px rgba(0,0,0,.25)}
 .maphost.full .mapclear{top:calc(env(safe-area-inset-top,0px) + 12px)}
@@ -335,8 +350,8 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
 
 <!-- ESPLORA -->
 <section class="screen" id="s-esplora">
-  <p class="muted small" id="where">Italia</p>
-  <h1 id="hello">Dove andiamo oggi?</h1>
+  <div class="row"><div class="sp" style="min-width:0"><p class="muted small" id="where">Italia</p><h1 id="hello">Dove andiamo oggi?</h1></div><a class="avatar sm" id="home-av" href="#cane" aria-label="Il mio cane"></a></div>
+  <div id="today"></div>
   <div class="maphost" id="hostExplore"><div class="peek" id="peek"></div></div>
   <div class="search" style="margin-top:14px"><svg width="22" height="22"><use href="#i-search"/></svg><input id="q" type="search" placeholder="Cerca un sentiero o una zona" aria-label="Cerca un sentiero o una zona"></div>
   <div class="hscroll" id="place-row" hidden></div>
@@ -438,7 +453,7 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
     <div class="stats"><div><b id="nav-time">0:00</b><span>Tempo</span></div><div><b id="nav-done">0,0 km</b><span>Fatti</span></div><div><b id="nav-left">…</b><span>Mancano</span></div><div><b id="nav-steps">0</b><span id="nav-steps-l">Passi del cane</span></div></div>
     <p class="small muted" id="nav-info"></p>
     <p class="small" id="nav-wx" style="margin-top:4px"></p>
-    <div class="row" style="margin-top:10px"><button class="round" id="nav-set" aria-label="Impostazioni di navigazione"><svg><use href="#i-gear"/></svg></button><button class="round" id="nav-share" aria-label="Condividi la posizione in tempo reale"><svg><use href="#i-share"/></svg></button><button class="btn" id="nav-pause">Pausa</button><button class="btn pri" id="nav-end">Chiudi attività</button></div>
+    <div class="row" style="margin-top:10px"><button class="round" id="nav-sos" aria-label="Emergenza">SOS</button><button class="round" id="nav-set" aria-label="Impostazioni di navigazione"><svg><use href="#i-gear"/></svg></button><button class="round" id="nav-share" aria-label="Condividi la posizione in tempo reale"><svg><use href="#i-share"/></svg></button><button class="btn" id="nav-pause">Pausa</button><button class="btn pri" id="nav-end">Chiudi attività</button></div>
   </div>
   <div class="sheetbg" id="nav-sheet" hidden><div class="box" id="nav-sheet-box"></div></div>
 </section>
@@ -477,6 +492,7 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
     </div>
   </div>
   <button class="btn pri wide" id="dog-save" style="margin-top:18px">Salva</button>
+  <button class="btn wide" id="dog-sos" style="margin-top:10px" type="button">Emergenza: veterinario e posizione</button>
   <div id="settings">
     <div class="block"><h2>Chiavi dei servizi</h2>
       <p class="muted small" style="margin-bottom:10px"><b>Giri ad anello</b>: OpenRouteService, gratuito. Registrati su <a href="https://openrouteservice.org/dev/#/signup" target="_blank" rel="noopener">openrouteservice.org</a>, copia la chiave e incollala qui.</p>
@@ -1254,6 +1270,7 @@ function renderPills(){
 }
 function renderList(){
   $("hello").textContent=`Dove andiamo con ${dog().name||"il tuo cane"}?`;
+  renderToday();
   renderPills();
   if(!S.ready)return;
   ["f-fit","f-eff","f-len","f-up","f-dif","f-zone"].forEach(id=>$(id).classList.toggle("act",$(id).value!=="all"));
@@ -1325,6 +1342,55 @@ function detailHTML(o){
     <div class="block"><h2>Cosa portare</h2><ul class="plain">${bringList(o.it,d,res,o.ft).map(x=>`<li>${x}</li>`).join("")}</ul></div>
     <p class="small muted block">Il verdetto è un consiglio prudente, non una garanzia. ${paceInfo()?`Tempo stimato con l'andatura reale di ${dn()}: circa ${Math.round(pace())} minuti al km, misurata nelle passeggiate salvate in Attività.`:"Tempo stimato al passo medio di un cane, pause comprese: dopo la prima passeggiata fatta con Avvia percorso uso l'andatura reale di "+dn()+"."}</p>`;
 }
+// ---- Pericoli di stagione per il cane (consigli generali di prudenza, scelti in base al mese e al tipo di percorso) ----
+const HAZ=[
+  {m:[2,3,4,5],t:"Processionaria",ok:c=>c.wood!==false,d:"Tra fine inverno e primavera i bruchi della processionaria scendono in fila dai pini e dalle querce. I loro peli sono molto pericolosi per la bocca e il naso del cane. Nelle pinete tienilo al guinzaglio e non farlo annusare a terra. Se la tocca o la lecca vai subito dal veterinario."},
+  {m:[5,6,7,8,9],t:"Forasacchi",d:"Le spighe secche dell'erba alta si infilano tra le dita, nelle orecchie e nel naso. Evita i prati incolti e a fine giro controlla zampe, orecchie, naso e ascelle."},
+  {m:[3,4,5,6,7,8,9,10],t:"Zecche",d:"Stanno nell'erba alta e nel sottobosco. A fine giro passa le mani su tutto il corpo, soprattutto testa, orecchie, collo e zampe. Tieni aggiornato l'antiparassitario: la data la trovi nel libretto, in Il mio cane."},
+  {m:[6,7,8,9],t:"Caldo e asfalto",d:"Esci presto la mattina o la sera. Prova dei 5 secondi: appoggia il dorso della mano sull'asfalto, se scotta per te scotta anche per le sue zampe. Acqua sempre con te, ombra e pause."},
+  {m:[6,7,8,9],t:"Greggi e cani da guardiania",ok:c=>c.alt==null||c.alt>=900,d:"In montagna d'estate i pascoli sono sorvegliati da cani da guardiania. Tieni il tuo cane al guinzaglio, gira largo attorno al gregge senza correre e non passare in mezzo agli animali."},
+  {m:[4,5,6,7,8,9,10],t:"Vipere",ok:c=>!c.city,d:"Stanno al sole su sassi, muretti e cataste di legna. Sul sentiero tieni il cane vicino e non farlo frugare tra le pietre. In caso di morso tienilo fermo e calmo e portalo subito dal veterinario."},
+  {m:[8,9,10,11],t:"Pozzanghere e acque ferme",d:"Dopo le piogge di fine estate e d'autunno le acque ferme possono trasmettere malattie come la leptospirosi. Non farlo bere dalle pozzanghere: porta la sua acqua. Per il vaccino chiedi al veterinario."},
+  {m:[9,10,11,12,1],t:"Stagione di caccia",ok:c=>!c.city,d:"Di solito va da metà settembre a fine gennaio, con giorni e zone diversi da regione a regione. Nei boschi tieni il cane vicino e ben visibile, meglio con una pettorina colorata, e informati sul calendario venatorio della zona."},
+  {m:[12,1,2],t:"Freddo, neve e sale",d:"Neve ghiacciata e sale sulle strade irritano i cuscinetti: asciuga e controlla le zampe al rientro. I cani piccoli o a pelo corto soffrono il freddo, un cappottino aiuta."}
+];
+function hazards(ctx){const m=new Date().getMonth()+1;return HAZ.filter(h=>h.m.includes(m)&&(!h.ok||h.ok(ctx||{})))}
+function hazSheet(list){openSheet(`<h2>Attenzione in questo periodo</h2>${list.map(h=>`<div class="hz"><b>${h.t}</b><p>${h.d}</p></div>`).join("")}<p class="small muted" style="margin-top:10px">Sono consigli generali di prudenza: non sostituiscono il veterinario.</p>`)}
+// ---- Oggi con il cane: com'è adesso e quali sono le ore buone per uscire, giudicate sui limiti del cane ----
+function renderToday(){
+  const box=$("today"),d=dog(),cap=capacity(d),w=dayWx(S.view.c,0);
+  const hz=hazards({}),hzBtn=hz.length?`<button class="haz" id="haz-btn"><b>!</b><span>In questo periodo: ${hz.map(h=>h.t.toLowerCase()).join(", ")}</span>›</button>`:"";
+  if(!w){box.innerHTML=hzBtn}
+  else{
+    const hr=new Date().getHours(),now=w.H[hr],lim=cap.heat,good=h=>w.H[h]&&w.H[h].f<=lim&&w.H[h].rain<60,wins=[];let a=null;
+    for(let h=Math.max(hr,5);h<=22;h++){if(good(h)){if(a==null)a=h}else if(a!=null){wins.push([a,h]);a=null}}if(a!=null)wins.push([a,23]);
+    const st=now.f>lim+4?2:now.f>lim||now.rain>=60?1:0,night=hr>=22||hr<5;
+    const head=st===2?`Adesso fa troppo caldo per ${dn()}`:now.rain>=60?"Adesso è probabile la pioggia":st===1?`Adesso fa caldo per ${dn()}: solo un giro breve`:night?`Temperatura buona per ${dn()}`:`Adesso è un buon momento per uscire con ${dn()}`;
+    const best=!wins.length?(night?"":"Oggi non ci sono più ore davvero adatte: solo uscite brevi."):wins[0][0]<=hr&&wins[0][1]>=23?"Va bene per tutto il resto della giornata.":"Ore buone oggi: "+wins.slice(0,3).map(x=>x[0]<=hr?`fino alle ${x[1]}:00`:x[1]>=23?`dalle ${x[0]}:00 in poi`:`${x[0]}:00–${x[1]}:00`).join(", ")+".";
+    box.innerHTML=`<div class="today s${st}"><div class="row"><b class="big">${Math.round(now.f)}°</b><div class="sp"><b>${head}</b><p class="small">${best} Pioggia ${now.rain}%.${now.t>=25?" Asfalto: prova dei 5 secondi con il dorso della mano.":""}</p></div></div>${hzBtn}</div>`;
+  }
+  const b=$("haz-btn");if(b)b.onclick=()=>hazSheet(hz);
+  const ph=store.get("alldogs-photo"),av=$("home-av");av.style.backgroundImage=ph?`url(${ph})`:"";av.textContent=ph?"":(d.name||"?").trim().charAt(0).toUpperCase();
+}
+// ---- Emergenza: chiamare il veterinario, trovarne uno vicino, mandare la posizione ----
+async function sosSheet(pos){
+  const d=dog(),tel=d.health&&d.health.vettel?String(d.health.vettel).replace(/[^+0-9]/g,""):"";
+  if(!pos){try{pos=await getPos()}catch(e){pos=null}}
+  const g=pos?`${pos[0].toFixed(5)},${pos[1].toFixed(5)}`:"";
+  openSheet(`<h2>Emergenza</h2><p class="small muted" style="margin-top:6px">Se ${dn()} sta male, la cosa giusta è sentire subito un veterinario.</p>
+    <div class="stack" style="margin-top:14px">
+      ${tel?`<a class="btn pri wide" href="tel:${tel}">Chiama ${esc(d.health.vet||"il veterinario")}</a>`:`<p class="small">Non hai ancora salvato il telefono del veterinario: aggiungilo in Il mio cane, nel libretto sanitario.</p>`}
+      <a class="btn wide" target="_blank" rel="noopener" href="https://www.google.com/maps/search/${encodeURIComponent("veterinario pronto soccorso aperto ora")}${pos?"/@"+g+",13z":""}">Cerca un veterinario aperto qui vicino</a>
+      ${pos?`<button class="btn wide" id="sos-pos">Manda a qualcuno dove sono</button>`:`<p class="small muted">Posizione non disponibile.</p>`}
+      <a class="btn wide" href="tel:112">Chiama il 112 (emergenze per le persone)</a>
+    </div>
+    <p class="small muted" style="margin-top:12px">Nel frattempo: tienilo fermo e tranquillo, all'ombra, e non dargli farmaci di tua iniziativa.</p>`);
+  const b=$("sos-pos");if(b)b.onclick=async()=>{const url=`https://www.google.com/maps?q=${g}`,text=`Sono qui con ${d.name||"il cane"} e ho bisogno di aiuto:`;
+    try{if(navigator.share){await navigator.share({title:"AllDogs",text,url});return}}catch(e){if(e&&e.name==="AbortError")return}
+    try{await navigator.clipboard.writeText(text+" "+url);toast("Posizione copiata: incollala in un messaggio")}catch(e){prompt("Copia e manda questo indirizzo:",url)}};
+}
+$("nav-sos").onclick=()=>sosSheet(nav&&nav.pos);
+$("dog-sos").onclick=()=>sosSheet(null);
 // Grafico del dislivello. p = quote a distanze uguali lungo il percorso. In arancione i tratti ripidi PER IL CANE.
 function elevChart(p,len,d){
   if(!p||p.length<3)return "";
@@ -1380,6 +1446,7 @@ function bindReview(id){
     store.set("alldogs-reviews",all);toast("Recensione salvata")};
 }
 function bindDays(root,again){root.querySelectorAll("[data-day]").forEach(b=>b.onclick=()=>{S.day=+b.dataset.day;$("f-day").value=S.day;again()})}
+function trailHaz(tr){const f=FT[tr.id],e=elev[tr.id];return hazards({wood:f?(f.wood>=.25||f.f.includes("bosco")):undefined,alt:e?e.max:null,city:!!(f&&f.f.includes("citta"))})}
 async function showTrail(id){
   mountMap($("hostTrail"),false);
   let tr=TR.get(id);S.sel=id;
@@ -1397,12 +1464,13 @@ async function showTrail(id){
     const sh=surfShare(tr),dom=sh&&SFK.slice().sort((a,b)=>sh[b]-sh[a])[0];
     $("det").innerHTML=detailHTML({title:tr.name,ft:f,prof:elev[id]&&elev[id].p,
       tools:`<div class="row" style="margin-top:14px;flex-wrap:wrap"><button class="btn sm" data-3d>${icon("layers")}Anteprima 3D</button>${sh?`<button class="btn sm" data-surf>${icon("surf")}Colora il fondo</button>`:""}<button class="btn sm" data-edit>${icon("edit")}Modifica percorso</button></div>`,sub:[esc(tr.zone),tr.ref?"sentiero n. "+esc(tr.ref):"",tr.cai?"CAI":"",tr.scale?"difficoltà "+tr.scale:""].filter(Boolean).join(" · "),it:item(tr),
-      sections:`${sh?`<div class="block"><h2>Fondo del percorso</h2>${surfBlock(sh,dog())}</div>`:""}<div class="block"><h2>Particolarità</h2>${tags}<p class="small muted" style="margin-top:8px">Ricavate in automatico da OpenStreetMap: elementi segnati vicino al tracciato.</p></div>
+      sections:`${(hz=>hz.length?`<div class="block"><h2>Attenzione in questo periodo</h2><div class="tags">${hz.map(h=>`<span class="tag">${h.t}</span>`).join("")}</div><button class="btn sm" data-haz style="margin-top:10px">Leggi i consigli</button></div>`:"")(trailHaz(tr))}${sh?`<div class="block"><h2>Fondo del percorso</h2>${surfBlock(sh,dog())}</div>`:""}<div class="block"><h2>Particolarità</h2>${tags}<p class="small muted" style="margin-top:8px">Ricavate in automatico da OpenStreetMap: elementi segnati vicino al tracciato.</p></div>
       <div class="block"><h2>Scheda per il cane</h2><div class="tiles"><div class="tile"><span>Acqua lungo il percorso</span><b>${water}</b></div><div class="tile"><span>Ombra (stima)</span><b>${shade}</b></div><div class="tile"><span>Fondo prevalente</span><b>${sh?SFL[dom]:"Da verificare"}</b></div><div class="tile"><span>Punti critici</span><b>Da verificare</b></div></div>
       <p class="small muted" style="margin-top:8px">${f&&f.w.length?"Le fontanelle sono i punti blu sulla mappa. ":""}Acqua e ombra sono stime dai dati di OpenStreetMap: verificale sul posto. Il sentiero non è ancora stato provato con un cane.</p></div>`})+
       reviewHTML(tr.id)+`<p class="small block"><a href="https://www.openstreetmap.org/relation/${tr.id}" target="_blank" rel="noopener">Vedi i dati del sentiero su OpenStreetMap</a></p>`;
     bindReview(tr.id);
     bindDays($("det"),paint);syncSave();bindTools($("det"));
+    $("det").querySelectorAll("[data-haz]").forEach(b=>b.onclick=()=>hazSheet(trailHaz(tr)));
   };
   paint();
   $("bar-go").href=`https://www.google.com/maps/dir/?api=1&destination=${tr.start[0]},${tr.start[1]}`;
@@ -2104,7 +2172,7 @@ syncLayersMenu();
 const onList=()=>(location.hash.slice(1)||"esplora")==="esplora";
 let viewT=null,viewSeq=0;
 // punti per cui chiedere il meteo: le partenze dei sentieri in elenco (al massimo 40 punti diversi)
-function wxPoints(){const seen=new Set(),out=[];for(const r of S.rows||[]){const k=wxKey(r.tr.start);if(!seen.has(k)){seen.add(k);out.push(r.tr.start);if(out.length>=40)break}}return out}
+function wxPoints(){const seen=new Set([wxKey(S.view.c)]),out=[S.view.c];for(const r of S.rows||[]){const k=wxKey(r.tr.start);if(!seen.has(k)){seen.add(k);out.push(r.tr.start);if(out.length>=40)break}}return out}
 function viewChanged(){
   if(!M)return;const b=M.getBounds(),c=M.getCenter();
   S.view={c:[c.lat,c.lng],z:M.getZoom(),b:[[b.getSouth(),b.getWest()],[b.getNorth(),b.getEast()]]};store.set("alldogs-view",S.view);
