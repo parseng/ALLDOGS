@@ -45,7 +45,7 @@ Sulle schede dei sentieri la durata calcolata per il cane sta in un cartellino a
 ## Come sono fatte le pagine
 
 - **Menu in basso**: Esplora · Attività · Crea giro · Allenati · [nome del cane]. Niente menu nascosti.
-- **Pagina del cane**: in cima Pronto soccorso ed Emergenza; poi salute, zaino, regole; i dati del cane e le impostazioni in riquadri che si aprono.
+- **Pagina del cane**: in cima i dati del cane (riquadro che si apre), poi Pronto soccorso ed Emergenza; poi salute, zaino, regole; i dati del cane e le impostazioni in riquadri che si aprono.
 - **Pagine lunghe** (Obiettivi, Addestramento): resta aperta solo la cosa principale; il resto va in riquadri apri/chiudi (`fold(...)` / `.fold`).
 - **Assistente AI**: solo dal bottone "Chiedi" in basso a destra (Crea giro, Obiettivi, Addestramento). Mai chat in fondo alle pagine.
 - **Scheda del sentiero**: contiene tutte le informazioni. In basso solo "Avvia percorso" e "Portami lì"; gli strumenti stanno nella fila di icone (`.tools`).
@@ -53,6 +53,8 @@ Sulle schede dei sentieri la durata calcolata per il cane sta in un cartellino a
 - **In cammino, la mappa**: schermata sempre scura (token del tema scuro), mappa a tutto schermo da navigazione notturna con i palazzi in 3D, inclinata e che gira con la direzione di marcia; freccia blu per la posizione; in alto la prossima svolta e i messaggi in riquadri galleggianti; a sinistra la bussola (tocco: nord in alto o mappa che gira), a destra mappe e centra.
 - **In cammino**: in basso solo tempo e km, grandi (numeri fino a 56 px, gli unici oltre le grandezze sopra). Toccandoli si apre il resto: sei numeri (tempo, distanza, mancano, andatura, velocità, passi del cane), meteo, grafico del dislivello con il punto dove siete, SOS e i pulsanti Pausa e Chiudi attività.
 - **Tendine dal basso**: si alzano e si abbassano trascinandole o toccando la lineetta in alto; le finestre lunghe scorrono e hanno sempre la X in alto a destra. Le impostazioni si aprono con i tre puntini.
+- **Ricerca**: i risultati stanno uno sotto l'altro (prima i sentieri di tutta Italia, poi i luoghi), non in una fila che scorre di lato.
+- **Niente cose nascoste in file che scorrono di lato**: i filtri vanno a capo, le sezioni di una pagina sono bottoni affiancati (come Allenati e Attività), non menu a tendina.
 - **Meteo**: riquadro con icona, gradi percepiti, giudizio per il cane e la striscia delle ore buone (verde, ocra, rosso); i dettagli si aprono toccandolo.
 
 ## Testi

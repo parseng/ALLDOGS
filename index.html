@@ -83,6 +83,15 @@ a{color:var(--accent)}
 .pill{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 13px;font-size:15px;font-weight:500;white-space:nowrap}
 .pill[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 .pill.x{background:var(--accent-soft);border-color:var(--accent);color:var(--ink)}
+/* risultati della ricerca: uno sotto l'altro */
+.sres{margin-top:8px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:0 8px 24px var(--shadow)}
+.sres h4{margin:0;padding:10px 14px 4px;font:600 13px/1.3 var(--body);color:var(--muted)}
+.sres button{display:flex;align-items:center;gap:12px;width:100%;padding:11px 14px;border:0;border-top:1px solid var(--line);background:none;color:var(--ink);text-align:left;font:inherit;cursor:pointer}
+.sres h4+button{border-top:0}
+.sres button>svg{flex:none;width:22px;height:22px;color:var(--accent)}
+.sres b{display:block;font-weight:600;font-size:16px;line-height:1.25}
+.sres small{display:block;color:var(--muted);font-size:13.5px;margin-top:2px}
+.sres p{padding:12px 14px;margin:0;color:var(--muted);font-size:14.5px}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:12px 18px;font-weight:700;font-size:15px;text-decoration:none;color:var(--ink)}
 .btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .btn.wide{width:100%}
@@ -214,6 +223,7 @@ ul.plain{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:5px}
 /* crea giro */
 .seg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
 .seg.three{grid-template-columns:repeat(3,1fr)}
+#act-view button{padding:9px 4px;line-height:1.15;text-align:center;min-height:52px}
 .seg button{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 0;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;gap:6px}
 .seg button svg{width:18px;height:18px}
 .seg button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
@@ -568,7 +578,9 @@ h2 .dot{width:12px;height:12px;margin-right:8px}
 body.noscroll{overflow:hidden}
 .ehd{display:flex;align-items:center;gap:12px}
 /* filtri su una sola riga che scorre */
-.frow{margin-top:12px}
+#f-fit,#f-eff,#f-dif{grid-column:1/-1}
+.frow{display:grid;grid-auto-flow:row dense;grid-template-columns:repeat(2,minmax(0,1fr));margin:12px 0 0;padding:0;overflow:visible}
+.frow select,.frow .dd{width:100%;min-width:0;overflow:hidden;text-overflow:ellipsis;justify-content:space-between}
 .frow .dd{flex:none;display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:0 12px;height:41px;font-size:15px;font-weight:500;white-space:nowrap}
 .frow .dd b{font-weight:500}
 .frow .dd.on{border-color:var(--accent);background:var(--accent-soft)}
@@ -822,7 +834,7 @@ body{font-size:17px;line-height:1.5}
   <div class="ehd"><div class="sp" style="min-width:0"><p class="muted small" id="where">Italia</p><h1 id="hello">Dove andiamo oggi?</h1></div><a class="avatar sm" id="home-av" href="#cane" aria-label="Il mio cane"></a></div>
   <div class="who" id="who" hidden></div>
   <div class="search" style="margin-top:14px"><svg width="22" height="22"><use href="#i-search"/></svg><input id="q" type="search" placeholder="Cerca un sentiero o una zona" aria-label="Cerca un sentiero o una zona"></div>
-  <div class="hscroll" id="place-row" hidden></div>
+  <div class="sres" id="place-row" hidden></div>
   <div class="hscroll" id="near-row" hidden></div>
   <div id="today"></div>
   <div id="home-extra"></div>
@@ -901,7 +913,7 @@ body{font-size:17px;line-height:1.5}
 <!-- ATTIVITÀ -->
 <section class="screen" id="s-attivita">
   <div class="hd"><h1>Attività</h1></div>
-  <div class="vpick"><select id="act-view" aria-label="Cosa vuoi vedere"><option value="diary">Le uscite</option><option value="saved">Percorsi salvati</option><option value="off">Mappe scaricate</option></select></div>
+  <div class="seg three subnav" id="act-view" role="group" aria-label="Cosa vuoi vedere"><button type="button" data-v="diary">Uscite</button><button type="button" data-v="saved">Percorsi salvati</button><button type="button" data-v="off">Mappe scaricate</button></div>
   <div id="av-diary">
     <div class="box" id="pace-box" style="margin-top:16px"></div>
     <div class="block"><h2>Diario delle uscite</h2><div id="act-list" class="stack"></div></div>
@@ -995,6 +1007,7 @@ body{font-size:17px;line-height:1.5}
   <div class="row" id="dog-head"><div class="avatar" id="avatar" role="button" tabindex="0" aria-label="Cambia la foto del cane">L</div><div><h1 id="dog-title">Il mio cane</h1><p class="muted" id="dog-cap"></p>
     <div class="row" style="margin-top:8px"><button class="btn sm" id="photo-btn" type="button">Aggiungi una foto</button><button class="btn sm" id="photo-del" type="button" hidden>Togli la foto</button></div><input type="file" id="photo-in" accept="image/*" hidden></div></div>
   <p class="small" id="dog-alert" style="margin-top:10px"></p>
+  <div id="fold-slot"></div>
   <nav class="hub" id="dog-hub" aria-label="Sezioni del cane">
     <a class="hrow sos" href="#soccorso"><span class="hi"><svg><use href="#i-aid"/></svg></span><span class="ht"><b>Pronto soccorso</b><small>Cosa fare subito, in attesa del veterinario</small></span><i>›</i></a>
     <button class="hrow sos" id="dog-sos" type="button"><span class="hi"><svg><use href="#i-phone"/></svg></span><span class="ht"><b>Emergenza</b><small>Chiama il veterinario e manda dove sei</small></span><i>›</i></button>
@@ -2759,11 +2772,11 @@ function showOut(t){
     <div class="stats"><div><b>${km(x.dist)} km</b><span>Distanza</span></div><div><b>${fmtDur(x.dur)}</b><span>Durata</span></div><div class="dg"><b>${pc?pc+" min":"…"}</b><span>Per 1 km</span></div><div><b>${x.up?x.up+" m":"…"}</b><span>Salita</span></div></div>`;
 }
 function showActView(){
-  const v=S.actView||"diary";$("act-view").value=v;
+  const v=S.actView||"diary";$("act-view").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===v));
   ["diary","saved","off"].forEach(k=>$("av-"+k).hidden=k!==v);
   showAct();showSaved();
 }
-$("act-view").onchange=()=>{S.actView=$("act-view").value;showActView();window.scrollTo(0,0)};
+$("act-view").querySelectorAll("button").forEach(b=>b.onclick=()=>{S.actView=b.dataset.v;showActView();window.scrollTo(0,0)});
 function showAct(){
   const d=dog(),pi=paceInfo(),A=S.acts,s=steps(5000,d);
   const tot=A.reduce((a,x)=>({km:a.km+x.dist/1000,ms:a.ms+x.dur}),{km:0,ms:0});
@@ -4127,6 +4140,8 @@ $("keys-save").onclick=()=>{
   showDog();toast(n?"Chiavi salvate":"Nessuna chiave nuova");
 };
 
+// i dati del cane stanno in cima alla sua pagina
+$("fold-slot").replaceWith($("fold-dog"));
 // ================= Avvio =================
 let geoT=null,geoSeq=0;
 function goPlace(c,z,bb){
@@ -4135,15 +4150,37 @@ function goPlace(c,z,bb){
   else{S.view={c,z:z||12,b:[[c[0]-.2,c[1]-.25],[c[0]+.2,c[1]+.25]]};refreshView()}
   renderList();
 }
-async function geoSuggest(){
-  const q=$("q").value.trim(),row=$("place-row"),my=++geoSeq;
+// Ricerca: i sentieri di tutta Italia (elenco leggero data/names.json, caricato alla prima ricerca) e i luoghi
+let NAMES=null,namesP=null,geoPlaces=[];
+const norm=t=>(t||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g," ").trim();
+function loadNames(){if(NAMES)return Promise.resolve(NAMES);if(!namesP)namesP=getJSON("data/names.json?v="+(IDX?IDX.t:0)).then(d=>NAMES=d.r.map(r=>({id:r[0],name:r[1],ref:r[2],zone:r[3],cell:r[4],p:[r[5],r[6]],len:r[7],n:norm(r[1]),k:norm(r[1]+" "+r[2]+" "+r[3])}))).catch(e=>{namesP=null;throw e});return namesP}
+function trailHits(q){
+  const nq=norm(q),w=nq.split(" ").filter(Boolean),c=S.view.c,out=[];if(!w.length||!NAMES)return out;
+  const wb=w.map(x=>" "+x);for(const r of NAMES){const k=" "+r.k;if(!wb.every(x=>k.includes(x)))continue;const sc=(r.n.startsWith(nq)?0:r.n.includes(nq)?1:2);out.push({r,sc,d:hav(c,r.p)})}
+  out.sort((a,b)=>a.sc-b.sc||a.d-b.d);return out.slice(0,8);
+}
+function paintSearch(){
+  const q=$("q").value.trim(),row=$("place-row");
   if(q.length<3){row.hidden=true;return}
+  const th=trailHits(q),fmtD=d=>d<1000?"qui vicino":d<100e3?Math.round(d/1000)+" km da qui":Math.round(d/1000)+" km";
+  let h="";
+  if(th.length)h+=`<h4>Sentieri</h4>`+th.map(x=>`<button data-t="${x.r.id}">${icon("route")}<span><b>${esc(x.r.name||"Sentiero "+x.r.ref)}</b><small>${[x.r.zone?esc(x.r.zone):"",km(x.r.len)+" km",fmtD(x.d)].filter(Boolean).join(" · ")}</small></span></button>`).join("");
+  else if(!NAMES)h+=`<p>Cerco tra i sentieri di tutta Italia…</p>`;
+  if(geoPlaces.length)h+=`<h4>Luoghi</h4>`+geoPlaces.map((x,i)=>`<button data-i="${i}">${icon("nav")}<span><b>${esc(x.text||x.place_name)}</b><small>${esc(x.place_name.replace(/, Italia$/,""))}</small></span></button>`).join("");
+  if(!h)h=`<p>Nessun sentiero o luogo trovato con questo nome.</p>`;
+  row.innerHTML=h;row.hidden=false;
+  row.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{const r=NAMES.find(x=>x.id===+b.dataset.t);if(!r)return;cellOf[r.id]=r.cell;store.set("alldogs-cellof",cellOf);row.hidden=true;lastList=window.scrollY;location.hash="s-"+r.id});
+  row.querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>{const x=geoPlaces[+b.dataset.i];goPlace([x.center[1],x.center[0]],x.place_type&&x.place_type[0]==="region"?8.8:12,x.place_type&&x.place_type[0]!=="poi"?x.bbox:null)});
+}
+async function geoSuggest(){
+  const q=$("q").value.trim(),my=++geoSeq;
+  if(q.length<3){$("place-row").hidden=true;geoPlaces=[];return}
+  loadNames().then(()=>{if(my===geoSeq)paintSearch()}).catch(()=>{});
+  paintSearch();
   try{
     const r=await getJSON(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(q)}.json?country=it&language=it&limit=4&types=place,locality,region,district,poi&access_token=${MAPBOX_TOKEN}`);
-    if(my!==geoSeq)return;const fs=r.features||[];row.hidden=!fs.length;
-    row.innerHTML=fs.map((x,i)=>`<button class="pill x" data-i="${i}">${icon("nav",14)} ${esc(x.place_name.replace(/, Italia$/,""))}</button>`).join("");
-    row.querySelectorAll("button").forEach(b=>b.onclick=()=>{const x=fs[+b.dataset.i];goPlace([x.center[1],x.center[0]],x.place_type&&x.place_type[0]==="region"?8.8:12,x.place_type&&x.place_type[0]!=="poi"?x.bbox:null)});
-  }catch(e){row.hidden=true}
+    if(my!==geoSeq)return;geoPlaces=r.features||[];paintSearch();
+  }catch(e){geoPlaces=[];if(my===geoSeq)paintSearch()}
 }
 $("q").addEventListener("input",()=>{S.limit=20;renderList();clearTimeout(geoT);geoT=setTimeout(geoSuggest,450)});
 ["f-fit","f-eff","f-len","f-up","f-dif","f-zone"].forEach(id=>$(id).addEventListener("change",()=>{S.limit=20;renderList()}));
