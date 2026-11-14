@@ -49,6 +49,8 @@ Sulle schede dei sentieri la durata calcolata per il cane sta in un cartellino a
 - **Pagine lunghe** (Obiettivi, Addestramento): resta aperta solo la cosa principale; il resto va in riquadri apri/chiudi (`fold(...)` / `.fold`).
 - **Assistente AI**: solo dal bottone "Chiedi" in basso a destra (Crea giro, Obiettivi, Addestramento). Mai chat in fondo alle pagine.
 - **Scheda del sentiero**: contiene tutte le informazioni. In basso solo "Avvia percorso" e "Portami lì"; gli strumenti stanno nella fila di icone (`.tools`).
+- **Mappa a tutto schermo del sentiero**: in basso una scheda con nome (toccandolo si torna alla scheda), km, salita, discesa, tempo con il cane in arancio, grafico del dislivello, e i pulsanti Scarica e Avvia percorso.
+- **In cammino**: in basso solo tempo e km, grandi (numeri fino a 56 px, gli unici oltre le grandezze sopra). Toccandoli si apre il resto: sei numeri (tempo, distanza, mancano, andatura, velocità, passi del cane), meteo, grafico del dislivello con il punto dove siete, SOS e i pulsanti Pausa e Chiudi attività.
 - **Meteo**: riquadro con icona, gradi percepiti, giudizio per il cane e la striscia delle ore buone (verde, ocra, rosso); i dettagli si aprono toccandolo.
 
 ## Testi

@@ -165,7 +165,8 @@ body > #mapwrap{display:none}
 .ts-st svg{width:22px;height:22px;color:var(--muted)}
 .ts-st .dg,.ts-st .dg svg{color:var(--dog)}
 .ts-row{display:flex;gap:10px;margin-top:14px}
-.ts-row .btn{flex:1;min-height:54px;font-size:18px}
+.ts-row .btn{flex:1;min-height:54px;font-size:18px;white-space:nowrap;padding-left:10px;padding-right:10px}
+.ts-row .btn.pri{flex:1.35}
 .sheet{position:relative;z-index:2;margin-top:-18px;background:var(--bg);border-radius:22px 22px 0 0;padding:22px max(16px,env(safe-area-inset-left,0px)) 0 max(16px,env(safe-area-inset-right,0px))}
 .verdict{display:inline-flex;align-items:center;gap:8px;font:700 16px/1 var(--display);padding:9px 14px;border-radius:10px;margin-top:12px}
 .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:18px 0 6px;font-variant-numeric:tabular-nums}
@@ -418,12 +419,14 @@ button.tag{font:inherit;font-size:15px;color:var(--ink);cursor:pointer}
 .nav-msg{margin-top:6px;font-size:17px;font-weight:500}
 #hostNav{flex:1;min-height:0;border-radius:0;border:0}
 #hostNav #m-full{display:none}
-.nav-bot{position:relative;padding:6px 18px calc(env(safe-area-inset-bottom,0px) + 14px);background:var(--surface);border-radius:22px 22px 0 0;margin-top:-22px;z-index:5;box-shadow:0 -6px 22px rgba(0,0,0,.22);max-height:72vh;overflow-y:auto;overscroll-behavior:contain}
+.nav-bot{overflow-x:hidden;position:relative;padding:6px 18px calc(env(safe-area-inset-bottom,0px) + 14px);background:var(--surface);border-radius:22px 22px 0 0;margin-top:-22px;z-index:5;box-shadow:0 -6px 22px rgba(0,0,0,.22);max-height:72vh;overflow-y:auto;overscroll-behavior:contain}
 .nav-bot .btn{flex:1}
 .nb-grab{display:block;width:100%;height:20px;border:0;background:none;padding:0;cursor:pointer}
 .nb-grab::before{content:"";display:block;width:44px;height:5px;border-radius:3px;background:var(--line);margin:4px auto 0}
-.nb-mini{display:flex;align-items:center;gap:18px;width:100%;border:0;background:none;color:var(--ink);padding:4px 0 8px;text-align:left;cursor:pointer;font:inherit;font-variant-numeric:tabular-nums}
-.nb-mini b{font:700 54px/1 var(--display);letter-spacing:-.01em}
+.nb-mini{display:flex;align-items:center;gap:14px;width:100%;border:0;background:none;color:var(--ink);padding:4px 0 8px;text-align:left;cursor:pointer;font:inherit;font-variant-numeric:tabular-nums}
+.nb-mini b{font:700 clamp(38px,12.5vw,56px)/1 var(--display);letter-spacing:-.01em;white-space:nowrap}
+.nb-mini > div{min-width:0}
+.nb-mini.long b{font-size:clamp(32px,10vw,48px)}
 .nb-mini small{font:600 24px/1 var(--display);margin-left:5px}
 .nb-mini .sep{width:1px;align-self:stretch;margin:6px 0;background:var(--line)}
 .nb-mini .round{margin-left:auto;width:52px;height:52px}
@@ -432,9 +435,9 @@ button.tag{font:inherit;font-size:15px;color:var(--ink);cursor:pointer}
 .nb-mini .pz:empty{display:none}
 #nav-bot.open .nb-mini{display:none}
 #nav-bot:not(.open) .nb-more{display:none}
-.nb-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 12px;margin:8px 0 6px;font-variant-numeric:tabular-nums}
-.nb-grid b{display:block;font:700 36px/1 var(--display);white-space:nowrap}
-.nb-grid b small{font:600 18px/1 var(--display);margin-left:3px}
+.nb-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 10px;margin:8px 0 6px;font-variant-numeric:tabular-nums}
+.nb-grid b{display:block;font:700 clamp(24px,7.4vw,36px)/1 var(--display);white-space:nowrap;overflow:hidden;text-overflow:clip}
+.nb-grid b small{font:600 clamp(13px,3.8vw,17px)/1 var(--display);margin-left:2px}
 .nb-grid span{display:block;font-size:16px;color:var(--muted);margin-top:5px}
 .nb-grid .dg b{color:var(--dog)}
 #nav-info,#nav-wx{font-size:16px}
@@ -444,7 +447,7 @@ button.tag{font:inherit;font-size:15px;color:var(--ink);cursor:pointer}
 .nb-row{display:flex;gap:10px;align-items:center;margin-top:14px}
 .nb-row .round{width:52px;height:52px}
 .nb-row .btn{min-height:52px;font-size:18px}
-@media (max-width:370px){.nb-mini b{font-size:46px}.nb-grid b{font-size:30px}}
+
 .sheetbg{position:fixed;inset:0;z-index:960;background:rgba(10,14,28,.55);display:grid;place-items:end center;padding:14px}
 .sheetbg .box{width:100%;max-width:520px;padding:18px;margin-bottom:env(safe-area-inset-bottom,0px)}
 .sheetbg label{display:flex;gap:10px;align-items:center;padding:8px 0;font-size:15px}
@@ -3835,7 +3838,7 @@ function paintNav(){
   const o=nav.o,d=dog(),cap=capacity(d),el=navElapsed(),name=esc(d.name||"il cane"),done=nav.dist;
   const res=verdict({len:o.len,up:o.up,scale:o.scale||"",start:o.path[0],loop:o.loop,dogs:o.dogs},d,0);
   $("nav-kicker").innerHTML=res.v<0?"In cammino":`<span class="c${res.v}"><i class="dot b${res.v}"></i>${VLABEL[res.v]} per ${name}</span> · ${km(o.len)} km${o.up?" · ↑ "+o.up+" m":""}`;
-  document.querySelectorAll('[data-nv="time"]').forEach(x=>x.textContent=clock(el));
+  document.querySelectorAll('[data-nv="time"]').forEach(x=>x.textContent=clock(el));$("nb-mini").classList.toggle("long",el>=3600e3||done>=1e4);
   document.querySelectorAll('[data-nv="km"]').forEach(x=>x.textContent=(done/1000).toFixed(2).replace(".",","));
   const mov=done>=150&&el>=60e3,pk=mov?el/60000/(done/1000):0;
   const pks=Math.round(pk*60);$("nav-pace").textContent=mov&&pk<60?Math.floor(pks/60)+":"+String(pks%60).padStart(2,"0"):"–";
@@ -3845,14 +3848,14 @@ function paintNav(){
   if(o.prof&&$("nav-bot").classList.contains("open")){const mk=nav.total?nav.prog/nav.total:0,ck=o.prof.length+"|"+Math.round(mk*200);if($("nb-chart").dataset.k!==ck){$("nb-chart").dataset.k=ck;$("nb-chart").innerHTML=elevChart(o.prof,o.len,d,{bare:1,mark:mk})}}
   const live=done>=300&&el>=180e3?Math.min(45,Math.max(8,el/60000/(done/1000))):pace();
   const rem=Math.max(0,nav.total-nav.prog),arrived=nav.prog>0&&rem<30;
-  $("nav-left").textContent=arrived?"Arrivati":km(rem)+" km";
+  $("nav-left").innerHTML=arrived?"Arrivati":km(rem)+"<small>km</small>";
   $("nav-steps").textContent=Math.round(done/dogStep(d.weight)).toLocaleString("it-IT");
-  $("nav-info").textContent=`Tu circa ${Math.round(done/.75).toLocaleString("it-IT")} passi`+(arrived?"":` · ancora circa ${fmtDur(rem/1000*live*60e3)}`)+(done>=300&&el>=180e3?` · andatura ${Math.round(el/60000/(done/1000))} min al km`:"");
+  $("nav-info").textContent=`Tu circa ${Math.round(done/.75).toLocaleString("it-IT")} passi`+(arrived?"":` · arrivo tra circa ${fmtDur(rem/1000*live*60e3)}`);
   const w=wxAt(nav.pos||o.path[0]);
   $("nav-wx").innerHTML=w?`Adesso ${Math.round(w.f)}° percepiti · pioggia ${w.rain}% · `+(w.f>cap.heat+4?`<b class="c2">troppo caldo per ${name}: accorcia e cerca ombra</b>`:w.f>cap.heat?`<b class="c1">fa caldo per ${name}: pause e tanta acqua</b>`:`<span class="c0">temperatura buona per ${name}</span>`):"";
   let msg,cls="";
   if(nav.tip&&Date.now()<nav.tip.until){msg=nav.tip.t;cls=nav.tip.cls||"c1"}
-  else if(nav.paused)msg=nav.auto?"Pausa automatica: riparto da solo quando camminate.":"In pausa. Tocca Riprendi quando ripartite.";
+  else if(nav.paused)msg=nav.auto?"Pausa automatica: riparto da solo quando camminate.":($("nav-bot").classList.contains("open")?"In pausa. Tocca Riprendi quando ripartite.":"In pausa. Quando ripartite tocca i numeri qui sotto e poi Riprendi.");
   else if(done/1000>cap.km){msg=`${name} ha superato il suo limite consigliato di ${kmN(cap.km)} km: meglio rientrare con calma.`;cls="c2"}
   else if(nav.gps==="denied")msg="Posizione non autorizzata: il tempo scorre lo stesso, ma non posso misurare la strada. Puoi attivarla dalle impostazioni del browser.";
   else if(nav.gps==="no")msg="Questo dispositivo non ha il GPS: il tempo scorre lo stesso.";
