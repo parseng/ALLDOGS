@@ -783,6 +783,7 @@ h2 .dot{width:12px;height:12px;margin-right:8px}
 <div class="toast" id="toast" role="status"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/3.9.4/mapbox-gl.min.js"></script>
+<script src="lezioni-anim.js"></script>
 <script>
 "use strict";
 // ================= Impostazioni =================
@@ -2509,6 +2510,7 @@ function todayLesson(){
 function lessonHTML(L,open,big){
   const s0=TRS.st[L.id],s=s0&&(s0.ok||s0.s!==dKey(Date.now()))?s0:null,ck=s&&s.ok?`<span class="ck ok" aria-label="Imparata">✓</span>`:s?`<span class="ck seen" aria-label="Da ripassare">↻</span>`:`<span class="ck" aria-hidden="true"></span>`;
   return `<details class="lesson${big?" big":""}"${open?" open":""}><summary>${ck}<span><b>${esc(L.t)}</b><small>${LV[L.lv]} · ${L.min} minuti${s&&s.ok?" · imparata":s?" · da ripassare":""}</small></span><i>›</i></summary><div class="lb">
+    <div data-anim="${L.id}"></div>
     <p>${esc(L.obj)}</p><ol>${L.steps.map(x=>`<li>${esc(x)}</li>`).join("")}</ol>
     <p style="margin-top:10px" class="small"><b class="c1">Da evitare:</b> ${esc(L.err)}</p>
     <p style="margin-top:6px" class="small"><b class="c0">È imparato quando:</b> ${esc(L.ok)}</p>
@@ -2526,6 +2528,7 @@ function showTrain(){
     <div class="block"><h2>Lezione di oggi</h2>${lessonHTML(T,true,true)}<p class="small muted" style="margin-top:8px">Non c'è fretta: se non la impara oggi la ritrovi in «Da ripassare». Domani arriva una lezione nuova.</p></div>
     ${rev.length?`<div class="block"><h2>Da ripassare</h2>${rev.map(l=>lessonHTML(l)).join("")}</div>`:""}
     <div class="block"><h2>Tutte le lezioni</h2>${[1,2,3,4,5].map(v=>{const ls=L.filter(l=>l.lv===v);return ls.length?`<div class="lvl"><p class="flabel" style="margin-top:0">Livello ${v} · ${LV[v]}</p>${ls.map(l=>lessonHTML(l)).join("")}</div>`:""}).join("")}</div>`;
+  if(window.AllDogsAnim)AllDogsAnim.mount($("tr-main"),dog().name);
   $("tr-main").querySelectorAll("[data-lk]").forEach(b=>b.onclick=()=>{const id=b.dataset.lk;TRS.st[id]=Object.assign(TRS.st[id]||{s:dKey(Date.now())},{ok:b.dataset.v==="1"});saveTR();
     toast(b.dataset.v==="1"?`Bravissimo ${dog().name||""}!`.trim():"Lo ritrovi tra quelle da ripassare");showTrain()});
   $("tr-main").querySelectorAll("[data-ask]").forEach(b=>b.onclick=()=>{const l=LESSONS.find(x=>x.id===b.dataset.ask);$("tr-chat").scrollIntoView({behavior:"smooth",block:"start"});$("tr-in").value=`Come faccio a insegnare «${l.t}» a ${dog().name}? `;$("tr-in").focus()});
