@@ -65,3 +65,10 @@ che mappa, miniature, filtri, scheda, meteo funzionino a larghezza telefono (390
 - **Posizione in tempo reale**: link `#segui-<canale>`; gli aggiornamenti passano da ntfy.sh (canale casuale, 12 ore). Nessun server nostro.
 - **Recensioni**: per ora solo locali (`alldogs-reviews`). Per condividerle tra utenti serve un archivio online (da decidere con Giuseppe).
 - Mappa: sentieri e gradini più evidenti, più nomi di luoghi, frecce di direzione sul percorso scelto. Dislivello ricalcolato (interpolazione, soglia 3 m).
+
+## Nuova veste (14 novembre 2026, richiesta di Giuseppe)
+- Regole grafiche in `DESIGN.md` (libretto di stile): da seguire per ogni schermata nuova.
+- Menu in basso: Esplora · Attività (diario + menu a tendina con percorsi salvati e mappe scaricate) · Crea giro · Allenati (Obiettivi e Addestramento) · [nome del cane] (pronto soccorso, salute, zaino, regole, dati, impostazioni). Il menu laterale non c'è più.
+- Assistente AI solo dal bottone "Chiedi" (Crea giro, Obiettivi, Addestramento).
+- Diario: mappa grande di ogni uscita; toccandola si apre il percorso fatto a tutto schermo (`#u-<ora di inizio>`).
+- Icona dell'app: `python tools/make_icon.py`.

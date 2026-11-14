@@ -5,42 +5,49 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>AllDogs</title>
 <meta name="description" content="Sentieri e passeggiate adatti al tuo cane, in tutta Italia.">
-<meta name="theme-color" content="#f6f7fb" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0e1220" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#eef0ec" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111613" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="AllDogs">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700;800&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/3.9.4/mapbox-gl.min.css">
 <style>
 /* Versione 3: una sola mappa Mapbox che si sposta tra le schermate; barra in basso; schede grandi. */
 :root{
-  --bg:#f6f7fb; --surface:#ffffff; --ink:#131a2a; --muted:#636b7d; --line:#e3e6ee;
-  --accent:#2456f5; --accent-ink:#ffffff; --accent-soft:#e6ecff;
-  --ok:#1f8a4c; --ok-bg:#dff3e6; --warn:#a85f00; --warn-bg:#fdeed3; --no:#c0271d; --no-bg:#fbe2df; --wait:#6b7280; --wait-bg:#eceef2;
-  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
-  --body:"Figtree","Segoe UI",system-ui,sans-serif;
-  --steep:#e8640c;
+  /* AllDogs, libretto di stile (DESIGN.md): pietra, bosco, segnavia.
+     --accent  = verde bosco: azioni principali e scheda attiva
+     --dog     = arancio segnavia: SOLO le cose del cane (il suo nome, il suo percorso, i suoi tempi, Crea giro, Chiedi) */
+  --bg:#eef0ec; --surface:#fbfcfa; --ink:#18201c; --muted:#5a6660; --line:#d8ddd6;
+  --accent:#1d4f3c; --accent-ink:#ffffff; --accent-soft:#dce8e1;
+  --dog:#d9531a; --dog-ink:#ffffff; --dog-soft:#fbe6db;
+  --ok:#2b7a47; --ok-bg:#dcefe2; --warn:#8f6a00; --warn-bg:#f6ebc6; --no:#a3202f; --no-bg:#f7dcdf; --wait:#66706b; --wait-bg:#e6e9e5;
+  --steep:#d9531a;
+  --display:"Barlow Semi Condensed","Arial Narrow","Segoe UI",system-ui,sans-serif;
+  --body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --shadow:rgba(16,34,24,.10);
   --tab:64px; --r:16px;
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){:root{
-  --bg:#0e1220; --surface:#181d2e; --ink:#eef0f7; --muted:#9aa3b8; --line:#2a3146;
-  --accent:#8aa5ff; --accent-ink:#0e1220; --accent-soft:#1f2a4d;
-  --ok:#74d69b; --ok-bg:#173324; --warn:#f3b65c; --warn-bg:#3b2c12; --no:#f59088; --no-bg:#401d1a; --wait:#a3a9b6; --wait-bg:#252a36; --steep:#ff9a52;
+  --bg:#111613; --surface:#1a211d; --ink:#e8ede9; --muted:#9aa79f; --line:#2c3630;
+  --accent:#86c9a6; --accent-ink:#0f1a14; --accent-soft:#1f3329;
+  --dog:#ff8a55; --dog-ink:#1a0c05; --dog-soft:#3a2216;
+  --ok:#7fd29c; --ok-bg:#16301f; --warn:#e6c15a; --warn-bg:#33290c; --no:#f08a95; --no-bg:#3a1519; --wait:#a3aca6; --wait-bg:#252c27;
+  --steep:#ff8a55; --shadow:rgba(0,0,0,.35);
   color-scheme:dark;
 }}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 var(--body);-webkit-tap-highlight-color:transparent;overflow-x:hidden}
-h1,h2,h3{font-family:var(--display);margin:0;letter-spacing:-.01em;text-wrap:balance}
-h1{font-size:28px;font-weight:800;line-height:1.1}
-h2{font-size:19px;font-weight:600}
-h3{font-size:17px;font-weight:600;line-height:1.2}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance}
+h1{font-size:31px;font-weight:700;line-height:1.05;letter-spacing:-.005em}
+h2{font-size:22px;font-weight:700;line-height:1.15}
+h3{font-size:19px;font-weight:700;line-height:1.15}
 p{margin:0}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
@@ -61,7 +68,7 @@ a{color:var(--accent)}
 #tabs a{flex:1;height:var(--tab);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none;color:var(--muted);font-size:11px;font-weight:500}
 #tabs a svg{width:24px;height:24px}
 #tabs a.on{color:var(--accent);font-weight:700}
-#tabs a.main span{background:var(--accent);color:var(--accent-ink);width:44px;height:44px;border-radius:50%;display:grid;place-items:center;margin-top:-18px;box-shadow:0 4px 12px rgba(20,40,120,.3)}
+#tabs a.main span{background:var(--dog);color:var(--dog-ink);width:46px;height:46px;border-radius:15px;display:grid;place-items:center;margin-top:-18px;box-shadow:0 4px 12px rgba(217,83,26,.35)}
 #tabs a.main{color:var(--ink)}
 
 /* controlli */
@@ -72,7 +79,7 @@ a{color:var(--accent)}
 .hscroll select{flex:none;appearance:none;-webkit-appearance:none;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:9px 30px 9px 14px;font-size:15px;font-weight:500;
   background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);background-position:calc(100% - 16px) 55%,calc(100% - 11px) 55%;background-size:5px 5px;background-repeat:no-repeat}
 .hscroll select.act{border-color:var(--accent);background-color:var(--accent-soft)}
-.flabel{font-size:12.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:12px}
+.flabel{font-size:14px;font-weight:700;color:var(--muted);margin-top:12px}
 .pill{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 13px;font-size:14px;font-weight:500;white-space:nowrap}
 .pill[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 .pill.x{background:var(--accent-soft);border-color:var(--accent);color:var(--ink)}
@@ -110,9 +117,9 @@ body > #mapwrap{display:none}
 .peek.on{display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:10px;align-items:center}
 .peek img{width:96px;height:72px;border-radius:10px;object-fit:cover;background:var(--accent-soft)}
 .peek .sub{color:var(--muted);font-size:13.5px}
-.mk-stop{width:24px;height:24px;border-radius:50%;background:#fff;color:#131a2a;border:2px solid #2456f5;font:700 12px/20px var(--body);text-align:center}
+.mk-stop{width:24px;height:24px;border-radius:50%;background:#fff;color:#131a2a;border:2px solid #1d4f3c;font:700 12px/20px var(--body);text-align:center}
 .mk-me{width:16px;height:16px;border-radius:50%;background:#2f7bff;border:3px solid #fff;box-shadow:0 0 0 6px rgba(47,123,255,.25)}
-.mk-pin{width:28px;height:28px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#2456f5;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4);cursor:grab}
+.mk-pin{width:28px;height:28px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#d9531a;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4);cursor:grab}
 
 /* schede sentiero grandi */
 .count{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 10px;margin:24px 0 10px}
@@ -221,7 +228,7 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
 .ddi{width:26px;height:26px;border-radius:8px;background:var(--accent-soft);display:grid;place-items:center;color:var(--accent)}
 .ddi svg{width:16px;height:16px}
 .ddn{width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-weight:800;font-size:13px}
-.ddpanel{margin-top:8px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:12px;box-shadow:0 8px 24px rgba(20,30,70,.12);animation:msup .18s ease-out}
+.ddpanel{margin-top:8px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:12px;box-shadow:0 8px 24px var(--shadow);animation:msup .18s ease-out}
 .ddg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .ddt{display:flex;flex-direction:column;align-items:center;gap:6px;border:1.5px solid transparent;background:var(--bg);border-radius:14px;padding:10px 4px;font:inherit;font-size:13px;font-weight:600;line-height:1.2;color:var(--ink);text-align:center;cursor:pointer}
 .ddt[aria-pressed=true]{border-color:var(--accent);background:var(--accent-soft)}
@@ -304,7 +311,7 @@ button.tag{font:inherit;font-size:14px;color:var(--ink);cursor:pointer}
 .ovleg small{display:block;color:var(--muted);font-size:11px;margin-top:3px;line-height:1.3}
 /* mappe, legenda, fondo, grafico */
 .layers{max-height:calc(100% - 20px);overflow-y:auto;min-width:190px}
-.layers p{font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:6px 12px 2px}
+.layers p{font-size:13px;font-weight:700;color:var(--muted);padding:6px 12px 2px}
 .surfleg{position:absolute;left:10px;right:10px;bottom:30px;z-index:5;background:var(--surface);border-radius:12px;padding:8px 10px;display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12.5px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
 .surfleg i,.sw{display:inline-block;width:14px;height:14px;border-radius:4px;margin-right:5px;vertical-align:-2px;border:1px solid rgba(0,0,0,.35)}
 .surf i{box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
@@ -321,7 +328,7 @@ button.tag{font:inherit;font-size:14px;color:var(--ink);cursor:pointer}
 /* volo 3D, recensioni, impostazioni */
 .mk-fly{width:34px;height:34px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
 .mk-fly svg{width:100%;height:100%;display:block}
-.mk-fly path{fill:#2456f5;stroke:#fff;stroke-width:2;stroke-linejoin:round}
+.mk-fly path{fill:#d9531a;stroke:#fff;stroke-width:2;stroke-linejoin:round}
 .flybar{position:absolute;left:10px;right:10px;bottom:30px;z-index:9;background:var(--surface);border-radius:16px;padding:8px 10px;display:flex;gap:10px;align-items:center;box-shadow:0 6px 20px rgba(0,0,0,.35);font-size:14px}
 .flybar .sp{min-width:0}
 .flyprog{height:6px;border-radius:3px;background:var(--line);margin-top:5px;overflow:hidden}
@@ -346,7 +353,7 @@ button.tag{font:inherit;font-size:14px;color:var(--ink);cursor:pointer}
 .steps .ti{flex:none;width:30px;height:30px}
 .steps b{display:block;font:700 16px/1.15 var(--display)}
 .steps span{display:block;font-size:14px;opacity:.85}
-.offbar{height:8px;border-radius:5px;background:var(--line);overflow:hidden;margin-top:8px}.offbar i{display:block;height:100%;width:0;background:#2456f5;transition:width .3s}
+.offbar{height:8px;border-radius:5px;background:var(--line);overflow:hidden;margin-top:8px}.offbar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
 #s-segui.on{position:fixed;inset:0;z-index:940;display:flex;flex-direction:column;padding:0;max-width:none;background:var(--bg)}
 #hostFollow{flex:1;min-height:0;border-radius:0;border:0}
 #hostFollow #m-full{display:none}
@@ -367,9 +374,9 @@ button.tag{font:inherit;font-size:14px;color:var(--ink);cursor:pointer}
 #nav-sos{background:var(--no);border-color:var(--no);color:#fff;font-weight:800;font-size:12px}
 
 /* rifiniture grafiche */
-.tcard .img{box-shadow:0 6px 18px rgba(20,30,70,.10)}
-.box,.tile,.search,.today{box-shadow:0 2px 10px rgba(20,30,70,.05)}
-.maphost:not(.full){box-shadow:0 8px 24px rgba(20,30,70,.10)}
+.tcard .img{box-shadow:0 6px 18px var(--shadow)}
+.box,.tile,.search,.today{box-shadow:0 2px 10px rgba(16,34,24,.05)}
+.maphost:not(.full){box-shadow:0 8px 24px var(--shadow)}
 #hostTrail,#hostNav,#hostFollow{box-shadow:none}
 #tabs{background:color-mix(in srgb,var(--surface) 86%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
 .btn.pri{box-shadow:0 4px 14px color-mix(in srgb,var(--accent) 32%,transparent)}
@@ -453,10 +460,10 @@ button.tag{font:inherit;font-size:14px;color:var(--ink);cursor:pointer}
 .lesson .ck{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;flex:none;font-size:14px;font-weight:800}
 .lesson .ck.ok{background:var(--ok);border-color:var(--ok);color:#fff}
 .lesson .ck.seen{border-color:var(--warn);color:var(--warn)}
-.lesson.big{border-color:var(--accent);box-shadow:0 6px 18px rgba(20,40,120,.10)}
+.lesson.big{border-color:var(--accent);box-shadow:0 6px 18px var(--shadow)}
 .lvl{margin-top:22px}
 .cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-top:10px}
-.cal-h{text-align:center;font-size:11.5px;color:var(--muted);font-weight:700;text-transform:uppercase}
+.cal-h{text-align:center;font-size:12px;color:var(--muted);font-weight:700}
 .cd{border:1px solid transparent;border-radius:10px;padding:5px 0 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50px;min-width:0;font-size:12px;position:relative;background:var(--surface)}
 .cd b{font-size:12.5px;font-weight:700;white-space:nowrap}
 .cd small{font-size:11px;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -568,6 +575,75 @@ body.noscroll{overflow:hidden}
 .wchip.p0 svg{color:var(--ok)} .wchip.p1{background:var(--warn-bg);color:var(--warn)} .wchip.p1 svg{color:var(--warn)} .wchip.p2{background:var(--no-bg);color:var(--no)} .wchip.p2 svg{color:var(--no)}
 .wx-more{margin-top:4px}
 .haz svg{color:var(--accent)}
+
+/* ===== Passo 2: identità (vedi DESIGN.md) ===== */
+body{font-size:17px;line-height:1.5}
+.btn,.pill,.seg button,.seg a{font-family:var(--body)}
+/* le cose del cane hanno il suo colore */
+#tabs a.tdog .tav{background-color:var(--dog-soft);color:var(--dog)}
+#tabs a.tdog.on{color:var(--dog)}
+#tabs a.tdog.on .tav{box-shadow:0 0 0 2px var(--dog)}
+.avatar{background-color:var(--dog);color:var(--dog-ink)}
+.fab-i{background:var(--dog);color:var(--dog-ink)}
+.fab{background:var(--ink);color:var(--bg)}
+.stats .dg b{color:var(--dog)}
+.stats .dg b.c0,.stats .dg b.c1,.stats .dg b.c2{color:var(--dog)}
+.dogb{background:var(--dog-soft);border-radius:var(--r);padding:14px 14px 12px}
+.dogb h2{color:var(--dog)}
+.dogb .muted{color:color-mix(in srgb,var(--ink) 70%,var(--dog))}
+.lesson.big{border-color:var(--dog)}
+/* cartello segnavia: la durata calcolata per il cane, come i cartelli che indicano le ore di cammino */
+.tcard .meta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin-top:6px}
+.sign{display:inline-flex;align-items:center;background:var(--dog);color:var(--dog-ink);font:700 14px/1 var(--display);letter-spacing:.01em;padding:5px 16px 5px 9px;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 50%,calc(100% - 10px) 100%,0 100%);border-radius:3px 0 0 3px}
+.tcard .meta b{font-weight:700}
+/* verdetti: colore + icona */
+.badge,.verdict{display:inline-flex;align-items:center;gap:6px}
+.badge::before,.verdict::before{content:"";width:13px;height:13px;flex:none;background:currentColor;-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
+.verdict::before{width:16px;height:16px}
+.verdict{font:700 17px/1 var(--display);border-radius:8px}
+.tcard .badge{font-size:13.5px;padding:6px 10px 6px 8px;border-radius:8px}
+/* titoli delle sezioni nella lista */
+.count h2{font-size:23px}
+.tcard h3{font-size:20px}
+.stats b{font:700 18px/1.15 var(--display)}
+.wx-t b,.today .big,.now > b{font-weight:800}
+.nav-turn b{font-weight:800}
+/* barra in basso */
+#tabs a{font-size:11.5px;font-weight:700}
+#tabs a.on{color:var(--accent)}
+/* campi e pulsanti */
+.btn{border-radius:12px}
+.btn.pri{box-shadow:none}
+.search{border-radius:14px}
+.round{background:var(--surface)}
+.box,.tile,.search,.wx,.fold,.hrow{box-shadow:none}
+.tcard .img{box-shadow:none;border-radius:14px}
+.maphost:not(.full){box-shadow:none}
+.seg button[aria-pressed=true],.seg a[aria-current=page]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.pill[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.msg.u{background:var(--accent);color:var(--accent-ink)}
+.chatin .round{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.hrow .hi,.ddi,.tool span{color:var(--accent)}
+.badge.v0::before,.verdict.v0::before{-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E")}
+.badge.v1::before,.verdict.v1::before{-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 6v8M12 18.6v.4'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 6v8M12 18.6v.4'/%3E%3C/svg%3E")}
+.badge.v2::before,.verdict.v2::before{-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 7l10 10M17 7 7 17'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 7l10 10M17 7 7 17'/%3E%3C/svg%3E")}
+.badge.vw::before,.verdict.vw::before{-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 7v5l3 2'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 7v5l3 2'/%3E%3C/svg%3E")}
+.pill svg{width:14px;height:14px;vertical-align:-2px;margin-left:5px}
+.ovx svg{width:16px;height:16px;display:block}
+.vax button svg{width:16px;height:16px}
+
+/* diario: mappa grande del percorso fatto */
+.dmap{position:relative;display:block;width:calc(100% + 28px);margin:-14px -14px 12px;aspect-ratio:2/1;border:0;padding:0;background:var(--accent-soft);border-radius:var(--r) var(--r) 0 0;overflow:hidden;cursor:pointer}
+.dmap img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.dmap>svg{position:absolute;inset:0;margin:auto;width:60%;height:70%}
+.dmap polyline{fill:none;stroke:var(--dog);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.dmap span{position:absolute;right:10px;bottom:10px;display:inline-flex;gap:6px;align-items:center;background:var(--surface);color:var(--ink);font-weight:700;font-size:13.5px;padding:7px 11px;border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.dmap span svg{width:15px;height:15px}
+#s-uscita.on{position:fixed;inset:0;z-index:940;display:flex;flex-direction:column;padding:0;max-width:none;background:var(--bg)}
+#hostOut{flex:1;min-height:0;border-radius:0;border:0}
+#hostOut #m-full{display:none}
+.outbar{padding:12px 16px calc(env(safe-area-inset-bottom,0px) + 12px);background:var(--surface);border-top:1px solid var(--line)}
+.outbar .stats{margin:12px 0 0}
 </style>
 </head>
 <body>
@@ -624,11 +700,11 @@ body.noscroll{overflow:hidden}
     <button class="round" id="m-loc" aria-label="Mostra dove sono"><svg><use href="#i-nav"/></svg></button>
     <button class="round" id="m-surf" aria-label="Colora il tipo di fondo" hidden><svg><use href="#i-surf"/></svg></button>
   </div>
-  <button class="btn sm mapclear" id="m-clear" hidden>✕ Rimuovi percorso</button>
+  <button class="btn sm mapclear" id="m-clear" hidden><svg><use href="#i-x"/></svg>Rimuovi percorso</button>
   <div class="ovleg" id="ovleg" hidden></div>
   <div class="kmscale" id="kmscale" aria-hidden="true"><div class="kl"><span>0</span><span id="ks-m"></span><span id="ks-e"></span></div><div class="kb"><i></i></div></div>
   <div class="surfleg" id="surfleg" hidden></div>
-  <div class="flybar" id="fly" hidden><button class="round" id="fly-play" aria-label="Pausa o riprendi">⏸</button><div class="sp"><b id="fly-km"></b><div class="flyprog"><i id="fly-bar"></i></div></div><button class="round" id="fly-x" aria-label="Chiudi l'anteprima">✕</button></div>
+  <div class="flybar" id="fly" hidden><button class="round" id="fly-play" aria-label="Pausa o riprendi">⏸</button><div class="sp"><b id="fly-km"></b><div class="flyprog"><i id="fly-bar"></i></div></div><button class="round" id="fly-x" aria-label="Chiudi l'anteprima"><svg><use href="#i-x"/></svg></button></div>
 </div>
 
 <!-- ESPLORA -->
@@ -846,6 +922,12 @@ body.noscroll{overflow:hidden}
   </div></details>
 </section>
 
+<!-- USCITA: il percorso fatto in una passeggiata del diario -->
+<section class="screen" id="s-uscita">
+  <div class="maphost" id="hostOut"><div class="overlay-top"><a class="round" href="#attivita" aria-label="Torna al diario"><svg><use href="#i-back"/></svg></a></div></div>
+  <div class="outbar" id="out-info"></div>
+</section>
+
 <!-- SEGUI: chi riceve il link vede la passeggiata in tempo reale -->
 <section class="screen" id="s-segui">
   <div class="nav-top"><p class="small muted">Posizione condivisa con AllDogs</p><h3 id="fol-title">Passeggiata in corso</h3><p class="nav-msg" id="fol-msg">Cerco la posizione…</p></div>
@@ -878,7 +960,7 @@ body.noscroll{overflow:hidden}
 </div></div>
 <!-- Menu "Mappe": schede con anteprima -->
 <div class="msheet" id="layers" hidden><div class="msbox" role="dialog" aria-label="Mappe">
-  <div class="mshd"><h2>Mappe</h2><button class="round" id="layers-x" aria-label="Chiudi">✕</button></div>
+  <div class="mshd"><h2>Mappe</h2><button class="round" id="layers-x" aria-label="Chiudi"><svg><use href="#i-x"/></svg></button></div>
   <h3>Mappa di base</h3>
   <div class="mgrid"><button class="mcard" data-st="map"><span class="mi"><img src="img/maps/map.jpg" alt="" loading="lazy"></span><span class="mt">Outdoor</span><small>Sentieri e curve</small></button><button class="mcard" data-st="sat"><span class="mi"><img src="img/maps/sat.jpg" alt="" loading="lazy"></span><span class="mt">Satellite</span><small>Foto aeree</small></button><button class="mcard" data-st="s2"><span class="mi"><img src="img/maps/s2.jpg" alt="" loading="lazy"><i class=tag>Nuovo</i></span><span class="mt">Sentinel-2</span><small>Satellite europeo</small></button><button class="mcard" data-st="topo"><span class="mi"><img src="img/maps/topo.jpg" alt="" loading="lazy"></span><span class="mt">Topografica</span><small>Carta classica</small></button><button class="mcard" data-st="str"><span class="mi"><img src="img/maps/str.jpg" alt="" loading="lazy"></span><span class="mt">Strade</span></button><button class="mcard" data-st="dark"><span class="mi"><img src="img/maps/dark.jpg" alt="" loading="lazy"></span><span class="mt">Notte</span></button></div>
   <h3>Meteo</h3>
@@ -1301,7 +1383,7 @@ function staticImg(path,w,h){
   const p=encodeURIComponent(encPoly(sample(path,Math.min(70,path.length)))),s=path[0];
   return `https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/static/path-6+ffffff-0.85(${p}),path-3+ff5d2a-1(${p}),pin-s+1f8a4c(${s[1].toFixed(5)},${s[0].toFixed(5)})/auto/${w||400}x${h||240}@2x?padding=36&access_token=${MAPBOX_TOKEN}`;
 }
-function staticPlace(c,w,h){return `https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/static/pin-l+2456f5(${c[1]},${c[0]})/${c[1]},${c[0]},13.2/${w||400}x${h||240}@2x?access_token=${MAPBOX_TOKEN}`}
+function staticPlace(c,w,h){return `https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/static/pin-l+1d4f3c(${c[1]},${c[0]})/${c[1]},${c[0]},13.2/${w||400}x${h||240}@2x?access_token=${MAPBOX_TOKEN}`}
 function svgThumb(path){
   const pts=sample(path,40),lat0=pts[0][0]*Math.PI/180;let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
   const xy=pts.map(p=>{const x=p[1]*Math.cos(lat0),y=-p[0];x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y);return [x,y]});
@@ -1413,7 +1495,7 @@ function addLayers(){
   M.addLayer({id:"ad-poi-l",type:"symbol",source:"poi",minzoom:13,filter:["!=",["get","k"],"g"],layout:{"text-field":["match",["get","k"],"a","C","v","+","~"],"text-size":10,"text-font":["DIN Pro Bold","Arial Unicode MS Bold"],"text-allow-overlap":true},paint:{"text-color":"#fff"}});
   poiData();setTimeout(vxView,1200);
   // da lontano: un cerchio per ogni riquadro con il numero dei sentieri
-  M.addLayer({id:"ad-cells",type:"circle",source:"cells",paint:{"circle-color":"#2456f5","circle-opacity":.85,"circle-stroke-color":"#fff","circle-stroke-width":2,"circle-radius":["interpolate",["linear"],["get","n"],1,11,200,17,1500,26]}});
+  M.addLayer({id:"ad-cells",type:"circle",source:"cells",paint:{"circle-color":"#1d4f3c","circle-opacity":.85,"circle-stroke-color":"#fff","circle-stroke-width":2,"circle-radius":["interpolate",["linear"],["get","n"],1,11,200,17,1500,26]}});
   M.addLayer({id:"ad-cells-n",type:"symbol",source:"cells",layout:{"text-field":["get","t"],"text-size":11.5,"text-font":["DIN Pro Bold","Arial Unicode MS Bold"],"text-allow-overlap":true},paint:{"text-color":"#fff"}});
   // frecce che mostrano il verso del percorso scelto
   if(!M.hasImage("ad-arrow")){const c=document.createElement("canvas");c.width=c.height=40;const g=c.getContext("2d");
@@ -1545,7 +1627,7 @@ function ovLegend(msg){
     ndvi:["Vegetazione",bar("#a6743c,#e3d36a,#9ccf5c,#2f8f2f,#0b4f12","terreno spoglio","bosco fitto"),`Media di 16 giorni dal ${fmt(ndviDate())} · NASA`],
   })[wxOv]||[C.lab,`<div class="ovbar" style="background:linear-gradient(90deg,${C.stops.filter(s=>s[1].length===7).map(s=>s[1]).join(",")})"></div><div class="ovlab">${C.leg.map(x=>`<span>${x}</span>`).join("")}</div>`,
     msg||(wxOv==="wind"?"Km orari · la freccia indica dove soffia · Open-Meteo":wxOv==="rainf"?"Millimetri previsti in 24 ore · Open-Meteo":"Gradi dell'aria · Open-Meteo")];
-  el.innerHTML=`<div class="ovhd"><b>${t}</b><button class="ovx" aria-label="Spegni questa mappa">✕</button></div>${body}<small>${foot}</small>`;
+  el.innerHTML=`<div class="ovhd"><b>${t}</b><button class="ovx" aria-label="Spegni questa mappa"><svg><use href="#i-x"/></svg></button></div>${body}<small>${foot}</small>`;
   el.hidden=false;el.querySelector(".ovx").onclick=()=>setStyleKind(wxOv);
 }
 function terrain(on){
@@ -1766,8 +1848,8 @@ $("m-loc").onclick=async()=>{
 
 // ================= Navigazione =================
 let curScr="esplora";
-const TABOF={sentiero:"esplora",obiettivi:"allenati",addestramento:"allenati",salute:"cane",zaino:"cane",soccorso:"cane",regole:"cane"};
-const SCREENS=["esplora","sentiero","crea","attivita","cane","vai","segui","obiettivi","addestramento","salute","zaino","soccorso","regole"];
+const TABOF={sentiero:"esplora",uscita:"attivita",obiettivi:"allenati",addestramento:"allenati",salute:"cane",zaino:"cane",soccorso:"cane",regole:"cane"};
+const SCREENS=["esplora","sentiero","crea","attivita","uscita","cane","vai","segui","obiettivi","addestramento","salute","zaino","soccorso","regole"];
 let lastList=0;
 function route(){
   let h=location.hash.slice(1)||"esplora";
@@ -1776,6 +1858,7 @@ function route(){
   if(h==="salvati"){S.actView="saved";location.replace("#attivita");return}
   let scr=h,arg=null;
   if(h.startsWith("s-")){scr="sentiero";arg=+h.slice(2)}
+  if(h.startsWith("u-")){scr="uscita";arg=+h.slice(2)}
   if(h.startsWith("segui-")){scr="segui";arg=h.slice(6).replace(/[^a-zA-Z0-9_-]/g,"")}
   if(!SCREENS.includes(scr))scr="esplora";
   if(scr==="vai"&&!nav&&!restoreNav()){location.replace("#esplora");return}
@@ -1797,6 +1880,7 @@ function route(){
   if(scr==="crea")showCrea();
   if(scr==="cane")showDog();
   if(scr==="attivita")showActView();
+  if(scr==="uscita")showOut(arg);
   if(scr==="obiettivi")showGoals();
   if(scr==="addestramento")showTrain();
   if(scr==="salute"){showHealth();renderRem()}
@@ -1822,8 +1906,8 @@ function cardHTML(tr,res,title){
   const badge=res.v<0?`<span class="badge vw">Sto valutando…</span>`:`<span class="badge v${res.v}">${VLABEL[res.v]}</span>`;
   return `<article class="tcard" data-id="${tr.id}"><div class="img">${svgThumb(tr.path)}<img loading="lazy" alt="" src="${staticImg(tr.path)}" onerror="this.remove()">${badge}
     <button class="round ${sv?"saved":""}" data-save="${tr.id}" aria-label="${sv?"Togli dai salvati":"Salva"}">${icon("heart")}</button></div>
-    <h3>${esc(title||tr.name)}</h3><p class="sub">${[title?esc(tr.name):"",esc(tr.zone),tr.ref?"n. "+esc(tr.ref):"",tr.scale].filter(Boolean).join(" · ")}</p>
-    <p class="meta">${res.v>=0?`Per ${dn()}: <b class="c${res.effort}">${EFFORT[res.effort].toLowerCase()}</b> · `:""}${km(tr.len)} km${e?" · ↑ "+e.up+" m":""} · ${fmtH(res.hours)} col cane</p>${featLine(tr)}</article>`;
+    <h3>${esc(title||tr.name)}</h3><p class="sub">${[title?esc(tr.name):"",esc(tr.zone),tr.ref?"sentiero "+esc(tr.ref):"",tr.scale?"CAI "+tr.scale:""].filter(Boolean).join(", ")}</p>
+    <p class="meta"><span class="sign">${fmtH(res.hours)} con ${dn()}</span><span>${km(tr.len)} km</span>${e?`<span>↑ ${e.up} m</span>`:""}${res.v>=0?`<span class="c${res.effort}"><b>${EFFORT[res.effort]}</b> per lui</span>`:""}</p>${featLine(tr)}</article>`;
 }
 function placeCard(f,i){
   return `<article class="tcard" data-place="${i}"><div class="img"><img loading="lazy" alt="" src="${staticPlace(f.c)}" onerror="this.remove()"><span class="badge vw">Sentieri vicini</span></div>
@@ -1914,7 +1998,7 @@ function renderList(){fitLabels();
   ["f-fit","f-eff","f-len","f-up","f-dif","f-zone"].forEach(id=>$(id).classList.toggle("act",$(id).value!=="all"));
   $("f-day").classList.toggle("act",S.day>0);
   $("near-row").hidden=!S.near;
-  if(S.near){$("near-row").innerHTML=`<button class="pill x" id="near-x">Vicino a ${esc(S.near.n)} ✕</button>`;$("near-x").onclick=()=>setNear(null)}
+  if(S.near){$("near-row").innerHTML=`<button class="pill x" id="near-x">Vicino a ${esc(S.near.n)}<svg><use href="#i-x"/></svg></button>`;$("near-x").onclick=()=>setNear(null)}
   $("feat-status").textContent="";
   // zone (paesi) presenti nella parte di mappa inquadrata
   {const sel=$("f-zone"),cur0=sel.value,cnt={};for(const t of S.trails)if(t.zone&&inView(t))cnt[t.zone]=(cnt[t.zone]||0)+1;
@@ -1967,11 +2051,11 @@ function detailHTML(o){
   const d=dog(),res=verdict(o.it,d,S.day),st=steps(o.it.len,d);
   const vb=res.v<0?`<span class="verdict vw">Sto valutando…</span>`:`<span class="verdict v${res.v}">${VLABEL[res.v]} per ${dn()}</span>`;
   return `<h1>${esc(o.title)}</h1><p class="muted" style="margin-top:6px">${o.sub}</p>${vb}
-    <div class="stats"><div><b>${km(o.it.len)} km</b><span>Lunghezza</span></div><div><b>${o.it.up!=null?o.it.up+" m":"…"}</b><span>Dislivello</span></div><div><b>${fmtH(res.hours)}</b><span>Col cane</span></div><div><b class="${res.v>=0?"c"+res.effort:""}">${res.v>=0?EFFORT[res.effort]:"…"}</b><span>Per ${dn()}</span></div></div>
+    <div class="stats"><div><b>${km(o.it.len)} km</b><span>Lunghezza</span></div><div><b>${o.it.up!=null?o.it.up+" m":"…"}</b><span>Dislivello</span></div><div class="dg"><b>${fmtH(res.hours)}</b><span>Con ${dn()}</span></div><div class="dg"><b class="${res.v>=0?"c"+res.effort:""}">${res.v>=0?EFFORT[res.effort]:"…"}</b><span>Per ${dn()}</span></div></div>
     <p class="small muted">${o.it.loop===false?"Percorso lineare (andata e ritorno raddoppia la distanza)":"Percorso ad anello"}. Tutte le valutazioni sono fatte sui limiti di ${dn()}, non su quelli di una persona.</p>
     ${o.tools||""}
     ${o.prof?`<div class="block"><h2>Dislivello lungo il percorso</h2>${elevChart(o.prof,o.it.len,d)}</div>`:""}
-    <div class="block"><h2>Per ${dn()}</h2>
+    <div class="block dogb"><h2>Per ${dn()}</h2>
       ${res.v>=0?`<p style="margin-bottom:10px">Impegno per ${dn()}: <b class="c${res.effort}">${EFFORT[res.effort]}</b> · ${dayName(S.day,res.w&&res.w.daily).toLowerCase()}</p>`:""}
       <ul class="why">${res.why.map(x=>`<li><i class="dot ${x.lvl<0?"bw":"b"+x.lvl}"></i><span>${x.txt}</span></li>`).join("")}</ul>
       ${res.cap.notes.length?`<p class="small muted" style="margin-top:10px">Limiti più prudenti perché ${dn()} ${res.cap.notes.join(", ")}.</p>`:""}
@@ -2344,7 +2428,7 @@ function showGen(){
     <div class="block"><h2>Tappe e giochi</h2><ol class="stops">${r.stops.map(s=>`<li><div><b>${s.t}</b> <span class="muted small">· km ${km(s.km)}</span><br>${s.d}</div></li>`).join("")}</ol>
       <p class="small muted" style="margin-top:10px">${r.source==="chat"?"Tappe proposte dall'assistente AI, distribuite lungo il giro.":"Tappe proposte con regole fisse."} I numeri corrispondono a quelli sulla mappa.</p></div>
     ${cmds}
-    <div class="row" style="margin-top:16px;flex-wrap:wrap"><button class="btn pri" id="gen-start">${icon("play")}Avvia percorso</button><button class="btn" id="gen-save">${icon("heart")}Salva il giro</button>${S.gen.length>1?`<button class="btn" id="gen-next">Prova un altro giro</button>`:""}<a class="btn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${r.path[0][0]},${r.path[0][1]}">${icon("nav")}Portami alla partenza</a><button class="btn" data-3d>${icon("layers")}Anteprima 3D</button>${gsh?`<button class="btn" data-surf>${icon("surf")}Colora il fondo</button>`:""}<button class="btn" id="gen-pack">${icon("bag")}Zaino pronto</button><button class="btn" id="gen-clear">✕ Rimuovi percorso</button></div></div>`;
+    <div class="row" style="margin-top:16px;flex-wrap:wrap"><button class="btn pri" id="gen-start">${icon("play")}Avvia percorso</button><button class="btn" id="gen-save">${icon("heart")}Salva il giro</button>${S.gen.length>1?`<button class="btn" id="gen-next">Prova un altro giro</button>`:""}<a class="btn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${r.path[0][0]},${r.path[0][1]}">${icon("nav")}Portami alla partenza</a><button class="btn" data-3d>${icon("layers")}Anteprima 3D</button>${gsh?`<button class="btn" data-surf>${icon("surf")}Colora il fondo</button>`:""}<button class="btn" id="gen-pack">${icon("bag")}Zaino pronto</button><button class="btn" id="gen-clear"><svg><use href="#i-x"/></svg>Rimuovi percorso</button></div></div>`;
   bindTools($("gen-out"));
   $("gen-pack").onclick=()=>packSheet({km:r.len/1000,p:r.path[0],title:r.name||"Giro di "+km(r.len)+" km",mount:(r.up||0)>=300});
   $("gen-start").onclick=()=>startNav({name:r.name||"Giro di "+km(r.len)+" km",kind:"giro",ways:[r.path],path:r.path,len:r.len,up:r.up,stops:r.stops.map(s=>({p:s.p,km:s.km,t:s.t,d:s.d})),water:[],scale:"CITY",loop:r.loop!==false,turns:r.turns||null});
@@ -2474,7 +2558,7 @@ $("chat-form").onsubmit=e=>{e.preventDefault();chatSend($("chat-in").value)};
 // ================= Salvati =================
 function showSaved(){
   const d=dog();offList();
-  $("saved-routes").innerHTML=S.routes.length?S.routes.map((r,i)=>`<article class="tcard" data-r="${i}"><div class="img">${svgThumb(r.path)}<img loading="lazy" alt="" src="${staticImg(r.path)}" onerror="this.remove()"><button class="round" data-del="${i}" aria-label="Elimina">✕</button></div><h3>${esc(r.name)}</h3><p class="sub">${new Date(r.t).toLocaleDateString("it-IT",{day:"numeric",month:"long"})}${r.source==="chat"?" · creato con l'AI":""}</p><p class="meta">${km(r.len)} km · ↑ ${r.up} m</p></article>`).join(""):`<p class="muted">Ancora nessun giro. Creane uno con il pulsante <b>+</b> qui sotto.</p>`;
+  $("saved-routes").innerHTML=S.routes.length?S.routes.map((r,i)=>`<article class="tcard" data-r="${i}"><div class="img">${svgThumb(r.path)}<img loading="lazy" alt="" src="${staticImg(r.path)}" onerror="this.remove()"><button class="round" data-del="${i}" aria-label="Elimina"><svg><use href="#i-x"/></svg></button></div><h3>${esc(r.name)}</h3><p class="sub">${new Date(r.t).toLocaleDateString("it-IT",{day:"numeric",month:"long"})}${r.source==="chat"?" · creato con l'AI":""}</p><p class="meta">${km(r.len)} km · ↑ ${r.up} m</p></article>`).join(""):`<p class="muted">Ancora nessun giro. Creane uno con il pulsante <b>+</b> qui sotto.</p>`;
   $("saved-routes").querySelectorAll(".tcard").forEach(c=>c.onclick=ev=>{const del=ev.target.closest("[data-del]");
     if(del){ev.stopPropagation();S.routes.splice(+del.dataset.del,1);store.set("alldogs-routes",S.routes);showSaved();toast("Giro eliminato");return}
     const r=S.routes[+c.dataset.r];S.gen=[Object.assign({},r)];S.genIdx=0;S.start=r.path[0];location.hash="crea";setTimeout(showGen,150)});
@@ -2491,6 +2575,17 @@ function showSaved(){
 
 // ================= Attività =================
 // Una sola scheda: il diario delle uscite, e dal menu a tendina i percorsi salvati e le mappe scaricate
+// percorso di un'uscita: quello registrato col GPS, altrimenti quello previsto del sentiero
+const outPath=x=>x.track&&x.track.length>2?x.track:(x.id&&TR.get(x.id)?TR.get(x.id).path:null);
+function outMap(x){const p=outPath(x);if(!p)return "";
+  return `<button class="dmap" type="button" data-out="${x.t}" aria-label="Apri la mappa del percorso fatto">${svgThumb(p)}<img loading="lazy" alt="" src="${staticImg(p,640,320)}" onerror="this.remove()"><span>${icon("expand")}Apri la mappa</span></button>`}
+function showOut(t){
+  const x=S.acts.find(a=>a.t===t),p=x&&outPath(x);if(!p){location.replace("#attivita");return}
+  cur=null;mountMap($("hostOut"),true);setScene({mode:"trail",ways:[p],sf:null,start:p[0],water:[]},true);
+  const k=x.dist/1000,pc=k>=.1?Math.round(x.dur/60000/k):null;
+  $("out-info").innerHTML=`<h3>${esc(x.name)}</h3><p class="small muted">${new Date(x.t).toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long"})}, ${x.gps&&x.track&&x.track.length>2?"percorso registrato col GPS":"percorso previsto (il GPS non l'ha registrato)"}</p>
+    <div class="stats"><div><b>${km(x.dist)} km</b><span>Distanza</span></div><div><b>${fmtDur(x.dur)}</b><span>Durata</span></div><div class="dg"><b>${pc?pc+" min":"…"}</b><span>Per 1 km</span></div><div><b>${x.up?x.up+" m":"…"}</b><span>Salita</span></div></div>`;
+}
 function showActView(){
   const v=S.actView||"diary";$("act-view").value=v;
   ["diary","saved","off"].forEach(k=>$("av-"+k).hidden=k!==v);
@@ -2505,7 +2600,7 @@ function showAct(){
     :`<p style="margin-top:8px">Ancora nessuna misura: per ora uso una media di ${DEF_PACE} minuti al km.</p><p class="small muted" style="margin-top:6px">Apri un sentiero o crea un giro e tocca <b>Avvia percorso</b>. Dopo la prima passeggiata l'app impara l'andatura di ${dn()} e stima meglio i tempi.</p>`)
     +(A.length?`<div class="stats" style="grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:0"><div><b>${A.length}</b><span>${A.length===1?"Passeggiata":"Passeggiate"}</span></div><div><b>${kmN(tot.km.toFixed(1))} km</b><span>In totale</span></div><div><b>${fmtDur(tot.ms)}</b><span>In cammino</span></div></div>`:"");
   $("act-list").innerHTML=A.length?A.map((x,i)=>{const k=x.dist/1000,p=k>=.1?Math.round(x.dur/60000/k):null;
-    return `<article class="box act"><div class="row"><div class="sp" style="min-width:0"><h3>${esc(x.name)}</h3><p class="small muted">${new Date(x.t).toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long"})} · ore ${new Date(x.t).toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"})}</p></div><button class="round" data-del="${i}" aria-label="Elimina la passeggiata">✕</button></div>
+    return `<article class="box act">${outMap(x)}<div class="row"><div class="sp" style="min-width:0"><h3>${esc(x.name)}</h3><p class="small muted">${new Date(x.t).toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long"})} · ore ${new Date(x.t).toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"})}</p></div><button class="round" data-del="${i}" aria-label="Elimina la passeggiata"><svg><use href="#i-x"/></svg></button></div>
     <div class="stats"><div><b>${km(x.dist)} km</b><span>Distanza</span></div><div><b>${fmtDur(x.dur)}</b><span>Durata</span></div><div><b>${p?p+" min":"…"}</b><span>Per 1 km</span></div><div><b>${Math.round(x.dist/dogStep(d.weight)).toLocaleString("it-IT")}</b><span>Passi del cane</span></div></div>
     <p class="small muted">${x.steps?`<b style="color:var(--ink)">I tuoi passi: ${x.steps.toLocaleString("it-IT")}</b> (dall'app Salute)`:`Tu circa ${Math.round(x.dist/myStride()).toLocaleString("it-IT")} passi (stima)`} · ${x.gps?"distanza misurata col GPS":"distanza del percorso previsto"}${x.up?" · ↑ circa "+x.up+" m":""}</p>
     ${diaryHTML(x,i)} <button class="btn sm" data-steps="${i}" style="margin-top:8px">${x.steps?"Cambia i passi":"Aggiungi i passi di Salute"}</button></article>`}).join(""):`<p class="muted">Ancora nessuna passeggiata. Le trovi qui dopo aver toccato <b>Chiudi attività</b> alla fine di un percorso.</p>`;
@@ -2517,6 +2612,7 @@ function showAct(){
     $("st-ok").onclick=()=>{const v=parseSteps($("st-in").value);if(!v){toast("Scrivi un numero di passi valido");return}x.steps=v;store.set("alldogs-acts",S.acts);$("sheet").hidden=true;showAct();toast("Passi salvati")};
     const dl=$("st-del");if(dl)dl.onclick=()=>{delete x.steps;store.set("alldogs-acts",S.acts);$("sheet").hidden=true;showAct()};
   });
+  $("act-list").querySelectorAll("[data-out]").forEach(b=>b.onclick=()=>{location.hash="u-"+b.dataset.out});
   $("act-list").querySelectorAll("[data-dia]").forEach(b=>b.onclick=()=>diarySheet(+b.dataset.dia));diaryPhotos($("act-list"));
   $("act-list").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{if(!confirm("Eliminare questa passeggiata?"))return;const gone=S.acts.splice(+b.dataset.del,1)[0];if(gone&&gone.ph)photoPut(String(gone.t),null).catch(()=>{});store.set("alldogs-acts",S.acts);showAct();toast("Passeggiata eliminata")});
   $("steps-box").innerHTML=`<h2>Quanti passi fa ${dn()}?</h2><p style="margin-top:8px">In una passeggiata di 5 km tu fai circa <b>${s.me.toLocaleString("it-IT")}</b> passi, ${dn()} circa <b>${s.dog.toLocaleString("it-IT")}</b>.</p><p class="small muted" style="margin-top:6px">${myStride()!==.75?`Il tuo passo misurato è di circa ${Math.round(myStride()*100)} cm, ricavato dai passi di Salute che hai scritto.`:"Per te uso un passo medio di 75 cm: scrivendo i passi dell'app Salute nelle passeggiate, l'app impara il tuo."} Per ${dn()} è una stima dalla taglia.</p>`;
@@ -3124,7 +3220,7 @@ function renderRem(){
   const el=$("he-rem");if(!el)return;const L=remList(),h=dog().health||{};
   el.innerHTML=`<div class="block"><h2>Libretto e promemoria</h2>
     ${L.length?`<div class="stack" style="margin-top:10px">${L.map((r,i)=>`<div class="rem${r.dd<0?" late":r.dd<=14?" soon":""}"><div class="sp" style="min-width:0"><b>${esc(r.n)}</b><small>${remWhen(r.dd,r.d)}${r.ev?" · "+REP.find(x=>x[0]===r.ev)?.[1].toLowerCase():""}</small></div>
-      <div class="row"><button class="btn sm" data-rd="${i}">Fatto</button><button class="round" data-rc="${i}" aria-label="Aggiungi al calendario">${icon("bell")}</button>${r.src==="rem"?`<button class="round" data-rx="${i}" aria-label="Elimina">✕</button>`:""}</div></div>`).join("")}</div>`
+      <div class="row"><button class="btn sm" data-rd="${i}">Fatto</button><button class="round" data-rc="${i}" aria-label="Aggiungi al calendario">${icon("bell")}</button>${r.src==="rem"?`<button class="round" data-rx="${i}" aria-label="Elimina"><svg><use href="#i-x"/></svg></button>`:""}</div></div>`).join("")}</div>`
     :`<p class="muted" style="margin-top:8px">Nessun promemoria. Aggiungi antipulci, filaria, vaccini e visite: te li ricordo qui e nella pagina iniziale.</p>`}
     <button class="btn wide" id="rem-add" style="margin-top:12px">${icon("plus")}Aggiungi un promemoria</button>
     <p class="small muted" style="margin-top:8px">«Fatto» sposta la data alla prossima volta. Con la campanella lo metti nel calendario del telefono, che ti avvisa anche ad app chiusa. Microchip, veterinario e vaccini si cambiano in <a href="#cane">Il mio cane</a>.</p>
@@ -3153,7 +3249,7 @@ async function photoGet(k){try{const db=await idb();return await new Promise(r=>
 async function photoPut(k,v){const db=await idb();return new Promise((res,rej)=>{const t=db.transaction("photos","readwrite");v?t.objectStore("photos").put(v,k):t.objectStore("photos").delete(k);t.oncomplete=res;t.onerror=()=>rej(t.error)})}
 function shrinkPhoto(file){return new Promise((res,rej)=>{const im=new Image();im.onload=()=>{const s=Math.min(1,1000/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext("2d").drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(im.src);res(c.toDataURL("image/jpeg",.75))};im.onerror=rej;im.src=URL.createObjectURL(file)})}
 function diaryHTML(x,i){const m=MOODS.find(m=>m[0]===x.mood);
-  return `${x.track&&x.track.length>2?`<div class="dtrace">${svgThumb(x.track)}</div>`:""}${x.ph?`<img class="dph" data-ph="${x.t}" alt="Foto della passeggiata">`:""}
+  return `${x.ph?`<img class="dph" data-ph="${x.t}" alt="Foto della passeggiata">`:""}
     ${m||x.note?`<p class="dnote">${m?`<span class="mood ${m[0]}">${m[1]}</span> `:""}${esc(x.note||"")}</p>`:""}
     <button class="btn sm" data-dia="${i}" style="margin-top:8px">${m||x.note||x.ph?"Modifica il diario":"Scrivi com'è andata"}</button>`}
 function diaryPhotos(root){root.querySelectorAll("img[data-ph]").forEach(async im=>{const v=await photoGet(im.dataset.ph);if(v)im.src=v;else im.remove()})}
@@ -3735,7 +3831,7 @@ const DF=["name","breed","age","weight","train","agil","coat","brachy"];
 const HF=[["chip","h-chip"],["vet","h-vet"],["vettel","h-vettel"],["antip","h-antip"],["antipdate","h-antipdate"],["note","h-note"]];
 $("pat").innerHTML=PATS.map(p=>`<label><input type="checkbox" data-p="${p[0]}">${p[1]}</label>`).join("");
 $("pat").querySelector('[data-p="altro"]').onchange=e=>$("pat-other-l").hidden=!e.target.checked;
-function vaxRow(v){const div=document.createElement("div");div.className="vax";div.innerHTML=`<input placeholder="Es. polivalente" value="${esc(v.n||"")}" aria-label="Vaccino"><input type="date" value="${esc(v.d||"")}" aria-label="Data del richiamo"><button class="round" type="button" aria-label="Togli">✕</button>`;div.querySelector("button").onclick=()=>div.remove();$("vax").appendChild(div)}
+function vaxRow(v){const div=document.createElement("div");div.className="vax";div.innerHTML=`<input placeholder="Es. polivalente" value="${esc(v.n||"")}" aria-label="Vaccino"><input type="date" value="${esc(v.d||"")}" aria-label="Data del richiamo"><button class="round" type="button" aria-label="Togli"><svg><use href="#i-x"/></svg></button>`;div.querySelector("button").onclick=()=>div.remove();$("vax").appendChild(div)}
 $("vax-add").onclick=()=>vaxRow({});
 const fmtD=s=>new Date(s+"T12:00").toLocaleDateString("it-IT",{day:"numeric",month:"long",year:"numeric"});
 function healthAlerts(d){
