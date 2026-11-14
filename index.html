@@ -661,7 +661,11 @@ function capacity(d){
   return {km:Math.max(1,Math.round(k*f*10)/10),up:Math.max(50,Math.round(up*f*fu/10)*10),notes,heat:(sensitive?21:24)+heat,sensitive,agil,health:pats(d).length>0};
 }
 const dogStep=w=>w<10?.3:w<25?.45:w<40?.6:.7;
-function steps(m,d){return {me:Math.round(m/.75/100)*100,dog:Math.round(m/dogStep(d.weight)/100)*100}}
+// lunghezza del TUO passo: media delle passeggiate in cui hai scritto i passi veri dell'app Salute (altrimenti 75 cm)
+function myStride(){let m=0,n=0;for(const x of S.acts||[]){if(!(x.steps>0)||!(x.dist>=300))continue;const st=x.dist/x.steps;if(st<.4||st>1.1)continue;m+=x.dist;n+=x.steps;if(n>200000)break}return n?m/n:.75}
+function steps(m,d){return {me:Math.round(m/myStride()/100)*100,dog:Math.round(m/dogStep(d.weight)/100)*100}}
+const HEALTH_HINT="Sull'iPhone apri l'app <b>Salute</b>, tocca <b>Sfoglia → Attività → Passi</b>, scegli <b>G</b> (giorno) e somma le barre delle ore della passeggiata.";
+function parseSteps(v){const n=parseInt(String(v||"").replace(/[^0-9]/g,""),10);return n>=50&&n<=150000?n:null}
 
 // Andatura PERSONALE del cane: minuti per fare 1 km, media delle passeggiate salvate in Attività (le ultime 10 credibili).
 // upk = metri di salita per km che quelle passeggiate avevano già dentro: nelle stime si aggiunge tempo solo per la salita in più.
@@ -1906,9 +1910,18 @@ function showAct(){
   $("act-list").innerHTML=A.length?A.map((x,i)=>{const k=x.dist/1000,p=k>=.1?Math.round(x.dur/60000/k):null;
     return `<article class="box act"><div class="row"><div class="sp" style="min-width:0"><h3>${esc(x.name)}</h3><p class="small muted">${new Date(x.t).toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long"})} · ore ${new Date(x.t).toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"})}</p></div><button class="round" data-del="${i}" aria-label="Elimina la passeggiata">✕</button></div>
     <div class="stats"><div><b>${km(x.dist)} km</b><span>Distanza</span></div><div><b>${fmtDur(x.dur)}</b><span>Durata</span></div><div><b>${p?p+" min":"…"}</b><span>Per 1 km</span></div><div><b>${Math.round(x.dist/dogStep(d.weight)).toLocaleString("it-IT")}</b><span>Passi del cane</span></div></div>
-    <p class="small muted">Tu circa ${Math.round(x.dist/.75).toLocaleString("it-IT")} passi · ${x.gps?"distanza misurata col GPS":"distanza del percorso previsto"}${x.up?" · ↑ circa "+x.up+" m":""}</p></article>`}).join(""):`<p class="muted">Ancora nessuna passeggiata. Le trovi qui dopo aver toccato <b>Chiudi attività</b> alla fine di un percorso.</p>`;
+    <p class="small muted">${x.steps?`<b style="color:var(--ink)">I tuoi passi: ${x.steps.toLocaleString("it-IT")}</b> (dall'app Salute)`:`Tu circa ${Math.round(x.dist/myStride()).toLocaleString("it-IT")} passi (stima)`} · ${x.gps?"distanza misurata col GPS":"distanza del percorso previsto"}${x.up?" · ↑ circa "+x.up+" m":""}</p>
+    <button class="btn sm" data-steps="${i}" style="margin-top:8px">${x.steps?"Cambia i passi":"Aggiungi i passi di Salute"}</button></article>`}).join(""):`<p class="muted">Ancora nessuna passeggiata. Le trovi qui dopo aver toccato <b>Chiudi attività</b> alla fine di un percorso.</p>`;
+  $("act-list").querySelectorAll("[data-steps]").forEach(b=>b.onclick=()=>{
+    const x=S.acts[+b.dataset.steps],d0=new Date(x.t),d1=new Date(x.t+x.dur);
+    openSheet(`<h2>I tuoi passi</h2><p class="small muted" style="margin-top:6px">${esc(x.name)} · ${d0.toLocaleDateString("it-IT",{day:"numeric",month:"long"})}, dalle ${d0.toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"})} alle ${d1.toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"})}</p>
+      <input class="field" id="st-in" inputmode="numeric" placeholder="Es. 4.500" value="${x.steps||""}" style="margin-top:12px"><p class="small muted" style="margin-top:8px">${HEALTH_HINT}</p>
+      <div class="row" style="margin-top:12px"><button class="btn pri" id="st-ok">Salva</button>${x.steps?`<button class="btn" id="st-del">Togli</button>`:""}</div>`);
+    $("st-ok").onclick=()=>{const v=parseSteps($("st-in").value);if(!v){toast("Scrivi un numero di passi valido");return}x.steps=v;store.set("alldogs-acts",S.acts);$("sheet").hidden=true;showAct();toast("Passi salvati")};
+    const dl=$("st-del");if(dl)dl.onclick=()=>{delete x.steps;store.set("alldogs-acts",S.acts);$("sheet").hidden=true;showAct()};
+  });
   $("act-list").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{if(!confirm("Eliminare questa passeggiata?"))return;S.acts.splice(+b.dataset.del,1);store.set("alldogs-acts",S.acts);showAct();toast("Passeggiata eliminata")});
-  $("steps-box").innerHTML=`<h2>Quanti passi fa ${dn()}?</h2><p style="margin-top:8px">In una passeggiata di 5 km tu fai circa <b>${s.me.toLocaleString("it-IT")}</b> passi, ${dn()} circa <b>${s.dog.toLocaleString("it-IT")}</b>.</p><p class="small muted" style="margin-top:6px">I passi sono una stima da distanza e taglia, non una misura: il contapassi vero ha bisogno dell'app installata dallo store.</p>`;
+  $("steps-box").innerHTML=`<h2>Quanti passi fa ${dn()}?</h2><p style="margin-top:8px">In una passeggiata di 5 km tu fai circa <b>${s.me.toLocaleString("it-IT")}</b> passi, ${dn()} circa <b>${s.dog.toLocaleString("it-IT")}</b>.</p><p class="small muted" style="margin-top:6px">${myStride()!==.75?`Il tuo passo misurato è di circa ${Math.round(myStride()*100)} cm, ricavato dai passi di Salute che hai scritto.`:"Per te uso un passo medio di 75 cm: scrivendo i passi dell'app Salute nelle passeggiate, l'app impara il tuo."} Per ${dn()} è una stima dalla taglia.</p>`;
 }
 
 // ================= In cammino (Avvia percorso) =================
@@ -2105,6 +2118,9 @@ $("nav-end").onclick=()=>{
     ${differ?`<p class="small muted" style="margin-top:8px">Quale distanza salvo?</p>
     <label><input type="radio" name="nsd" value="gps" ${gpsOK?"checked":""}>Quella misurata dal GPS (${km(nav.dist)} km)</label>
     <label><input type="radio" name="nsd" value="plan" ${gpsOK?"":"checked"}>Ho fatto tutto il percorso (${km(o.len)} km)</label>`:""}
+    <label class="w" style="display:block;margin-top:12px;font-size:14px"><b>I tuoi passi veri (facoltativo)</b>
+      <input class="field" id="ns-steps" inputmode="numeric" placeholder="Es. 4.500" style="margin-top:6px"></label>
+    <p class="small muted" style="margin-top:6px">${HEALTH_HINT} Puoi aggiungerli anche dopo, dalla sezione Attività.</p>
     <div class="stack" style="margin-top:12px"><button class="btn pri wide" id="ns-save">Salva nelle attività</button><button class="btn wide" id="ns-cont">Continua a camminare</button><button class="btn wide" id="ns-drop">Chiudi senza salvare</button></div>`;
   $("nav-sheet").hidden=false;
   $("ns-cont").onclick=()=>{$("nav-sheet").hidden=true;if(!was){nav.paused=false;nav.since=Date.now()}paintNav()};
@@ -2112,7 +2128,8 @@ $("nav-end").onclick=()=>{
   $("ns-save").onclick=()=>{
     const pick=document.querySelector('input[name="nsd"]:checked'),useGps=pick?pick.value==="gps":true,dist=Math.round(useGps?nav.dist:o.len);
     let tr=nav.track.length>1?thin(nav.track,15):[];if(tr.length>400)tr=sample(tr,400);
-    S.acts.unshift({t:nav.t0,name:o.name,kind:o.kind,id:o.id||null,dur:Math.round(el),dist,plan:o.len,up:Math.round((o.up||0)*Math.min(1,dist/Math.max(1,o.len))),gps:useGps,track:tr});
+    const stp=parseSteps($("ns-steps").value);if($("ns-steps").value.trim()&&!stp){toast("Il numero dei passi non sembra giusto");return}
+    S.acts.unshift({t:nav.t0,name:o.name,kind:o.kind,id:o.id||null,dur:Math.round(el),dist,plan:o.len,up:Math.round((o.up||0)*Math.min(1,dist/Math.max(1,o.len))),gps:useGps,track:tr,steps:stp});
     S.acts=S.acts.slice(0,200);
     if(!store.set("alldogs-acts",S.acts)){S.acts.slice(5).forEach(x=>delete x.track);store.set("alldogs-acts",S.acts)}
     if(nav.share)sharePub({k:"e",t:Date.now(),d:dist,e:Math.round(el/1000)});
