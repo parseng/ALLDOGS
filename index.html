@@ -1019,11 +1019,12 @@ const item=tr=>({len:tr.len,up:elev[tr.id]?elev[tr.id].up:null,scale:tr.scale,st
 const cellKey=(la,lo)=>(Math.floor(la/CELL)*CELL).toFixed(1)+"_"+(Math.floor(lo/CELL)*CELL).toFixed(1);
 const cellOf=store.get("alldogs-cellof")||{}; // in quale riquadro sta ogni sentiero aperto o salvato (per ritrovarlo dopo)
 function rememberCell(tr){if(tr&&tr.cell&&cellOf[tr.id]!==tr.cell){cellOf[tr.id]=tr.cell;store.set("alldogs-cellof",cellOf)}}
-async function loadIndex(){if(!IDX)IDX=await getJSON("data/index.json");return IDX}
+async function loadIndex(){if(!IDX)IDX=await getJSON("data/index.json?t="+Math.floor(Date.now()/6e5),{cache:"no-cache"});return IDX}
+// ?v= nei file dei riquadri: quando i dati cambiano, il telefono non usa la copia vecchia
 function loadCell(k){
   if(cellState[k])return cellState[k];
   if(!IDX||!IDX.cells[k])return cellState[k]=Promise.resolve(0);
-  return cellState[k]=getJSON(`data/c/${k}.json`).then(d=>{
+  return cellState[k]=getJSON(`data/c/${k}.json?v=${IDX.t}`).then(d=>{
     for(const t of d.trails){if(TR.has(t.id))continue;elev[t.id]=t.e;FT[t.id]=t.f||{f:[],w:[],wood:0};delete t.e;delete t.f;t.cell=k;hydrate(t);TR.set(t.id,t)}
     S.trails=[...TR.values()];return d.trails.length;
   }).catch(e=>{delete cellState[k];throw e});
@@ -1036,7 +1037,7 @@ let trailsOn=store.get("alldogs-trailson")!==false;
 function loadPlaces(k){
   if(plState[k])return plState[k];
   if(!IDX||!(IDX.places||[]).includes(k))return plState[k]=Promise.resolve();
-  return plState[k]=getJSON(`data/p/${k}.json`).then(d=>{PL[k]=d;poiData()}).catch(()=>{delete plState[k]});
+  return plState[k]=getJSON(`data/p/${k}.json?v=${IDX?IDX.t:0}`).then(d=>{PL[k]=d;poiData()}).catch(()=>{delete plState[k]});
 }
 function allPoi(){const o=[];for(const k in PL)for(const p of PL[k].poi)o.push(p);return o}
 // Veterinari in più dalla ricerca di Mapbox: OpenStreetMap non li ha tutti. Si chiedono solo guardando la mappa da vicino
@@ -1970,11 +1971,11 @@ async function showTrail(id){
     const shade=!f?"…":f.wood>=.6?"Tanta (bosco)":f.wood>=.3?"In parte":"Poca";
     const sh=surfShare(tr),dom=sh&&SFK.slice().sort((a,b)=>sh[b]-sh[a])[0];
     $("det").innerHTML=detailHTML({title:tr.name,ft:f,prof:elev[id]&&elev[id].p,
-      tools:`<div class="row" style="margin-top:14px;flex-wrap:wrap"><button class="btn sm" data-3d>${icon("layers")}Anteprima 3D</button>${sh?`<button class="btn sm" data-surf>${icon("surf")}Colora il fondo</button>`:""}<button class="btn sm" data-edit>${icon("edit")}Modifica percorso</button><button class="btn sm" data-pack>${icon("bag")}Zaino pronto</button></div>`,sub:[esc(tr.zone),tr.ref?"sentiero n. "+esc(tr.ref):"",tr.cai?"CAI":"",tr.scale?"difficoltà "+tr.scale:""].filter(Boolean).join(" · "),it:item(tr),
+      tools:`<div class="row" style="margin-top:14px;flex-wrap:wrap"><button class="btn sm" data-3d>${icon("layers")}Anteprima 3D</button>${sh?`<button class="btn sm" data-surf>${icon("surf")}Colora il fondo</button>`:""}<button class="btn sm" data-edit>${icon("edit")}Modifica percorso</button><button class="btn sm" data-pack>${icon("bag")}Zaino pronto</button></div>`,sub:[tr.type==="walk"?"Giro in città ad anello":"",esc(tr.zone),tr.ref?"sentiero n. "+esc(tr.ref):"",tr.cai?"CAI":"",tr.scale?"difficoltà "+tr.scale:""].filter(Boolean).join(" · "),it:item(tr),
       sections:`${(hz=>hz.length?`<div class="block"><h2>Attenzione in questo periodo</h2><div class="tags">${hz.map(h=>`<span class="tag">${h.t}</span>`).join("")}</div><button class="btn sm" data-haz style="margin-top:10px">Leggi i consigli</button></div>`:"")(trailHaz(tr))}${sh?`<div class="block"><h2>Fondo del percorso</h2>${surfBlock(sh,dog())}</div>`:""}<div class="block"><h2>Particolarità</h2>${tags}<p class="small muted" style="margin-top:8px">Ricavate in automatico da OpenStreetMap: elementi segnati vicino al tracciato.</p></div>
-      <div class="block"><h2>Scheda per il cane</h2><div class="tiles"><div class="tile"><span>Acqua lungo il percorso</span><b>${water}</b></div><div class="tile"><span>Ombra (stima)</span><b>${shade}</b></div><div class="tile"><span>Fondo prevalente</span><b>${sh?SFL[dom]:"Da verificare"}</b></div><div class="tile"><span>Punti critici</span><b>Da verificare</b></div></div>
+      <div class="block"><h2>Scheda per il cane</h2><div class="tiles"><div class="tile"><span>Acqua lungo il percorso</span><b>${water}</b></div><div class="tile"><span>Ombra (stima)</span><b>${shade}</b></div><div class="tile"><span>Fondo prevalente</span><b>${sh?SFL[dom]:"Da verificare"}</b></div>${tr.type==="walk"?`<div class="tile"><span>Nel verde</span><b>${Math.round((tr.green||0)*100)}% del giro</b></div>`:`<div class="tile"><span>Punti critici</span><b>Da verificare</b></div>`}</div>
       <p class="small muted" style="margin-top:8px">${f&&f.w.length?"Le fontanelle sono i punti blu sulla mappa. ":""}Acqua e ombra sono stime dai dati di OpenStreetMap: verificale sul posto. Il sentiero non è ancora stato provato con un cane.</p></div>${trailRules(tr)}`})+
-      reviewHTML(tr.id)+`<p class="small block"><a href="https://www.openstreetmap.org/relation/${tr.id}" target="_blank" rel="noopener">Vedi i dati del sentiero su OpenStreetMap</a></p>`;
+      reviewHTML(tr.id)+(tr.type==="walk"?`<p class="small muted block">Giro in città calcolato da AllDogs sulle strade e i vialetti di OpenStreetMap, preferendo verde, zone pedonali e poco traffico. Controlla sempre attraversamenti, marciapiedi e orari di apertura dei parchi.</p>`:`<p class="small block"><a href="https://www.openstreetmap.org/relation/${tr.id}" target="_blank" rel="noopener">Vedi i dati del sentiero su OpenStreetMap</a></p>`);
     bindReview(tr.id);
     bindDays($("det"),paint);syncSave();bindTools($("det"));
     $("det").querySelectorAll("[data-haz]").forEach(b=>b.onclick=()=>hazSheet(trailHaz(tr)));
