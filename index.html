@@ -199,6 +199,32 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
 
 
 
+
+/* scala dei km */
+.kmscale{position:absolute;right:12px;bottom:12px;z-index:3;pointer-events:none;min-width:60px}
+.kmscale .kl{display:flex;justify-content:space-between;font:700 12.5px/1 var(--body);color:#fff;text-shadow:0 0 3px #000,0 0 2px #000,0 1px 2px #000;margin:0 -8px 4px}
+.kmscale .kl span{min-width:16px;text-align:center}
+.kmscale .kb{height:9px;border-radius:5px;background:#fff;border:1.5px solid #1d2b1d;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.35)}
+.kmscale .kb i{display:block;width:50%;height:100%;background:#1f3a1f}
+.maphost:not(.full) .kmscale{bottom:10px}
+/* menu a tendina con i disegnini */
+.ddrow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.dd{display:flex;align-items:center;gap:9px;min-width:0;border:1px solid var(--line);background:var(--surface);border-radius:16px;padding:8px 10px;text-align:left;color:var(--ink);font:inherit;cursor:pointer}
+.dd span:not(.ddi):not(.ddn){flex:1;min-width:0}
+.dd small{display:block;font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dd b{display:block;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dd>i{font-style:normal;color:var(--muted);transition:transform .2s}
+.dd[aria-expanded=true]>i{transform:rotate(180deg)}
+.dd.on{border-color:var(--accent);background:var(--accent-soft)}
+.dd .art,.dd .ddi,.dd .ddn{flex:none}
+.ddi{width:26px;height:26px;border-radius:8px;background:var(--accent-soft);display:grid;place-items:center;color:var(--accent)}
+.ddi svg{width:16px;height:16px}
+.ddn{width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-weight:800;font-size:13px}
+.ddpanel{margin-top:8px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:12px;box-shadow:0 8px 24px rgba(20,30,70,.12);animation:msup .18s ease-out}
+.ddg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.ddt{display:flex;flex-direction:column;align-items:center;gap:6px;border:1.5px solid transparent;background:var(--bg);border-radius:14px;padding:10px 4px;font:inherit;font-size:13px;font-weight:600;line-height:1.2;color:var(--ink);text-align:center;cursor:pointer}
+.ddt[aria-pressed=true]{border-color:var(--accent);background:var(--accent-soft)}
+.ddt .art{border-radius:11px;box-shadow:0 1px 3px rgba(0,0,0,.12)}
 /* zampe, quando uscire, promemoria, diario, zaino, soccorso, regole */
 .paw{display:flex;gap:8px;align-items:flex-start;margin-top:10px;padding:9px 12px;border-radius:12px;background:var(--surface);border:1px solid var(--line);font-size:14px}
 .paw svg{width:18px;height:18px;flex:none;margin-top:2px;color:var(--ok)}
@@ -499,6 +525,7 @@ h2 .dot{width:12px;height:12px;margin-right:8px}
   </div>
   <button class="btn sm mapclear" id="m-clear" hidden>✕ Rimuovi percorso</button>
   <div class="ovleg" id="ovleg" hidden></div>
+  <div class="kmscale" id="kmscale" aria-hidden="true"><div class="kl"><span>0</span><span id="ks-m"></span><span id="ks-e"></span></div><div class="kb"><i></i></div></div>
   <div class="surfleg" id="surfleg" hidden></div>
   <div class="flybar" id="fly" hidden><button class="round" id="fly-play" aria-label="Pausa o riprendi">⏸</button><div class="sp"><b id="fly-km"></b><div class="flyprog"><i id="fly-bar"></i></div></div><button class="round" id="fly-x" aria-label="Chiudi l'anteprima">✕</button></div>
 </div>
@@ -521,10 +548,9 @@ h2 .dot{width:12px;height:12px;margin-right:8px}
     <select id="f-dif" aria-label="Difficoltà CAI (per persone)"><option value="all">Difficoltà CAI (persone)</option><option value="T">T · turistico</option><option value="E">E · escursionistico</option><option value="EE">EE · esperti</option></select>
     <select id="f-zone" aria-label="Zona"><option value="all">Tutte le zone</option></select>
   </div>
-  <p class="flabel">Attività adatte al cane</p>
-  <div class="hscroll" id="f-act" style="margin-top:6px"></div>
-  <p class="flabel">Particolarità</p>
-  <div class="hscroll" id="f-feat" style="margin-top:6px"></div>
+  <div class="ddrow"><button class="dd" id="dd-act" aria-expanded="false"></button><button class="dd" id="dd-feat" aria-expanded="false"></button></div>
+  <div class="ddpanel" id="f-act" hidden></div>
+  <div class="ddpanel" id="f-feat" hidden></div>
   <p class="small muted" id="feat-status" style="margin-top:6px"></p>
   <div id="parks-box" hidden>
     <div class="count"><h2>Parchi per una passeggiata</h2><span class="muted small">tocca per creare un giro lì</span></div>
@@ -812,6 +838,26 @@ const FAMOUS=[
   {n:"Cala Goloritzé",re:/goloritz/i,c:[40.11,9.69]},
   {n:"Gola di Gorropu",re:/gorropu/i,c:[40.185,9.50]}
 ];
+// Disegnini colorati per i filtri di Esplora (attività e particolarità)
+const ART={
+ facile:`<rect width="40" height="40" rx="11" fill="#e3f4e6"/><path d="M6 33c8-2 10-10 17-12s9-9 11-13" stroke="#c9a46a" stroke-width="5" fill="none" stroke-linecap="round"/><g fill="#2e7d4f"><ellipse cx="13" cy="27" rx="2.3" ry="2"/><circle cx="10.6" cy="24.3" r="1"/><circle cx="12.6" cy="23.4" r="1"/><circle cx="14.8" cy="23.9" r="1"/><ellipse cx="25" cy="15.5" rx="2.3" ry="2"/><circle cx="22.6" cy="12.8" r="1"/><circle cx="24.6" cy="11.9" r="1"/><circle cx="26.8" cy="12.4" r="1"/></g>`,
+ escursione:`<rect width="40" height="40" rx="11" fill="#fdeedd"/><path d="M12 9h9l1 11 8 4c2 1 3 3 3 5v2H9V21z" fill="#a0612c"/><path d="M9 31h24v3H9z" fill="#4a3020"/><path d="M13 14h7M13 18h7" stroke="#f3c89a" stroke-width="2" stroke-linecap="round"/><path d="M21 22l3 3M24 21l3 3" stroke="#f3c89a" stroke-width="1.6" stroke-linecap="round"/>`,
+ trekking:`<rect width="40" height="40" rx="11" fill="#e4ecfa"/><path d="M3 34 17 11l7 11 4-5 9 17z" fill="#5b6f8f"/><path d="M17 11l-4 6 3-1 2 2 2-2 2 2z" fill="#fff"/><path d="M28 17l-2.4 3.4 2.4-.8 1.6 1.4 1.4-1.2z" fill="#fff"/><path d="M17 11V4" stroke="#333" stroke-width="1.4"/><path d="M17 4h6l-2 2 2 2h-6z" fill="#e5483a"/>`,
+ corsa:`<rect width="40" height="40" rx="11" fill="#fff1d6"/><path d="M4 16h7M3 21h6M5 26h6" stroke="#f0a020" stroke-width="2.4" stroke-linecap="round"/><path d="M14 24c0-5 4-7 9-7h4l3-4 2 1-1 4c2 1 3 3 2 5l-3 1-2 4h-3l1-3h-6l-3 4h-3l2-5z" fill="#c07a35"/><circle cx="31" cy="15.5" r=".9" fill="#222"/>`,
+ bagno:`<rect width="40" height="40" rx="11" fill="#dff2fb"/><circle cx="20" cy="17" r="7" fill="#c98d4f"/><path d="M13 13c-3 0-4 5-2 7l3-2zM27 13c3 0 4 5 2 7l-3-2z" fill="#8a5a2c"/><circle cx="17.5" cy="16" r="1" fill="#222"/><circle cx="22.5" cy="16" r="1" fill="#222"/><ellipse cx="20" cy="19.5" rx="1.6" ry="1.1" fill="#222"/><path d="M3 26c3-2 5-2 8 0s5 2 8 0 5-2 8 0 5 2 8 0 3-1 2-1v12H3z" fill="#2aa1d8"/><path d="M3 31c3-2 5-2 8 0s5 2 8 0 5-2 8 0 5 2 8 0" stroke="#bfe8fa" stroke-width="1.6" fill="none"/>`,
+ citta:`<rect width="40" height="40" rx="11" fill="#ece8f8"/><path d="M5 33V18h8v15M14 33V9h10v24M25 33V15h10v18" fill="#7a68c6"/><path d="M17 13h2M21 13h1M17 17h2M21 17h1M17 21h2M21 21h1M8 22h2M8 26h2M28 19h2M31 19h1M28 23h2M31 23h1" stroke="#fff" stroke-width="1.6"/><path d="M3 33h34" stroke="#4b3f86" stroke-width="2"/>`,
+ cascate:`<rect width="40" height="40" rx="11" fill="#e8f1ee"/><path d="M3 10c4-3 9-3 12-1v25H3zM25 9c4-2 9-1 12 2v23H25z" fill="#7d8a86"/><path d="M15 9h10v24H15z" fill="#4fb3e8"/><path d="M17 11v19M20 10v22M23 11v19" stroke="#d6f1ff" stroke-width="1.4"/><ellipse cx="20" cy="33" rx="10" ry="3.2" fill="#fff"/><circle cx="12" cy="32" r="2" fill="#fff"/><circle cx="28" cy="32" r="2" fill="#fff"/><path d="M3 10c4-3 9-3 12-1M25 9c4-2 9-1 12 2" stroke="#4e7d4a" stroke-width="2.4"/>`,
+ panorama:`<rect width="40" height="40" rx="11" fill="#fff4e0"/><circle cx="28" cy="13" r="5" fill="#f6b52b"/><path d="M2 34 13 18l6 8 6-7 13 15z" fill="#4c9a5b"/><path d="M2 34l9-10 5 6 5-5 6 5 4-3 7 7z" fill="#2f7444"/>`,
+ laghi:`<rect width="40" height="40" rx="11" fill="#e3f3e7"/><ellipse cx="21" cy="27" rx="15" ry="7" fill="#3d9fe0"/><path d="M14 27h6M23 29h6" stroke="#c4e8ff" stroke-width="1.6" stroke-linecap="round"/><path d="M8 20l4-10 4 10z" fill="#2e7d4f"/><path d="M12 20v3" stroke="#6b4423" stroke-width="2"/><path d="M27 18l3.5-8 3.5 8z" fill="#2e7d4f"/><path d="M30.5 18v3" stroke="#6b4423" stroke-width="2"/>`,
+ fiumi:`<rect width="40" height="40" rx="11" fill="#e3f3e7"/><path d="M24 2c-8 6 6 10-3 17s-12 8-7 19h10c-5-9 1-11 6-17s-3-12 3-19z" fill="#3d9fe0"/><path d="M23 9c-2 2 0 4-1 6M19 26c-2 2-1 5 0 7" stroke="#c4e8ff" stroke-width="1.6" fill="none" stroke-linecap="round"/><circle cx="8" cy="11" r="4" fill="#4c9a5b"/><circle cx="33" cy="29" r="4" fill="#4c9a5b"/>`,
+ bosco:`<rect width="40" height="40" rx="11" fill="#e6f4e3"/><path d="M12 5 5 18h4l-5 9h16l-5-9h4z" fill="#2e7d4f"/><path d="M27 9l-6 11h3.5l-4.5 8h14l-4.5-8H33z" fill="#3f9a5c"/><path d="M12 27v6M27 28v5" stroke="#6b4423" stroke-width="3"/><path d="M3 34h34" stroke="#8bbf6a" stroke-width="2"/>`,
+ spiaggia:`<rect width="40" height="40" rx="11" fill="#e1f3fb"/><path d="M0 26h40v14H0z" fill="#3ba7e0"/><path d="M0 30c8-4 18 2 40-3v13H0z" fill="#f2d48f"/><path d="M21 31 15 13" stroke="#6b4423" stroke-width="1.8"/><path d="M5 17c3-8 16-11 22-4z" fill="#e5483a"/><path d="M10 15.5c3-4 8-5 11-3.5" stroke="#fff" stroke-width="2" fill="none"/><circle cx="32" cy="9" r="4" fill="#f6b52b"/>`,
+ grotte:`<rect width="40" height="40" rx="11" fill="#efebe6"/><path d="M2 34C3 14 12 6 20 6s17 8 18 28z" fill="#8c7b6a"/><path d="M10 34c0-10 4-17 10-17s10 7 10 17z" fill="#2c2420"/><path d="M15 17l1 4 1-4M23 17l1 3 1-3" fill="#8c7b6a"/>`,
+ storia:`<rect width="40" height="40" rx="11" fill="#f6efe2"/><path d="M6 14 20 6l14 8z" fill="#c9a46a"/><path d="M7 14h26v3H7zM6 31h28v3H6z" fill="#b08a52"/><path d="M10 17h3v14h-3zM18.5 17h3v14h-3zM27 17h3v14h-3z" fill="#e8d6b0"/>`,
+ vette:`<rect width="40" height="40" rx="11" fill="#e5edf7"/><path d="M2 34 16 10l8 12 4-6 10 18z" fill="#6c7f99"/><path d="M16 10l-5 8 3-1 2 2 2-2 3 1z" fill="#fff"/><path d="M28 16l-3 4.5 3-1 2 1.5 1.8-1z" fill="#fff"/><path d="M16 10V3" stroke="#333" stroke-width="1.4"/><path d="M16 3h6l-2 2 2 2h-6z" fill="#2e7d4f"/>`,
+ fontanelle:`<rect width="40" height="40" rx="11" fill="#e2f1fc"/><path d="M8 34V20a4 4 0 0 1 4-4h11v5H14v13z" fill="#6d7c8f"/><path d="M23 15h5v7h-5z" fill="#55657a"/><path d="M26 25c2 3 3 5 3 6.5a3 3 0 0 1-6 0c0-1.5 1-3.5 3-6.5z" fill="#2b97e0"/><path d="M5 34h14" stroke="#55657a" stroke-width="2.4"/>`,
+};
+const artSvg=(k,s)=>ART[k]?`<svg class="art" viewBox="0 0 40 40" width="${s||28}" height="${s||28}" aria-hidden="true">${ART[k]}</svg>`:"";
 const ACTS=[["facile","Passeggiata facile"],["escursione","Escursione"],["trekking","Trekking impegnativo"],["corsa","Corsa col cane"],["bagno","Bagno"],["citta","Giro in città"]];
 const FEATS=[["cascate","Cascate"],["panorama","Vista panoramica"],["laghi","Laghi"],["fiumi","Fiumi"],["bosco","Bosco"],["spiaggia","Spiaggia"],["grotte","Grotte"],["storia","Siti storici"],["vette","Vette"],["fontanelle","Fontanelle"],["citta","Passeggiata in città"]];
 const FEATL=Object.fromEntries(FEATS);
@@ -1176,6 +1222,7 @@ function initMap(){
   M.on("mouseenter","ad-trails-hit",()=>M.getCanvas().style.cursor="pointer");M.on("mouseleave","ad-trails-hit",()=>M.getCanvas().style.cursor="");
   M.on("moveend",()=>{clearTimeout(vxT);vxT=setTimeout(vxView,600)});
   M.on("moveend",gridMoved);
+  M.on("move",kmScale);M.on("resize",kmScale);M.on("load",kmScale);
   M.on("moveend",()=>{clearTimeout(wtT);wtT=setTimeout(wtView,700)});
   M.on("moveend",()=>{if(scene.mode!=="explore"||!curHost||curHost.id!=="hostExplore")return;clearTimeout(viewT);viewT=setTimeout(viewChanged,350)});
   M.once("load",()=>{if(scene.mode==="explore"&&curHost&&curHost.id==="hostExplore")viewChanged()});
@@ -1192,6 +1239,13 @@ function initMap(){
   ["mousedown","touchstart","wheel"].forEach(ev=>M.on(ev,()=>{if(fly&&fly.playing&&fly.started){fly.playing=false;paintFly()}}));
   M.on("dragstart",()=>{if(scene.mode==="nav")navFollow=false});
 }
+// Scala dei km in basso: barra lunga al massimo 170 pixel, con valori tondi (1, 2, 5, 10…)
+let ksRaf=0;
+function kmScale(){if(ksRaf)return;ksRaf=requestAnimationFrame(()=>{ksRaf=0;if(!M)return;
+  const lat=M.getCenter().lat,mpp=40075016.686*Math.cos(lat*Math.PI/180)/(512*Math.pow(2,M.getZoom())),max=mpp*170;
+  const e=Math.pow(10,Math.floor(Math.log10(max))),n=[5,2,1].map(x=>x*e).find(x=>x<=max)||e,px=Math.round(n/mpp);
+  const f=v=>v>=1000?String(+(v/1000).toFixed(2)).replace(".",",")+" km":Math.round(v)+" m";
+  const el=$("kmscale");el.style.width=px+"px";$("ks-m").textContent=f(n/2);$("ks-e").textContent=f(n)})}
 function setInteractive(on){if(!M)return;HANDLERS.forEach(h=>M[h]&&(on?M[h].enable():M[h].disable()))}
 function fixSatellite(){
   const L=M.getStyle().layers,ras=L.find(l=>l.type==="raster");if(!ras||M.getSource("sat2"))return;
@@ -1695,12 +1749,27 @@ function renderParks(){
     <h3>${esc(p.n)}</h3><p class="sub">${p.dog==="no"?"Secondo OpenStreetMap i cani non sono ammessi":p.dog==="leashed"?"Cani al guinzaglio":"Verifica sul posto le regole per i cani"}</p><p class="meta">Tocca per creare un giro su misura per ${dn()}</p></article>`).join("");
   $("parks").querySelectorAll(".tcard").forEach(c=>c.onclick=()=>{const p=top[+c.dataset.pk];S.start=p.c;store.set("alldogs-start",p.c);S.gen=null;$("gen-out").innerHTML="";S.mode="auto";store.set("alldogs-creamode","auto");lastList=window.scrollY;location.hash="crea";toast("Partenza nel parco: tocca Crea il giro")});
 }
+// Attività e particolarità: due menu a tendina con i disegnini. L'attività è una sola, le particolarità anche più di una.
+let ddOpen=null;
 function renderPills(){
-  $("f-act").innerHTML=ACTS.map(a=>`<button class="pill" data-a="${a[0]}" aria-pressed="${S.act===a[0]}">${a[1]}</button>`).join("");
-  $("f-feat").innerHTML=FEATS.map(a=>`<button class="pill" data-f="${a[0]}" aria-pressed="${S.feat.includes(a[0])}">${a[1]}</button>`).join("");
-  $("f-act").querySelectorAll("button").forEach(b=>b.onclick=()=>{S.act=S.act===b.dataset.a?null:b.dataset.a;S.limit=20;fitPending=true;renderList()});
-  $("f-feat").querySelectorAll("button").forEach(b=>b.onclick=()=>{const k=b.dataset.f,i=S.feat.indexOf(k);if(i>=0)S.feat.splice(i,1);else S.feat.push(k);S.limit=20;fitPending=true;renderList()});
+  const a=ACTS.find(x=>x[0]===S.act),nf=S.feat.length,f1=nf===1?FEATS.find(x=>x[0]===S.feat[0]):null;
+  $("dd-act").innerHTML=`${a?artSvg(a[0],26):`<span class="ddi">${icon("paw")}</span>`}<span><small>Attività</small><b>${a?a[1]:"Tutte"}</b></span><i>▾</i>`;
+  $("dd-feat").innerHTML=`${f1?artSvg(f1[0],26):nf?`<span class="ddn">${nf}</span>`:`<span class="ddi">${icon("search")}</span>`}<span><small>Particolarità</small><b>${f1?f1[1]:nf?nf+" scelte":"Tutte"}</b></span><i>▾</i>`;
+  $("dd-act").classList.toggle("on",!!a);$("dd-feat").classList.toggle("on",!!nf);
+  $("dd-act").setAttribute("aria-expanded",ddOpen==="act");$("dd-feat").setAttribute("aria-expanded",ddOpen==="feat");
+  $("f-act").hidden=ddOpen!=="act";$("f-feat").hidden=ddOpen!=="feat";
+  const tile=(k,t,on,attr)=>`<button class="ddt" ${attr}="${k}" aria-pressed="${on}">${artSvg(k,40)}<span>${t}</span></button>`;
+  $("f-act").innerHTML=`<div class="ddg">${ACTS.map(x=>tile(x[0],x[1],S.act===x[0],"data-a")).join("")}</div>${S.act?`<button class="btn sm" id="dd-a0" style="margin-top:10px">Togli il filtro</button>`:""}`;
+  $("f-feat").innerHTML=`<p class="small muted">Puoi sceglierne più di una: mostro i sentieri che le hanno tutte.</p><div class="ddg" style="margin-top:8px">${FEATS.map(x=>tile(x[0],x[1],S.feat.includes(x[0]),"data-f")).join("")}</div>
+    <div class="row" style="margin-top:10px">${nf?`<button class="btn sm" id="dd-f0">Togli tutte</button>`:""}<span class="sp"></span><button class="btn sm pri" id="dd-fok">Fatto</button></div>`;
+  $("f-act").querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{S.act=S.act===b.dataset.a?null:b.dataset.a;ddOpen=null;S.limit=20;fitPending=true;renderList()});
+  $("f-feat").querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{const k=b.dataset.f,i=S.feat.indexOf(k);if(i>=0)S.feat.splice(i,1);else S.feat.push(k);S.limit=20;fitPending=true;renderList()});
+  const a0=$("dd-a0");if(a0)a0.onclick=()=>{S.act=null;ddOpen=null;renderList()};
+  const f0=$("dd-f0");if(f0)f0.onclick=()=>{S.feat=[];renderList()};
+  $("dd-fok").onclick=()=>{ddOpen=null;renderPills()};
 }
+$("dd-act").onclick=()=>{ddOpen=ddOpen==="act"?null:"act";renderPills()};
+$("dd-feat").onclick=()=>{ddOpen=ddOpen==="feat"?null:"feat";renderPills()};
 function renderList(){
   $("hello").textContent=`Dove andiamo con ${dog().name||"il tuo cane"}?`;
   renderToday();
