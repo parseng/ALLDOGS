@@ -1436,7 +1436,7 @@ const totLen=tr=>tr.loop===false?tr.len*2:tr.len;
 function totUp(tr){const e=elev[tr.id];if(!e)return null;if(tr.loop!==false)return e.up;const dn=dnOf(tr);return e.up+(dn??e.up)}
 // Cani ammessi (campo "dg" dei sentieri, da tools/build_dogs.py): [stato, testo, area]
 const DGS={no:"Cani vietati",lim:"Cani: solo in parte",lea:"Al guinzaglio",ok:"Cani ammessi"},DGC={no:"c2",lim:"c1",lea:"c0",ok:"c0"};
-function dogBlock(tr){const g=tr.dg;if(!g)return `<div class="block"><h2>Cani ammessi?</h2><p class="muted">Sto ancora controllando le regole per i cani in questa zona. Guarda i cartelli all'ingresso.</p></div>`;
+function dogBlock(tr){const g=tr.dg;if(!g)return `<div class="block"><h2>Cani ammessi?</h2><p class="muted">Per questa zona non ho ancora le regole sui cani. Porta il guinzaglio e guarda i cartelli all'ingresso.</p></div>`;
   return `<div class="block dogrule ${DGC[g[0]]}"><h2>${icon("paw")} ${DGS[g[0]]}</h2><p>${esc(g[1])}</p><p class="small muted" style="margin-top:6px">Fonti: regolamenti dei parchi e OpenStreetMap. Le regole possono cambiare: vale sempre il cartello all'ingresso.</p></div>`}
 // ombra tratto per tratto: una striscia verde (alberi) e gialla (sole), dalla partenza all'arrivo
 function shadeBar(sh,len){const n=sh.length;if(!n)return "";const w=100/n;let x="",i=0;while(i<n){let j=i;while(j<n&&sh[j]===sh[i])j++;x+=`<rect x="${(i*w).toFixed(2)}" width="${((j-i)*w+.05).toFixed(2)}" height="10" fill="${sh[i]==="1"?"#3f8f4f":"#f0c34a"}"/>`;i=j}
