@@ -536,6 +536,11 @@ def apply(only=None):
         merged = [mine.get(t["id"], t) for t in now]
         json.dump({"trails": merged}, open(dst, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
         log(f"[{n + 1}/{len(files)}] {k}: {len(data['trails'])} sentieri")
+    # cambio la "versione" dell'indice, così i telefoni riscaricano i riquadri
+    idxf = os.path.join(bd.ROOT, "data", "index.json")
+    I = json.load(open(idxf))
+    I["t"] = int(time.time() * 1000)
+    json.dump(I, open(idxf, "w"), separators=(",", ":"))
 
 
 def check(tid):
