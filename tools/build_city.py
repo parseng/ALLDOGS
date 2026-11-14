@@ -27,14 +27,13 @@ def fetch(c):
     return bi.curl_overpass(q, dst, tries=3)
 
 
-def build(c, towns):
+def places(c, data):
+    """Aree cani, veterinari, spiagge per cani, ville comunali e parchi del riquadro c -> data/p/<k>.json"""
     k = bi.key(c)
-    data = bi.load(f"c_{k}.json")
-    poi, parks, ways = [], [], {}
+    poi, parks = [], []
     for el in data["elements"]:
         t = el.get("tags", {})
         if el["type"] == "way" and el.get("geometry") and t.get("highway"):
-            ways.setdefault(t["name"].strip(), []).append((el, [[round(p["lat"], 5), round(p["lon"], 5)] for p in el["geometry"]]))
             continue
         b0 = el.get("bounds")
         ce = el.get("center") or ({"lat": el["lat"], "lon": el["lon"]} if "lat" in el else
@@ -55,12 +54,26 @@ def build(c, towns):
         elif t.get("leisure") == "park" and el.get("bounds") and t.get("access") not in ("private", "no", "military") and not t.get("military"):
             b = el["bounds"]
             diag = bd.hav([b["minlat"], b["minlon"]], [b["maxlat"], b["maxlon"]])
+            if diag >= 60 and name:  # ville comunali e parchi sulla mappa (escluse le aiuole)
+                poi.append(["g", p[0], p[1], name, "", "", round(diag), "" if t.get("dog") in (None, "") else t["dog"][:8]])
             if diag >= 450:  # solo parchi abbastanza grandi per un giro
                 parks.append({"id": el["id"], "n": name, "c": p, "d": round(diag), "dog": t.get("dog", "")})
     if poi or parks:
         os.makedirs(os.path.join(bd.ROOT, "data", "p"), exist_ok=True)
         json.dump({"poi": poi, "parks": sorted(parks, key=lambda x: -x["d"])[:60]}, open(os.path.join(bd.ROOT, "data", "p", k + ".json"), "w", encoding="utf-8"),
                   ensure_ascii=False, separators=(",", ":"))
+    return poi, parks
+
+
+def build(c, towns):
+    k = bi.key(c)
+    data = bi.load(f"c_{k}.json")
+    poi, parks = places(c, data)
+    ways = {}
+    for el in data["elements"]:
+        t = el.get("tags", {})
+        if el["type"] == "way" and el.get("geometry") and t.get("highway"):
+            ways.setdefault(t["name"].strip(), []).append((el, [[round(p["lat"], 5), round(p["lon"], 5)] for p in el["geometry"]]))
     # passeggiate con un nome: unisco i pezzi con lo stesso nome
     walks = []
     for name, lst in ways.items():
@@ -138,5 +151,25 @@ def main():
     bi.log("Finito:", tot)
 
 
+def only_places():
+    """Rifà solo data/p/ dai dati già scaricati (python tools/build_city.py luoghi)."""
+    order, _ = bi.cells_todo()
+    n = [0, 0]
+    for c in order:
+        k = bi.key(c)
+        if not os.path.exists(os.path.join(bi.RAW, f"c_{k}.json")):
+            continue
+        poi, parks = places(c, bi.load(f"c_{k}.json"))
+        n = [n[0] + len(poi), n[1] + len(parks)]
+    pdir = os.path.join(bd.ROOT, "data", "p")
+    idxf = os.path.join(bd.ROOT, "data", "index.json")
+    idx = json.load(open(idxf))
+    idx["places"] = sorted(fn[:-5] for fn in os.listdir(pdir) if fn.endswith(".json"))
+    idx["t"] = int(time.time() * 1000)
+    json.dump(idx, open(idxf, "w"), separators=(",", ":"))
+    bi.log("Luoghi rifatti:", n)
+
+
 if __name__ == "__main__":
-    main()
+    import sys
+    only_places() if sys.argv[1:] == ["luoghi"] else main()

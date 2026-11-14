@@ -426,7 +426,12 @@ h2 .dot{width:12px;height:12px;margin-right:8px}
     <button data-st="3d">Rilievo 3D</button>
     <button data-st="hill">Ombre del rilievo</button>
     <button data-st="rain">Pioggia adesso</button>
-    <button data-st="poi">Luoghi per il cane</button>
+    <p>Sulla mappa</p>
+    <button data-st="trails">Sentieri</button>
+    <button data-st="poi-a">Aree cani</button>
+    <button data-st="poi-v">Veterinari</button>
+    <button data-st="poi-s">Spiagge per cani</button>
+    <button data-st="poi-g">Ville comunali e parchi</button>
     <button data-st="legend">Legenda della mappa</button>
   </div>
   <div class="surfleg" id="surfleg" hidden></div>
@@ -872,22 +877,57 @@ function loadCell(k){
   }).catch(e=>{delete cellState[k];throw e});
 }
 // Luoghi utili per il cane (aree cani, veterinari, spiagge per cani) e parchi: data/p/<riquadro>.json, creati da tools/build_city.py
-const PL={},plState={},POI_T={a:["Area cani","#1f8a4c"],v:["Veterinario","#d9483b"],s:["Spiaggia per cani","#1e88e5"]};
-let poiOn=store.get("alldogs-poi")!==false;
+const PL={},plState={},POI_T={a:["Area cani","#1f8a4c"],v:["Veterinario","#d9483b"],s:["Spiaggia per cani","#1e88e5"],g:["Villa comunale o parco","#6a9f2a"]};
+const poiOld=store.get("alldogs-poi")!==false;
+const poiK=Object.assign({a:poiOld,v:poiOld,s:poiOld,g:poiOld},store.get("alldogs-poik")||{}); // quali luoghi mostrare sulla mappa
+let trailsOn=store.get("alldogs-trailson")!==false;
 function loadPlaces(k){
   if(plState[k])return plState[k];
   if(!IDX||!(IDX.places||[]).includes(k))return plState[k]=Promise.resolve();
   return plState[k]=getJSON(`data/p/${k}.json`).then(d=>{PL[k]=d;poiData()}).catch(()=>{delete plState[k]});
 }
 function allPoi(){const o=[];for(const k in PL)for(const p of PL[k].poi)o.push(p);return o}
+// Veterinari in più dalla ricerca di Mapbox: OpenStreetMap non li ha tutti. Si chiedono solo guardando la mappa da vicino
+// (zoom 12 o più) con i Veterinari accesi; ogni riquadro di 0,05° resta salvato sul telefono 30 giorni, così le richieste sono poche.
+const VX={},vxState={},VXK="alldogs-vx",VX_S=.05,VX_NO=/ordine dei|order of|associazion|eukanuba|farmacia|toelettatura|pet shop|negozio|mangimi/i;
+let vxCache=store.get(VXK)||{},vxT=null;
+async function vxTile(k,b){
+  const c=vxCache[k];if(c&&Date.now()-c.t<30*864e5){VX[k]=c.v;poiData();return}
+  if(vxState[k])return;vxState[k]=1;
+  const q=async bb=>(await getJSON(`https://api.mapbox.com/search/searchbox/v1/category/veterinary?language=it&limit=25&bbox=${bb[1]},${bb[0]},${bb[3]},${bb[2]}&access_token=${MAPBOX_TOKEN}`)).features||[];
+  try{
+    let f=await q(b);
+    if(f.length>=25){const a=(b[0]+b[2])/2,o=(b[1]+b[3])/2;f=(await Promise.all([[b[0],b[1],a,o],[b[0],o,a,b[3]],[a,b[1],b[2],o],[a,o,b[2],b[3]]].map(q))).flat()}
+    const seen=new Set(),v=[];
+    for(const x of f){const pr=x.properties||{},n=(pr.name||"").trim(),g=x.geometry&&x.geometry.coordinates,id=pr.mapbox_id||n+g;
+      if(!g||!n||seen.has(id)||VX_NO.test(n))continue;seen.add(id);
+      v.push([+g[1].toFixed(5),+g[0].toFixed(5),n.slice(0,70),(pr.full_address||pr.address||"").replace(/, Italia$/,"").slice(0,90),String(pr.metadata&&pr.metadata.phone||"").replace(/[^+0-9]/g,"")])}
+    VX[k]=v;vxCache[k]={t:Date.now(),v};
+    const ks=Object.keys(vxCache);if(ks.length>120)ks.sort((x,y)=>vxCache[x].t-vxCache[y].t).slice(0,ks.length-120).forEach(x=>delete vxCache[x]);
+    store.set(VXK,vxCache);poiData();
+  }catch(e){console.warn("Veterinari Mapbox:",e);delete vxState[k]}
+}
+function vxView(){
+  if(!M||!poiK.v||M.getZoom()<12)return;
+  const b=M.getBounds(),i0=Math.floor(b.getSouth()/VX_S),i1=Math.floor(b.getNorth()/VX_S),j0=Math.floor(b.getWest()/VX_S),j1=Math.floor(b.getEast()/VX_S);
+  if((i1-i0+1)*(j1-j0+1)>12)return;
+  for(let i=i0;i<=i1;i++)for(let j=j0;j<=j1;j++){const k=i+"_"+j;if(!VX[k])vxTile(k,[i*VX_S,j*VX_S,(i+1)*VX_S,(j+1)*VX_S])}
+}
 function poiData(){if(!M||!styleOK||!M.getSource("poi"))return;
-  setData("poi",fc(poiOn?allPoi().map(p=>({type:"Feature",properties:{k:p[0],n:p[3]||"",tel:p[4]||"",h:p[5]||"",col:POI_T[p[0]][1]},geometry:{type:"Point",coordinates:[p[2],p[1]]}})):[]))}
+  const P=allPoi().filter(p=>poiK[p[0]]),F=P.map(p=>({type:"Feature",properties:{k:p[0],n:p[3]||"",tel:p[4]||"",h:p[5]||"",dog:p[7]||"",col:POI_T[p[0]][1]},geometry:{type:"Point",coordinates:[p[2],p[1]]}}));
+  if(poiK.v){const ov=P.filter(p=>p[0]==="v");
+    for(const k in VX)for(const x of VX[k]){if(ov.some(p=>Math.abs(p[1]-x[0])<.0008&&Math.abs(p[2]-x[1])<.001&&hav([p[1],p[2]],x)<70))continue;
+      F.push({type:"Feature",properties:{k:"v",n:x[2],adr:x[3],tel:x[4],h:"",src:"m",col:POI_T.v[1]},geometry:{type:"Point",coordinates:[x[1],x[0]]}})}}
+  setData("poi",fc(F))}
 function poiSheet(pr,c){
-  const g=`${c[1].toFixed(5)},${c[0].toFixed(5)}`;
+  const g=`${c[1].toFixed(5)},${c[0].toFixed(5)}`,dogTxt={no:"Secondo OpenStreetMap i cani qui non sono ammessi: controlla i cartelli.",leashed:"Cani ammessi al guinzaglio.",yes:"Cani ammessi."}[pr.dog]||"";
   openSheet(`<p class="small muted">${POI_T[pr.k][0]}${pr.h?" · segnato come pronto soccorso o sempre aperto":""}</p><h2>${esc(pr.n||POI_T[pr.k][0])}</h2>
+    ${pr.adr?`<p class="muted" style="margin-top:4px">${esc(pr.adr)}</p>`:""}${dogTxt?`<p style="margin-top:6px">${dogTxt}</p>`:""}
     <div class="stack" style="margin-top:14px">${pr.tel?`<a class="btn pri wide" href="tel:${esc(pr.tel)}">Chiama ${esc(pr.tel)}</a>`:""}
+    ${pr.k==="g"?`<button class="btn pri wide" id="poi-giro">Crea un giro qui</button>`:""}
     <a class="btn wide" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${g}">Portami lì</a></div>
-    <p class="small muted" style="margin-top:10px">Dato di OpenStreetMap: orari e regole vanno verificati sul posto.</p>`);
+    <p class="small muted" style="margin-top:10px">${pr.src==="m"?"Dato della ricerca di Mapbox":"Dato di OpenStreetMap"}: orari, telefono e regole vanno verificati${pr.k==="v"?" prima di andare":" sul posto"}.</p>`);
+  const gb=$("poi-giro");if(gb)gb.onclick=()=>{$("sheet").hidden=true;S.start=[c[1],c[0]];store.set("alldogs-start",S.start);S.gen=null;$("gen-out").innerHTML="";S.mode="auto";store.set("alldogs-creamode","auto");location.hash="crea";toast("Partenza nel parco: tocca Crea il giro")};
 }
 function viewCells(b){const out=[];for(let la=Math.floor(b[0][0]/CELL)*CELL;la<b[1][0];la+=CELL)for(let lo=Math.floor(b[0][1]/CELL)*CELL;lo<b[1][1];lo+=CELL)out.push(cellKey(la+.01,lo+.01));return out}
 async function findTrail(id){ // per aprire un sentiero salvato o un indirizzo diretto
@@ -1028,10 +1068,11 @@ function initMap(){
   M.on("style.load",()=>{styleOK=true;addLayers();if(map3d)terrain(true);applyScene()});
   M.on("error",e=>console.warn("Mapbox:",e&&e.error&&e.error.message));
   M.on("mouseenter","ad-trails-hit",()=>M.getCanvas().style.cursor="pointer");M.on("mouseleave","ad-trails-hit",()=>M.getCanvas().style.cursor="");
+  M.on("moveend",()=>{clearTimeout(vxT);vxT=setTimeout(vxView,600)});
   M.on("moveend",()=>{if(scene.mode!=="explore"||!curHost||curHost.id!=="hostExplore")return;clearTimeout(viewT);viewT=setTimeout(viewChanged,350)});
   M.once("load",()=>{if(scene.mode==="explore"&&curHost&&curHost.id==="hostExplore")viewChanged()});
   M.on("click",e=>{
-    if(scene.mode!=="nav"&&M.getLayer("ad-poi")){const pf=M.queryRenderedFeatures([[e.point.x-8,e.point.y-8],[e.point.x+8,e.point.y+8]],{layers:["ad-poi"]});
+    if(scene.mode!=="nav"&&M.getLayer("ad-poi")){const pf=M.queryRenderedFeatures([[e.point.x-8,e.point.y-8],[e.point.x+8,e.point.y+8]],{layers:["ad-poi","ad-poi-g"].filter(l=>M.getLayer(l))});
       if(pf.length&&!(scene.mode==="crea"&&drawing())){poiSheet(pf[0].properties,pf[0].geometry.coordinates);return}}
     if(scene.mode==="explore"){
       if(M.getLayer("ad-cells")){const cf=M.queryRenderedFeatures(e.point,{layers:["ad-cells"]});if(cf.length){M.flyTo({center:cf[0].geometry.coordinates,zoom:9.6});return}}const f=M.queryRenderedFeatures([[e.point.x-10,e.point.y-10],[e.point.x+10,e.point.y+10]],{layers:["ad-trails-hit","ad-trails-start"]});if(f.length){peek(f[0].properties.id);return}hidePeek()}
@@ -1073,9 +1114,11 @@ function addLayers(){
   M.addLayer({id:"ad-sel-casing",type:"line",source:"sel",layout:{"line-cap":"round","line-join":"round"},paint:{"line-color":"#ffffff","line-width":9,"line-opacity":.95}});
   M.addLayer({id:"ad-sel-line",type:"line",source:"sel",layout:{"line-cap":"round","line-join":"round"},paint:{"line-color":["match",["get","sf"],"a",SFC.a,"n",SFC.n,"g",SFC.g,"u",SFC.u,"#ff5d2a"],"line-width":5}});
   // luoghi utili per il cane: verde = area cani, rosso = veterinario, azzurro = spiaggia per cani
-  M.addLayer({id:"ad-poi",type:"circle",source:"poi",minzoom:10.5,paint:{"circle-color":["get","col"],"circle-radius":["interpolate",["linear"],["zoom"],10.5,3.5,14,7.5],"circle-stroke-color":"#fff","circle-stroke-width":2}});
-  M.addLayer({id:"ad-poi-l",type:"symbol",source:"poi",minzoom:13,layout:{"text-field":["match",["get","k"],"a","C","v","+","~"],"text-size":10,"text-font":["DIN Pro Bold","Arial Unicode MS Bold"],"text-allow-overlap":true},paint:{"text-color":"#fff"}});
-  poiData();
+  M.addLayer({id:"ad-poi-g",type:"circle",source:"poi",minzoom:12,filter:["==",["get","k"],"g"],paint:{"circle-color":["get","col"],"circle-radius":["interpolate",["linear"],["zoom"],12,3,15,7],"circle-stroke-color":"#fff","circle-stroke-width":1.5}});
+  M.addLayer({id:"ad-poi-gl",type:"symbol",source:"poi",minzoom:14.5,filter:["==",["get","k"],"g"],layout:{"text-field":["get","n"],"text-size":11,"text-offset":[0,1.1],"text-anchor":"top","text-max-width":9,"text-font":["DIN Pro Medium","Arial Unicode MS Regular"]},paint:{"text-color":"#2f5d12","text-halo-color":"#fff","text-halo-width":1.5}});
+  M.addLayer({id:"ad-poi",type:"circle",source:"poi",minzoom:10.5,filter:["!=",["get","k"],"g"],paint:{"circle-color":["get","col"],"circle-radius":["interpolate",["linear"],["zoom"],10.5,3.5,14,7.5],"circle-stroke-color":"#fff","circle-stroke-width":2}});
+  M.addLayer({id:"ad-poi-l",type:"symbol",source:"poi",minzoom:13,filter:["!=",["get","k"],"g"],layout:{"text-field":["match",["get","k"],"a","C","v","+","~"],"text-size":10,"text-font":["DIN Pro Bold","Arial Unicode MS Bold"],"text-allow-overlap":true},paint:{"text-color":"#fff"}});
+  poiData();setTimeout(vxView,1200);
   // da lontano: un cerchio per ogni riquadro con il numero dei sentieri
   M.addLayer({id:"ad-cells",type:"circle",source:"cells",paint:{"circle-color":"#2456f5","circle-opacity":.85,"circle-stroke-color":"#fff","circle-stroke-width":2,"circle-radius":["interpolate",["linear"],["get","n"],1,11,200,17,1500,26]}});
   M.addLayer({id:"ad-cells-n",type:"symbol",source:"cells",layout:{"text-field":["get","t"],"text-size":11.5,"text-font":["DIN Pro Bold","Arial Unicode MS Bold"],"text-allow-overlap":true},paint:{"text-color":"#fff"}});
@@ -1115,12 +1158,14 @@ function setStyleKind(k){
   if(k==="3d"){map3d=!map3d;store.set("alldogs-map3d",map3d);prev3d=false;stopSpin();terrain(map3d)}
   else if(k==="hill"){hillOn=!hillOn;store.set("alldogs-hill",hillOn);overlays()}
   else if(k==="rain"){rainOn=!rainOn;overlays();if(rainOn)toast("Radar: dove sta piovendo adesso")}
-  else if(k==="poi"){poiOn=!poiOn;store.set("alldogs-poi",poiOn);poiData();toast(poiOn?"Aree cani, veterinari e spiagge sulla mappa":"Luoghi nascosti")}
+  else if(k==="trails"){trailsOn=!trailsOn;store.set("alldogs-trailson",trailsOn);applyScene();toast(trailsOn?"Sentieri sulla mappa":"Sentieri nascosti: restano nell'elenco qui sotto")}
+  else if(k.startsWith("poi-")){const t=k.slice(4);poiK[t]=!poiK[t];store.set("alldogs-poik",poiK);poiData();if(t==="v")vxView();
+    toast((poiK[t]?"":"Nascosti: ")+({a:"Aree cani",v:"Veterinari",s:"Spiagge per cani",g:"Ville comunali e parchi"})[t]+(poiK[t]?(t==="g"?": avvicinati alla mappa per vederle":" sulla mappa"):""))}
   else if(k==="legend")showLegend();
   else if(k!==mapStyle){mapStyle=k;store.set("alldogs-mapstyle",k);styleOK=false;M.setStyle(STYLES[k],{diff:false})}
   syncLayersMenu();
 }
-function syncLayersMenu(){document.querySelectorAll("#layers button").forEach(b=>b.setAttribute("aria-pressed",({"3d":map3d,hill:hillOn,rain:rainOn,poi:poiOn,legend:false})[b.dataset.st]??b.dataset.st===mapStyle))}
+function syncLayersMenu(){document.querySelectorAll("#layers button").forEach(b=>b.setAttribute("aria-pressed",({"3d":map3d,hill:hillOn,rain:rainOn,trails:trailsOn,"poi-a":poiK.a,"poi-v":poiK.v,"poi-s":poiK.s,"poi-g":poiK.g,legend:false})[b.dataset.st]??b.dataset.st===mapStyle))}
 const fc=f=>({type:"FeatureCollection",features:f});
 const lineF=(ways,props)=>({type:"Feature",properties:props||{},geometry:{type:"MultiLineString",coordinates:ways.map(w=>w.map(ll))}});
 function setData(src,data){const s=M.getSource(src);if(s)s.setData(data)}
@@ -1132,7 +1177,7 @@ function boundsOf(paths){let a=90,b=-90,c=180,e=-180;for(const w of paths)for(co
 function applyScene(){
   if(!M||!styleOK)return;
   const sc=scene,ex=sc.mode==="explore";
-  ["ad-trails-line","ad-trails-hit","ad-trails-start","ad-cells","ad-cells-n"].forEach(id=>vis(id,ex));
+  ["ad-trails-line","ad-trails-hit","ad-trails-start","ad-cells","ad-cells-n"].forEach(id=>vis(id,ex&&trailsOn));
   clearMarkers();
   if(pinM&&sc.mode!=="crea"){pinM.remove();pinM=null}
   if(sc.mode!=="nav"&&sc.mode!=="follow")setData("track",fc([]));
@@ -1282,7 +1327,7 @@ function showLegend(){
     ${row(dot(css("--warn")),"Con prudenza")}${row(dot(css("--no")),"Sconsigliato")}${row(dot(css("--wait")),"Lo sto ancora valutando")}
     ${row(ln("#ff5d2a",null,4),"Percorso scelto")}${row(ln("#2f7bff",null,4),"Strada già fatta","Durante Avvia percorso")}
     ${row(dot("#1e88e5"),"Fontanella","Acqua lungo il percorso, da verificare sul posto")}
-    ${row(dot("#1f8a4c","C"),"Area cani")}${row(dot("#d9483b","+"),"Veterinario")}${row(dot("#1e88e5","~"),"Spiaggia per cani")}${row(dot("#fff","2"),"Tappa o segnaposto")}
+    ${row(dot("#1f8a4c","C"),"Area cani")}${row(dot("#d9483b","+"),"Veterinario")}${row(dot("#1e88e5","~"),"Spiaggia per cani")}${row(dot("#6a9f2a"),"Villa comunale o parco","Da vicino, con il nome")}${row(dot("#fff","2"),"Tappa o segnaposto")}
     ${SFK.map(k=>row(ln(SFC[k],null,5),"Fondo: "+SFL[k].toLowerCase(),k==="a"?"D'estate può scottare le zampe":k==="g"?"Faticosi per le articolazioni":k==="u"?"Nei dati non c'è scritto":"Il migliore per le zampe")).join("")}
   </div>
   <h3>Sentieri e strade</h3><div class="lg">
