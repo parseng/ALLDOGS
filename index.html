@@ -348,6 +348,27 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
 .lesson .ck.seen{border-color:var(--warn);color:var(--warn)}
 .lesson.big{border-color:var(--accent);box-shadow:0 6px 18px rgba(20,40,120,.10)}
 .lvl{margin-top:22px}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-top:10px}
+.cal-h{text-align:center;font-size:11.5px;color:var(--muted);font-weight:700;text-transform:uppercase}
+.cd{border:1px solid transparent;border-radius:10px;padding:5px 0 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50px;min-width:0;font-size:12px;position:relative;background:var(--surface)}
+.cd b{font-size:12.5px;font-weight:700;white-space:nowrap}
+.cd small{font-size:11px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.cd i{position:absolute;top:1px;right:4px;font-style:normal;font-size:11px;font-weight:800}
+.cd.x{background:none;color:var(--line)}
+.k-lunga{background:var(--accent);color:var(--accent-ink)}
+.k-normale{background:var(--ok-bg);color:var(--ok)}
+.k-fiuto{background:var(--warn-bg);color:var(--warn)}
+.k-riposo{background:var(--wait-bg);color:var(--wait)}
+.cd.past{opacity:.6}
+.cd.today{border-color:var(--ink);opacity:1}
+.cd.sel{box-shadow:0 0 0 2px var(--ink);opacity:1}
+.dot.k-lunga{background:var(--accent)}.dot.k-normale{background:var(--ok)}.dot.k-fiuto{background:var(--warn)}.dot.k-riposo{background:var(--wait)}
+h2 .dot{width:12px;height:12px;margin-right:8px}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px;margin-top:8px}
+.opt-b{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:9px 12px}
+.opt-b b{display:block;font-size:15px}
+.opt-b small{display:block;color:var(--muted);font-size:13px}
+.opt-b.on{border-color:var(--accent);background:var(--accent-soft)}
 </style>
 </head>
 <body>
@@ -380,6 +401,7 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
     <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
     <symbol id="i-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".8" fill="currentColor"/></symbol>
     <symbol id="i-cap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 9 12 4.5 21.5 9 12 13.5 2.5 9Z"/><path d="M6.5 11v4.5c1.5 1.6 3.4 2.4 5.5 2.4s4-.8 5.5-2.4V11M21.5 9v5"/></symbol>
+    <symbol id="i-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2Z"/><path d="M6 12h3l1.5-2.5 2 5 1.5-2.5h4"/></symbol>
   </defs>
 </svg>
 
@@ -521,6 +543,13 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
   <p class="small muted" style="margin-top:22px">Il programma è un <b>consiglio prudente, non una garanzia</b>. Osserva sempre il tuo cane e fermati ai primi segni di stanchezza, affanno o zoppia. Non sostituisce il veterinario.</p>
 </section>
 
+<!-- SALUTE: peso, movimento, obiettivi consigliati -->
+<section class="screen" id="s-salute">
+  <div class="hd"><button class="round mbtn" data-menu aria-label="Apri il menu"><svg><use href="#i-menu"/></svg></button><h1>Salute</h1></div>
+  <div id="he-main"></div>
+  <p class="small muted" style="margin-top:22px">Sono <b>indicazioni prudenti, non una visita</b>. Peso giusto, dieta e attività adatte le decide il veterinario, che conosce il tuo cane.</p>
+</section>
+
 <!-- ADDESTRAMENTO: una lezione al giorno -->
 <section class="screen" id="s-addestramento">
   <div class="hd"><button class="round mbtn" data-menu aria-label="Apri il menu"><svg><use href="#i-menu"/></svg></button><h1>Addestramento</h1></div>
@@ -612,6 +641,7 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
 <aside class="drawer" id="drawer" aria-label="Menu">
   <div class="dtop"><b>AllDogs</b><button class="round" id="drawer-x" aria-label="Chiudi il menu">✕</button></div>
   <a href="#obiettivi" data-d="obiettivi"><svg><use href="#i-target"/></svg><span><b>Obiettivi</b><small>Allenamento graduale su misura</small></span></a>
+  <a href="#salute" data-d="salute"><svg><use href="#i-pulse"/></svg><span><b>Salute</b><small>Peso, movimento e obiettivi consigliati</small></span></a>
   <a href="#addestramento" data-d="addestramento"><svg><use href="#i-cap"/></svg><span><b>Addestramento</b><small>Una lezione nuova ogni giorno</small></span></a>
 </aside>
 <div class="sheetbg" id="sheet" hidden><div class="box" id="sheet-box"></div></div>
@@ -1286,7 +1316,7 @@ $("m-loc").onclick=async()=>{
   try{const p=await getPos();showMe(p);if(scene.mode==="crea")setStart(p);else M.flyTo({center:ll(p),zoom:Math.max(M.getZoom(),13)})}catch(e){toast("Non riesco a leggere la posizione")}};
 
 // ================= Navigazione =================
-const SCREENS=["esplora","sentiero","crea","salvati","attivita","cane","vai","segui","obiettivi","addestramento"];
+const SCREENS=["esplora","sentiero","crea","salvati","attivita","cane","vai","segui","obiettivi","addestramento","salute"];
 let lastList=0;
 function route(){
   let h=location.hash.slice(1)||"esplora";
@@ -1316,6 +1346,8 @@ function route(){
   if(scr==="attivita")showAct();
   if(scr==="obiettivi")showGoals();
   if(scr==="addestramento")showTrain();
+  if(scr==="salute")showHealth();
+  if(scr!=="obiettivi"){S.goalDraft=null;S.goalEdit=false}
   if(scr==="vai")showNav();
   if(scr==="segui")showFollow(arg);else stopFollow();
   retryWx();
@@ -2176,11 +2208,12 @@ Regole:
 // ================= Obiettivi =================
 const GK="alldogs-goal";
 let GOAL=store.get(GK);
+if(GOAL&&!GOAL.end){GOAL.end=GOAL.want||addDays(GOAL.start,30);store.set(GK,GOAL)} // obiettivi creati con la prima versione
 const DOWN=["domenica","lunedì","martedì","mercoledì","giovedì","venerdì","sabato"];
-const SESS={lunga:{t:"Passeggiata lunga",f:1,d:"La più importante della settimana: allena alla distanza. Al suo ritmo, con pause e acqua."},
-  normale:{t:"Passeggiata normale",f:.6,d:"Al suo passo, con tempo per annusare."},
-  fiuto:{t:"Passeggiata corta e giochi di fiuto",f:.4,d:"Una passeggiata breve e 10 minuti di «Cerca!»: stanca la testa e fa riposare le zampe."},
-  riposo:{t:"Recupero",f:.25,d:"Solo uscite tranquille per i bisogni e per annusare. Il riposo fa parte dell'allenamento: è lì che i muscoli si rinforzano."}};
+const SESS={lunga:{t:"Passeggiata lunga",s:"Lunga",f:1,d:"Il giorno in cui cammina di più: è quello che lo allena alla distanza. Al suo ritmo, con pause e acqua."},
+  normale:{t:"Passeggiata normale",s:"Normale",f:.6,d:"Al suo passo, con tempo per annusare."},
+  fiuto:{t:"Passeggiata corta e giochi di fiuto",s:"Corta",f:.4,d:"Si cammina di meno: una passeggiata breve e 10 minuti di «Cerca!». Stanca la testa e fa riposare le zampe."},
+  riposo:{t:"Riposo",s:"Riposo",f:.25,d:"Solo uscite brevi e tranquille per i bisogni e per annusare. Il riposo fa parte dell'allenamento: è lì che i muscoli si rinforzano."}};
 const WEEK_TPL=["lunga","riposo","normale","fiuto","normale","riposo","fiuto"]; // dal giorno della lunga in avanti
 const actsIn=(a,b)=>S.acts.filter(x=>x.t>=a&&x.t<b);
 const bestIn=(a,b)=>actsIn(a,b).reduce((m,x)=>Math.max(m,x.dist/1000),0);
@@ -2189,25 +2222,36 @@ const kmIn=(a,b)=>actsIn(a,b).reduce((m,x)=>m+x.dist/1000,0);
 function goalRate(d,k){
   if(k.p.conv||k.puppy)return 0;
   if(k.heart)return .05;
-  if(k.senior||k.brachy||k.giant||k.joint||k.p.peso||k.p.diab||k.p.epi||k.p.altro)return .07;
+  if(k.senior||k.brachy||k.giant||k.joint||k.p.peso||k.p.diab||k.p.epi||k.p.altro||weightState(d).s>=1)return .07;
   if(d.train==="molto"&&k.energy)return .15;
   return k.energy||d.train==="molto"?.12:.10;
 }
-// la passeggiata lunga di ogni settimana fino all'obiettivo; ogni 4ª settimana non si aumenta (consolidamento)
-function goalPlan(g,r){
-  const w=[];let lv=g.from;
-  for(let i=0;i<80;i++){const cons=i%4===3,L=cons?lv:Math.min(g.target,r1(Math.max(lv*(1+r),lv+.1)));w.push({L,cons});lv=L;if(L>=g.target&&!cons)break}
-  return w;
+function firstDow(t,dow){t=day0(t);while(new Date(t).getDay()!==dow)t=addDays(t,1);return t}
+const consAt=(j,K)=>j%4===3&&j!==K-1; // ogni 4ª settimana la lunga non cresce (consolidamento), mai l'ultima
+function stepsFor(K){let s=0;for(let j=0;j<K;j++)if(!consAt(j,K))s++;return s}
+// Calendario giorno per giorno, dall'inizio al giorno dell'obiettivo.
+// Le passeggiate lunghe crescono in modo regolare e l'ultima è l'obiettivo. Se per arrivarci entro la data
+// servirebbe un aumento oltre quello prudente (r a settimana), la data si sposta in avanti.
+function buildCal(g,r){
+  const ratio=Math.max(1,g.target/g.from),grow=ratio>1,need=grow?Math.ceil(Math.log(ratio)/Math.log(1+r)-1e-9):0,f0=firstDow(g.start,g.longDow);
+  let end=day0(g.end),K=end>=f0?Math.floor(Math.round((end-f0)/DAY)/7)+1:0,late=false;
+  if(K<1||(grow&&stepsFor(K)<need)){late=true;K=Math.max(1,K);while(stepsFor(K)<need)K++;end=addDays(f0,(K-1)*7)}
+  const q=grow?Math.pow(ratio,1/stepsFor(K)):1,longs=[];let st=0;
+  for(let j=0;j<K;j++){const cons=grow&&consAt(j,K);if(!cons)st++;longs.push({t:addDays(f0,j*7),L:j===K-1?g.target:r1(g.from*Math.pow(q,st)),cons})}
+  const days=[];let li=0;
+  for(let t=day0(g.start);t<=end;t=addDays(t,1)){
+    while(li<longs.length-1&&longs[li].t<t)li++;
+    const nx=longs[li];
+    if(nx.t===t){days.push({t,kd:"lunga",km:nx.L,cons:nx.cons});continue}
+    const kd=WEEK_TPL[(new Date(t).getDay()-g.longDow+7)%7];
+    days.push({t,kd,km:r1(Math.max(.3,nx.L*SESS[kd].f))});
+  }
+  return {days,longs,end,late,r};
 }
 function goalNow(g,d,k){
-  const r=Math.min(g.r,goalRate(d,k)),plan=goalPlan(g,r||.05),m0=monday(g.start),mw=monday(Date.now());
-  const wi=Math.max(0,Math.round((mw-m0)/DAY/7)),pw=plan[Math.min(wi,plan.length-1)];
-  const prev=actsIn(addDays(mw,-14),mw),prevBest=bestIn(addDays(mw,-14),mw);
-  let L=pw.L,note="";
-  if(wi>0&&g.start<addDays(mw,-7)&&!prev.length){L=g.from;note=`Non vedo passeggiate salvate nelle ultime due settimane: si riparte dalla distanza iniziale. Se cammini senza «Avvia percorso», aggiungi le passeggiate qui sotto.`}
-  else if(wi>0&&prevBest<plan[Math.min(wi-1,plan.length-1)].L*.8){L=Math.min(pw.L,Math.max(g.from,r1(prevBest*(1+r))));note="Nelle ultime settimane la passeggiata lunga è stata più corta del previsto: questa settimana si sale più piano."}
-  const last=plan.length-1,end=addDays(m0,last*7+((g.longDow+6)%7));
-  return {r,plan,wi,L,cons:pw.cons&&!note,note,end};
+  const r=Math.min(g.r||.1,goalRate(d,k)||.05),C=buildCal(g,r),now=Date.now(),t0=day0(now);
+  const past=C.longs.filter(x=>x.t<t0),lastL=past.length?past[past.length-1]:null,recent=bestIn(addDays(now,-14),now+DAY);
+  return Object.assign(C,{today:C.days.find(x=>x.t===t0)||null,recent,behind:!!(lastL&&lastL.t>=day0(g.start)&&recent<lastL.L*.8)});
 }
 function fitTips(d,k){
   const t=["Riscaldamento: i primi 5-10 minuti al passo lento, lasciandolo annusare. Alla fine altri 5 minuti tranquilli.",
@@ -2229,93 +2273,121 @@ function fitTips(d,k){
   return t;
 }
 const STOP_SIGNS="Fermati e accorcia se ansima molto, rallenta tanto, si siede o si sdraia spesso, zoppica, ha la lingua viola o molto scura, inciampa. Il giorno dopo: riposo. Se un segno non passa in fretta, chiama il veterinario.";
-function goalForm(d,k){
-  const best=r1(bestIn(Date.now()-30*DAY,Date.now()+DAY)),want=dKey(addDays(Date.now(),30));
-  return `<p class="muted" style="margin-top:6px">Un programma per far camminare ${dn()} un po' di più, piano piano, partendo da quello che fa adesso.</p>
+function goalForm(d,k,dr){
+  const now=Date.now(),best=r1(bestIn(addDays(now,-30),now+DAY)),from=dr?dr.from:best,want=dKey(addDays(now,dr?dr.weeks*7:30));
+  return `${dr?`<div class="note" style="margin-top:14px"><b>Obiettivo consigliato: ${esc(dr.title)}</b><p style="margin-top:4px">${esc(dr.why)}</p>${dr.est?`<p style="margin-top:4px">Ho stimato quanto cammina oggi: correggi il numero se non è giusto.</p>`:""}</div>`
+    :`<p class="muted" style="margin-top:6px">Scegli dove vuoi arrivare e entro quando: l'app ti prepara un calendario con cosa fare ogni giorno. Trovi anche gli obiettivi consigliati per ${dn()} nella sezione <a href="#salute">Salute</a>.</p>`}
   <div class="box" style="margin-top:14px"><div class="form">
-    <label class="w">Quanti km riesce a fare oggi in una passeggiata, senza stancarsi troppo?<input id="g-from" type="number" inputmode="decimal" min="0.3" max="40" step="0.1" value="${best||""}" placeholder="Es. 3"></label>
-    <label>Obiettivo (km)<input id="g-to" type="number" inputmode="decimal" min="0.5" max="40" step="0.5" placeholder="Es. 5"></label>
-    <label>Entro il<input id="g-date" type="date" value="${want}"></label>
+    <label class="w">Quanti km riesce a fare oggi in una passeggiata, senza stancarsi troppo?<input id="g-from" type="number" inputmode="decimal" min="0.3" max="40" step="0.1" value="${from||""}" placeholder="Es. 3"></label>
+    <label>Obiettivo (km)<input id="g-to" type="number" inputmode="decimal" min="0.3" max="40" step="0.1" value="${dr?dr.target:""}" placeholder="Es. 5"></label>
+    <label>Entro il<input id="g-date" type="date" value="${want}" min="${dKey(addDays(now,7))}"></label>
     <label class="w">Giorno della passeggiata lunga<select id="g-dow">${[6,0,5,1,2,3,4].map(i=>`<option value="${i}">${DOWN[i]}</option>`).join("")}</select></label>
-  </div>${best?`<p class="small muted" style="margin-top:8px">La passeggiata più lunga salvata nell'ultimo mese è di ${kmN(best)} km.</p>`:""}
+  </div>${best&&!dr?`<p class="small muted" style="margin-top:8px">La passeggiata più lunga salvata nell'ultimo mese è di ${kmN(best)} km.</p>`:""}
   ${k.heart||k.joint||k.p.altro||k.p.diab||k.p.epi?`<div class="note" style="margin-top:12px">Per ${dn()} hai segnato dei problemi di salute (${esc(pats(d).join(", "))}): <b>prima di iniziare un programma di allenamento parlane con il veterinario</b>. L'app userà aumenti più piccoli.</div>`:""}
+  ${GOAL?`<p class="small muted" style="margin-top:10px">Il nuovo obiettivo sostituirà quello attuale.</p>`:""}
   <p class="err" id="g-err" hidden style="margin-top:12px"></p>
-  <button class="btn pri wide" id="g-make" style="margin-top:14px">${icon("target")}Crea il programma</button></div>
+  <button class="btn pri wide" id="g-make" style="margin-top:14px">${icon("target")}Crea il calendario</button>
+  ${GOAL?`<button class="btn wide" id="g-cancel" style="margin-top:8px">Annulla, tengo l'obiettivo attuale</button>`:""}</div>
   <div class="block"><h2>Come si allena bene un cane</h2><ul class="plain">${fitTips(d,k).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`;
 }
 function showGoals(){
   const d=dog(),k=dogKind(d),nm=dn(),box=$("ob-main"),rate=goalRate(d,k);
   if(k.puppy){const mins=Math.max(10,Math.round(d.age*12)*5);
-    box.innerHTML=`<div class="note" style="margin-top:14px"><b>${nm} è ancora in crescita: niente programmi di resistenza per ora.</b><p style="margin-top:6px">Le ossa e le articolazioni dei cuccioli si stanno ancora formando. Una regola prudente usata da molti veterinari: circa <b>5 minuti di passeggiata per ogni mese di età</b>, una o due volte al giorno. Per ${nm} vuol dire circa <b>${mins} minuti</b> a uscita, più il gioco libero.</p><p style="margin-top:6px">Intanto è il momento perfetto per l'<a href="#addestramento">Addestramento</a>. Quando sarà adulto, qui potrai creare il suo programma.</p></div>
+    box.innerHTML=`<div class="note" style="margin-top:14px"><b>${nm} è ancora in crescita: niente programmi di resistenza per ora.</b><p style="margin-top:6px">Le ossa e le articolazioni dei cuccioli si stanno ancora formando. Una regola prudente usata da molti veterinari: circa <b>5 minuti di passeggiata per ogni mese di età</b>, una o due volte al giorno. Per ${nm} vuol dire circa <b>${mins} minuti</b> a uscita, più il gioco libero.</p><p style="margin-top:6px">Intanto è il momento perfetto per l'<a href="#addestramento">Addestramento</a>. Quando sarà adulto, qui potrai creare il suo calendario.</p></div>
     <div class="block"><h2>Come si allena bene un cane</h2><ul class="plain">${fitTips(d,k).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`;
   }else if(k.p.conv){box.innerHTML=`<div class="note" style="margin-top:14px"><b>${nm} è in convalescenza.</b> Niente programmi di allenamento finché il veterinario non dà il via libera. Quando sarà guarito, togli la spunta «Convalescenza» in <a href="#cane">Il mio cane</a>.</div>`}
-  else if(!GOAL){box.innerHTML=goalForm(d,k);
+  else if(!GOAL||S.goalDraft||S.goalEdit){const dr=S.goalDraft;box.innerHTML=goalForm(d,k,dr);
+    if(dr&&dr.dow!=null)$("g-dow").value=dr.dow;else if(GOAL)$("g-dow").value=GOAL.longDow;
+    const c=$("g-cancel");if(c)c.onclick=()=>{S.goalDraft=null;S.goalEdit=false;showGoals()};
     $("g-make").onclick=()=>{
-      const from=parseFloat($("g-from").value.replace(",",".")),to=parseFloat($("g-to").value.replace(",",".")),wd=$("g-date").value,err=$("g-err"),max=capacity(Object.assign({},d,{train:"molto"})).km;
+      const num=id=>parseFloat($(id).value.replace(",",".")),from=num("g-from"),to=num("g-to"),wd=$("g-date").value,err=$("g-err"),max=capacity(Object.assign({},d,{train:"molto"})).km;
       const bad=t=>{err.hidden=false;err.textContent=t};
       if(!(from>=.3&&from<=40))return bad("Scrivi quanti km fa oggi (per esempio 3).");
-      if(!(to>from))return bad("L'obiettivo deve essere più lungo della distanza di oggi.");
+      if(!(to>=from))return bad("L'obiettivo deve essere almeno uguale alla distanza di oggi (uguale vuol dire: mantenerla).");
       if(to>max)return bad(`Per ${d.name} l'app consiglia di non superare circa ${kmN(max)} km in una passeggiata, anche quando sarà ben allenato. Scegli un obiettivo fino a ${kmN(max)} km.`);
-      GOAL={from:r1(from),target:r1(to),start:day0(Date.now()),want:wd?new Date(wd+"T12:00").getTime():null,longDow:+$("g-dow").value,r:rate,created:Date.now()};
-      store.set(GK,GOAL);toast("Programma creato");showGoals()};
+      const end=wd?day0(new Date(wd+"T12:00").getTime()):0;
+      if(!(end>=addDays(day0(Date.now()),7)))return bad("Scegli una data ad almeno una settimana da oggi.");
+      GOAL={title:dr?dr.title:"",from:r1(from),target:r1(to),start:day0(Date.now()),end,longDow:+$("g-dow").value,r:rate,created:Date.now()};
+      store.set(GK,GOAL);S.goalDraft=null;S.goalEdit=false;calSel=null;toast("Calendario creato");showGoals();window.scrollTo(0,0)};
   }else showPlan(d,k);
   miniChat("ob",{host:"ob-chat",ph:"Chiedi qualcosa sul suo allenamento",
     hello:()=>`Ciao! Sono l'allenatore di AllDogs. Chiedimi come allenare ${dog().name||"il tuo cane"} nel modo giusto, o come cambiare il programma.`,
     sugg:()=>GOAL?["Oggi è stanco, cosa faccio?","Fa caldo: come cambio la passeggiata?","Quali giochi lo allenano?"]:["Come lo alleno a camminare di più?","Quanti km può fare un cane come lui?","Quali giochi lo allenano?"],
     sys:goalSys});
 }
+let calSel=null;
+function calHTML(G){
+  const t0=day0(Date.now()),a=monday(G.days[0].t),z=addDays(monday(G.days[G.days.length-1].t),6),by=new Map(G.days.map(x=>[x.t,x]));
+  let h=["lun","mar","mer","gio","ven","sab","dom"].map(x=>`<span class="cal-h">${x}</span>`).join("");
+  for(let t=a;t<=z;t=addDays(t,1)){
+    const x=by.get(t),dt=new Date(t),lab=dt.getDate()===1||t===a?dt.getDate()+" "+dt.toLocaleDateString("it-IT",{month:"short"}).replace(".",""):dt.getDate();
+    if(!x){h+=`<span class="cd x"><b>${lab}</b></span>`;continue}
+    const ok=t<=t0&&kmIn(t,t+DAY)>=x.km*.8;
+    h+=`<button type="button" class="cd k-${x.kd}${t===t0?" today":""}${t===calSel?" sel":""}${t<t0?" past":""}" data-cd="${t}" aria-label="${dt.toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long"})}: ${SESS[x.kd].t}, ${kmN(x.km)} km"><b>${lab}</b><small>${x.kd==="riposo"?"riposo":kmN(x.km)}</small>${ok?"<i>✓</i>":""}</button>`;
+  }
+  return `<div class="cal">${h}</div>`;
+}
+function dayBox(x,head){
+  const nm=dn(),t0=day0(Date.now()),mins=Math.max(5,Math.round(x.km*pace()/5)*5),done=kmIn(x.t,x.t+DAY),S0=SESS[x.kd];
+  const bar=`<div class="prog"><i style="width:${Math.min(100,Math.round(done/Math.max(.1,x.km)*100))}%"></i></div>`;
+  return `<p class="small muted">${head||new Date(x.t).toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long"})}</p><h2 style="margin-top:2px"><span class="dot k-${x.kd}"></span>${S0.t}</h2>
+    <p style="margin-top:4px">${x.kd==="riposo"?"Uscite tranquille, in tutto circa "+kmN(x.km)+" km":"Circa <b>"+kmN(x.km)+" km</b>, più o meno "+fmtDur(mins*60000)+" al passo di "+nm}. <span class="muted">${S0.d}</span></p>
+    ${x.cons?`<p class="small muted" style="margin-top:6px">Settimana di consolidamento: la lunga resta come la settimana scorsa, per dare tempo ai muscoli.</p>`:""}
+    ${x.t<=t0?`<div class="gl"><span>Fatti</span><b>${kmN(r1(done))} di ${kmN(x.km)} km</b></div>${bar}`:""}`;
+}
 function showPlan(d,k){
-  const g=GOAL,nm=dn(),G=goalNow(g,d,k),now=Date.now(),t0=day0(now),mw=monday(now);
-  const off=(new Date(now).getDay()-g.longDow+7)%7,kind=WEEK_TPL[off],S0=SESS[kind];
-  const kmFor=kd=>r1(Math.max(.3,G.L*SESS[kd].f)),todayKm=kmFor(kind),mins=Math.max(5,Math.round(todayKm*pace()/5)*5);
-  const doneToday=kmIn(t0,t0+DAY),weekKm=kmIn(mw,addDays(mw,7)),weekBest=bestIn(mw,addDays(mw,7));
-  const days=[0,1,2,3,4,5,6].map(i=>{const t=addDays(mw,i),dw=new Date(t).getDay(),kd=WEEK_TPL[(dw-g.longDow+7)%7];return {t,kd,km:kmFor(kd),done:kmIn(t,t+DAY)}});
-  const weekPlan=days.reduce((a,x)=>a+x.km,0),recent=bestIn(addDays(now,-14),now+DAY),reached=recent>=g.target;
-  const pct=Math.max(0,Math.min(100,Math.round((recent-g.from)/(g.target-g.from)*100)));
-  const bar=(a,b)=>`<div class="prog"><i style="width:${Math.min(100,Math.round(a/Math.max(.1,b)*100))}%"></i></div>`;
-  const late=g.want&&G.end>g.want+3*DAY,early=g.want&&G.end<g.want-7*DAY;
-  $("ob-main").innerHTML=`<p class="muted" style="margin-top:6px">Da ${kmN(g.from)} a <b style="color:var(--ink)">${kmN(g.target)} km</b> in una passeggiata, con aumenti di circa il ${Math.round(G.r*100)}% a settimana. Settimana ${G.wi+1} di circa ${G.plan.length}.</p>
-    ${reached?`<div class="today" style="margin-top:14px"><h2>Obiettivo raggiunto!</h2><p>${nm} ha fatto ${kmN(r1(recent))} km. Per mantenerlo basta continuare con una passeggiata lunga a settimana. ${d.train!=="molto"?"Se ora cammina spesso, aggiorna «Allenamento» in Il mio cane.":""} Quando vuoi, crea un obiettivo nuovo.</p></div>`:""}
-    ${late?`<div class="note" style="margin-top:14px">Volevi arrivarci entro il ${fmtDay(g.want)}. Con aumenti prudenti per ${nm} è più sicuro verso il <b>${fmtDay(G.end)}</b>: il programma segue questa data. Andare più veloce aumenta il rischio di farsi male.</div>`:early?`<div class="note" style="margin-top:14px">Con questo ritmo ci arriverà verso il ${fmtDay(G.end)}, prima della data che volevi. Non c'è fretta: il programma resta graduale.</div>`:""}
-    ${G.note?`<div class="note" style="margin-top:12px">${esc(G.note)}</div>`:""}
-    <div class="box" style="margin-top:14px">
-      <p class="small muted">Oggi, ${DOWN[new Date(now).getDay()]}</p><h2 style="margin-top:2px">${S0.t}</h2>
-      <p style="margin-top:4px">${kind==="riposo"?"Uscite tranquille, in tutto circa "+kmN(todayKm)+" km":"Circa <b>"+kmN(todayKm)+" km</b>, più o meno "+fmtDur(mins*60000)+" al passo di "+nm}. <span class="muted">${S0.d}</span></p>
-      <div class="gl"><span>Fatti oggi</span><b>${kmN(r1(doneToday))} di ${kmN(todayKm)} km</b></div>${bar(doneToday,todayKm)}
-      ${G.cons?`<p class="small muted" style="margin-top:10px">Questa è una settimana di consolidamento: la lunga resta uguale alla settimana scorsa, per dare tempo ai muscoli.</p>`:""}
-    </div>
-    <div class="box" style="margin-top:12px"><h2>Questa settimana</h2>
-      <div class="gl"><span>Passeggiata lunga (${kmN(G.L)} km)</span><b>${weekBest>=G.L*.95?`<span class="c0">✓ fatta</span>`:kmN(r1(weekBest))+" km"}</b></div>${bar(weekBest,G.L)}
-      <div class="gl"><span>Km della settimana</span><b>${kmN(r1(weekKm))} di ${kmN(r1(weekPlan))}</b></div>${bar(weekKm,weekPlan)}
-      <ul class="wk" style="margin-top:12px">${days.map(x=>x.t<g.start?`<li class="muted"><span>${DOWN[new Date(x.t).getDay()]}</span><span>prima dell'inizio${x.done>0?" · "+kmN(r1(x.done))+" km fatti":""}</span><span></span></li>`:`<li class="${x.t===t0?"today":""}"><span>${DOWN[new Date(x.t).getDay()]}</span><span>${SESS[x.kd].t}<span class="muted"> · ${kmN(x.km)} km</span></span><span>${x.done>=x.km*.8?`<span class="c0">✓</span>`:x.done>0?`<span class="muted">${kmN(r1(x.done))}</span>`:""}</span></li>`).join("")}</ul>
+  const g=GOAL,nm=dn(),G=goalNow(g,d,k),now=Date.now(),t0=day0(now),maint=g.target<=g.from;
+  const reached=!maint&&G.recent>=g.target,over=t0>G.end;
+  const pct=maint?100:Math.max(0,Math.min(100,Math.round((G.recent-g.from)/(g.target-g.from)*100)));
+  if(calSel==null||!G.days.some(x=>x.t===calSel))calSel=G.today?t0:G.days[0].t;
+  const sel=G.days.find(x=>x.t===calSel),nLong=G.days.filter(x=>x.kd==="lunga").length,nRest=G.days.filter(x=>x.kd==="riposo").length;
+  $("ob-main").innerHTML=`<p class="muted" style="margin-top:6px">${g.title?`<b style="color:var(--ink)">${esc(g.title)}</b> · `:""}${maint?`Mantenere ${kmN(g.from)} km in una passeggiata`:`Da ${kmN(g.from)} a <b style="color:var(--ink)">${kmN(g.target)} km</b> in una passeggiata`}, entro il ${fmtDay(G.end)}.</p>
+    ${G.late?`<div class="note" style="margin-top:14px">Volevi arrivarci entro il ${fmtDay(g.end)}. Per ${nm} servirebbero aumenti troppo rapidi (il limite prudente è circa il ${Math.round(G.r*100)}% in più a settimana), quindi il calendario arriva all'obiettivo il <b>${fmtDay(G.end)}</b>. Andare più veloce aumenta il rischio di farsi male.</div>`:""}
+    ${reached?`<div class="today" style="margin-top:14px"><h2>Obiettivo raggiunto!</h2><p>${nm} ha fatto ${kmN(r1(G.recent))} km. Per mantenerlo basta una passeggiata lunga a settimana. ${d.train!=="molto"?"Se ora cammina spesso, aggiorna «Allenamento» in Il mio cane.":""}</p></div>`:""}
+    ${G.behind&&!reached&&!over?`<div class="note" style="margin-top:12px">Nelle ultime due settimane la passeggiata più lunga salvata è di ${kmN(r1(G.recent))} km, meno di quanto previsto. Meglio non forzare e ripartire da lì.<br><button class="btn sm" id="g-recalc" style="margin-top:8px">Rifai il calendario da ${kmN(Math.max(.3,r1(G.recent)))} km</button></div>`:""}
+    ${over?`<div class="note" style="margin-top:14px">Il calendario è finito il ${fmtDay(G.end)}. ${reached?"":"Puoi crearne uno nuovo partendo da quello che fa adesso."}</div>`:""}
+    <div class="box" style="margin-top:14px">${G.today?dayBox(G.today,"Oggi, "+new Date(now).toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long"})):`<p>Il calendario inizia il ${fmtDay(G.days[0].t)}.</p>`}</div>
+    <div class="box" style="margin-top:12px"><h2>Calendario</h2>
+      <p class="small muted" style="margin-top:4px">${G.days.length} giorni: ${nLong} passeggiate lunghe e ${nRest} giorni di riposo. Tocca un giorno per vedere cosa fare.</p>
+      <div class="legend"><span><i class="dot k-lunga"></i>Lunga</span><span><i class="dot k-normale"></i>Normale</span><span><i class="dot k-fiuto"></i>Corta e fiuto</span><span><i class="dot k-riposo"></i>Riposo</span></div>
+      ${calHTML(G)}
+      <div id="cal-day" style="margin-top:14px;border-top:1px solid var(--line);padding-top:12px">${sel&&sel.t!==t0?dayBox(sel):`<p class="small muted">Tocca un altro giorno per vedere cosa fare.</p>`}</div>
     </div>
     <div class="box" style="margin-top:12px"><h2>Verso l'obiettivo</h2>
-      <div class="gl"><span>Passeggiata più lunga, ultime 2 settimane</span><b>${kmN(r1(recent))} di ${kmN(g.target)} km</b></div><div class="prog"><i style="width:${pct}%"></i></div>
-      <ul class="wk small" style="margin-top:12px">${G.plan.map((w,i)=>`<li class="${i===G.wi?"today":""}"><span>Settimana ${i+1}</span><span>Lunga di ${kmN(w.L)} km${w.cons?' <span class="muted">· consolidamento</span>':""}</span><span class="muted">${fmtDay(addDays(monday(g.start),i*7))}</span></li>`).join("")}</ul>
+      <div class="gl"><span>Passeggiata più lunga, ultime 2 settimane</span><b>${kmN(r1(G.recent))} di ${kmN(g.target)} km</b></div><div class="prog"><i style="width:${pct}%"></i></div>
+      <ul class="wk small" style="margin-top:12px">${G.longs.map((w,i)=>`<li class="${w.t<t0?"muted":""}"><span>${fmtDay(w.t)}</span><span>Lunga di ${kmN(w.L)} km${w.cons?' <span class="muted">· consolidamento</span>':""}</span><span>${w.t<=t0&&bestIn(addDays(w.t,-2),addDays(w.t,3))>=w.L*.9?'<span class="c0">✓</span>':""}</span></li>`).join("")}</ul>
     </div>
-    <div class="block"><h2>Hai camminato senza l'app?</h2><p class="small muted">Aggiungi qui la passeggiata, così il programma ne tiene conto.</p>
+    <div class="block"><h2>Hai camminato senza l'app?</h2><p class="small muted">Aggiungi qui la passeggiata, così il calendario la conta.</p>
       <div class="form" style="margin-top:10px"><label>Km<input id="m-km" type="number" inputmode="decimal" min="0.1" max="60" step="0.1" placeholder="Es. 2,5"></label><label>Minuti<input id="m-min" type="number" inputmode="numeric" min="3" max="600" placeholder="Es. 45"></label><label class="w">Giorno<input id="m-day" type="date" value="${dKey(now)}" max="${dKey(now)}"></label></div>
       <button class="btn wide" id="m-add" style="margin-top:10px">Aggiungi la passeggiata</button></div>
     <div class="block"><h2>Quando fermarsi</h2><p>${esc(STOP_SIGNS)}</p></div>
     <div class="block"><h2>Come si allena bene un cane</h2><ul class="plain">${fitTips(d,k).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
-    <button class="btn wide" id="g-del" style="margin-top:20px">${reached?"Crea un obiettivo nuovo":"Cambia o elimina l'obiettivo"}</button>`;
+    <div class="row" style="margin-top:20px;flex-wrap:wrap"><button class="btn" id="g-new">Nuovo obiettivo</button><button class="btn" id="g-del">Elimina l'obiettivo</button></div>`;
+  $("ob-main").querySelectorAll("[data-cd]").forEach(b=>b.onclick=()=>{calSel=+b.dataset.cd;
+    $("ob-main").querySelectorAll(".cd.sel").forEach(x=>x.classList.remove("sel"));b.classList.add("sel");
+    const x=G.days.find(y=>y.t===calSel);$("cal-day").innerHTML=x.t===t0?`<p class="small muted">È oggi: lo trovi qui sopra.</p>`:dayBox(x)});
+  const rc=$("g-recalc");if(rc)rc.onclick=()=>{GOAL=Object.assign({},g,{from:Math.max(.3,r1(G.recent)),start:t0,created:now});if(GOAL.target<GOAL.from)GOAL.target=GOAL.from;store.set(GK,GOAL);calSel=null;toast("Calendario rifatto");showGoals()};
   $("m-add").onclick=()=>{
     const kmv=parseFloat($("m-km").value.replace(",",".")),mn=parseInt($("m-min").value,10),dy=$("m-day").value;
     if(!(kmv>=.1&&kmv<=60)){toast("Scrivi i km");return}
     if(!(mn>=3&&mn<=600)){toast("Scrivi quanti minuti");return}
-    const t=dy?new Date(dy+"T"+(dy===dKey(now)?new Date(now-mn*60000).toTimeString().slice(0,5):"10:00")).getTime():now-mn*60000;
+    const t=dy&&dy!==dKey(now)?new Date(dy+"T10:00").getTime():now-mn*60000;
     S.acts.push({t,name:"Passeggiata aggiunta a mano",kind:"manual",id:null,dur:mn*60000,dist:Math.round(kmv*1000),plan:Math.round(kmv*1000),up:0,gps:false});
     S.acts.sort((a,b)=>b.t-a.t);store.set("alldogs-acts",S.acts);toast("Passeggiata aggiunta");showGoals()};
-  $("g-del").onclick=()=>{if(!reached&&!confirm("Vuoi eliminare questo obiettivo e crearne uno nuovo? Le passeggiate salvate restano."))return;GOAL=null;store.del(GK);showGoals()};
+  $("g-new").onclick=()=>{S.goalEdit=true;showGoals();window.scrollTo(0,0)};
+  $("g-del").onclick=()=>{if(!confirm("Vuoi eliminare questo obiettivo? Le passeggiate salvate restano."))return;GOAL=null;store.del(GK);showGoals()};
 }
 function goalSys(){
   const d=dog(),k=dogKind(d),cap=capacity(d),g=GOAL;let plan="nessun obiettivo ancora";
-  if(g&&!k.puppy&&!k.p.conv){const G=goalNow(g,d,k),off=(new Date().getDay()-g.longDow+7)%7;
-    plan=`da ${g.from} km a ${g.target} km in una passeggiata; aumenti di circa ${Math.round(G.r*100)}% a settimana; settimana ${G.wi+1} di ${G.plan.length}; passeggiata lunga di questa settimana ${G.L} km il ${DOWN[g.longDow]}; oggi: ${SESS[WEEK_TPL[off]].t} di circa ${r1(Math.max(.3,G.L*SESS[WEEK_TPL[off]].f))} km; arrivo previsto ${fmtDay(G.end)}.`}
+  if(g&&!k.puppy&&!k.p.conv){const G=goalNow(g,d,k),t0=day0(Date.now());
+    plan=`${g.title?g.title+": ":""}da ${g.from} km a ${g.target} km in una passeggiata entro il ${fmtDay(G.end)}${G.late?" (data spostata in avanti per prudenza)":""}; aumento massimo circa ${Math.round(G.r*100)}% a settimana.
+Prossimi giorni del calendario: ${G.days.filter(x=>x.t>=t0).slice(0,7).map(x=>`${new Date(x.t).toLocaleDateString("it-IT",{weekday:"long",day:"numeric"})}: ${SESS[x.kd].t} ${x.km} km`).join("; ")||"finito"}.`}
   const last=S.acts.slice(0,10).map(x=>`${fmtDay(x.t)}: ${km(x.dist)} km in ${fmtDur(x.dur)}`).join("; ")||"nessuna";
+  const W=weightState(d),M=moveNeed(d,k);
   return `Sei l'allenatore di AllDogs, un'app per passeggiate ed escursioni col cane in Italia. Parli in italiano semplice, frasi brevi, tono gentile.
 Il tuo compito: aiutare a migliorare piano piano la resistenza e la forma fisica del cane, in modo prudente e adatto a razza, età, taglia e salute.
 Profilo del cane: ${dogLine(d)}.
+Peso e forma secondo l'app: ${W.s==null?"non valutato":["magro","nella norma","in sovrappeso","obeso"][W.s+1]}. Movimento consigliato: ${M.puppy?"cucciolo, 5 minuti per mese di età":`${M.a}-${M.b} minuti al giorno`}.
 Limite prudente attuale dell'app: circa ${kmN(cap.km)} km e ${cap.up} m di salita in una passeggiata; oltre ${cap.heat}° percepiti fa troppo caldo per lui.
 Andatura: ${paceInfo()?`circa ${Math.round(pace())} minuti per km (misurata)`:`non ancora misurata (media ${DEF_PACE} min/km)`}.
 Programma attuale: ${plan}
@@ -2323,18 +2395,111 @@ Ultime passeggiate: ${last}.
 Regole:
 - Il cane viene prima di tutto: mai aumenti bruschi (al massimo il 10-15% a settimana per un cane sano, meno per anziani, giganti, muso schiacciato o con problemi di salute), giorni di riposo, riscaldamento e defaticamento.
 - Cuccioli e cani giovani di taglia grande: niente allenamento di resistenza, corse lunghe o salti.
+- Per il sovrappeso: il movimento aiuta ma la cosa principale è la dieta decisa con il veterinario.
 - Se il cane ha problemi di salute, ricorda di parlarne col veterinario prima di aumentare lo sforzo. Niente diagnosi né farmaci.
 - Se l'utente descrive segni preoccupanti (zoppia, affanno forte, svenimento, lingua viola, vomito, collasso) digli di fermarsi e chiamare subito il veterinario.
 - Considera il caldo: con il caldo si accorcia e si esce all'alba o alla sera.
 - Non garantire mai nulla: sono consigli prudenti.
 - reply: massimo 7 frasi.`;
 }
-// Esplora: in evidenza la lezione di oggi e la passeggiata di oggi del programma
+
+// ================= Salute =================
+// Peso tipico di un adulto (kg) per le razze più comuni in Italia: indicativo, maschi e femmine insieme.
+const BREEDS=[["bulldog francese",8,14],["bulldog inglese",18,25],["bulldog",18,25],["bouledogue",8,14],["labrador",25,36],["golden",25,34],["retriever",25,36],["pastore tedesco",22,40],["pastore australiano",16,32],["australian",16,32],["maremmano",30,45],["pastore belga",20,30],["malinois",20,30],["border collie",12,20],["beagle",9,14],["bassotto",4,12],["jack russell",5,8],["chihuahua",1.5,3],["yorkshire",2,3.2],["maltese",3,4],["shih tzu",4,8],["carlino",6,9],["boxer",25,32],["cocker",12,15],["springer",18,25],["breton",14,18],["epagneul",14,18],["setter",25,32],["pointer",20,30],["bracco",25,40],["kurzhaar",25,32],["spinone",28,39],["segugio",18,28],["weimaraner",25,40],["dalmata",24,32],["husky",16,27],["malamute",34,43],["samoiedo",16,30],["akita",32,50],["shiba",8,11],["chow",20,32],["cane corso",40,50],["rottweiler",35,60],["dobermann",32,45],["alano",50,90],["san bernardo",60,90],["terranova",50,70],["bovaro",38,50],["bernese",38,50],["cavalier",5.5,8],["volpino",3,5.5],["pomerania",2,3.5],["west highland",6,10],["westie",6,10],["schnauzer nano",5,8],["schnauzer",14,20],["pinscher nano",4,6],["lagotto",11,16],["whippet",10,15],["levriero italiano",3,5],["corgi",10,14],["amstaff",25,35],["staffordshire",11,17],["pitbull",14,30],["bull terrier",20,32],["shar pei",18,25],["barboncino toy",2,4],["barboncino nano",4,7],["barbone",20,30],["boston",5,11],["pechinese",3,6],["lhasa",5,8],["bichon",3,5],["cirneco",8,12],["leonberger",45,75],["mastino",60,90]];
+const BCS=[["Troppo magro","Costole, spina dorsale e ossa del bacino si vedono anche da lontano."],["Magro","Le costole si vedono e si sentono subito, la vita è molto stretta."],["Giusto","Le costole si sentono facilmente sotto un sottile strato di grasso. Da sopra si vede la vita, di lato la pancia risale verso le zampe."],["Sovrappeso","Le costole si sentono a fatica, la vita si vede poco o per niente."],["Obeso","Le costole non si sentono, la pancia è tonda o pende, c'è grasso sulla schiena e alla base della coda."]];
+const HK="alldogs-salute";
+let HS=Object.assign({bcs:null,w:[]},store.get(HK)||{});
+const saveHS=()=>store.set(HK,HS);
+function breedRange(d){const b=(d.breed||"").toLowerCase(),x=BREEDS.find(r=>b.includes(r[0]));return x?{n:x[0],min:x[1],max:x[2]}:null}
+const sizeName=w=>w<10?"piccola":w<25?"media":w<40?"grande":"gigante";
+// -1 magro, 0 giusto, 1 sovrappeso, 2 obeso, null non si sa. La prova delle costole conta più del peso di razza.
+function weightState(d){
+  const br=breedRange(d),p=d.pat||{},why=[];let s=null;
+  if(HS.bcs){s=HS.bcs<=2?-1:HS.bcs-3;why.push(`dalla prova delle costole risulta «${BCS[HS.bcs-1][0].toLowerCase()}»`)}
+  if(br&&d.age>=1){
+    const rng=`${kmN(br.min)}-${kmN(br.max)} kg`;
+    if(d.weight>br.max*1.1){if(s==null)s=d.weight>br.max*1.3?2:1;why.push(`pesa ${kmN(d.weight)} kg, più del peso tipico di un ${br.n} adulto (${rng})`)}
+    else if(d.weight<br.min*.9){if(s==null)s=-1;why.push(`pesa ${kmN(d.weight)} kg, meno del peso tipico di un ${br.n} adulto (${rng})`)}
+    else why.push(`pesa ${kmN(d.weight)} kg, ${d.weight>br.max?"appena sopra il":d.weight<br.min?"appena sotto il":"dentro il"} peso tipico di un ${br.n} adulto (${rng})`)}
+  if(p.peso){s=Math.max(s==null?1:s,1);why.push("nel profilo hai segnato «Sovrappeso»")}
+  return {s,why,br};
+}
+// minuti di movimento al giorno consigliati (indicativi), in base a razza, taglia, età e salute
+function moveNeed(d,k){
+  if(k.puppy)return {puppy:true,a:0,b:0};
+  let a,b;
+  if(k.heart){a=20;b=40}else if(k.brachy){a=30;b=50}else if(k.giant){a=45;b=70}else if(k.energy){a=80;b=120}else if(k.small){a=30;b=60}else{a=50;b=80}
+  if(k.senior){a*=.7;b*=.7}
+  if(k.joint){a=Math.min(a,30);b=Math.min(b,60)}
+  return {a:Math.round(a/5)*5,b:Math.round(b/5)*5};
+}
+function moveNow(){const now=Date.now(),A=actsIn(addDays(now,-14),now+DAY);return {n:A.length,min:A.reduce((m,x)=>m+x.dur,0)/60000/14}}
+function healthGoals(d,k){
+  const cap=capacity(d),now=Date.now(),best=r1(bestIn(addDays(now,-30),now+DAY)),from=best||r1(Math.min(3,Math.max(1,cap.km*.4))),W=weightState(d),M=moveNeed(d,k),mv=moveNow(),out=[];
+  if(k.puppy||k.p.conv)return out;
+  const up=f=>r1(Math.min(cap.km,Math.max(from+.5,from*f))),base={from,est:!best};
+  if(W.s>=1&&!k.heart){const target=up(W.s===2?1.3:1.4);
+    out.push(Object.assign({},base,{title:"Rimettersi in forma",target,weeks:W.s===2?10:8,why:`${W.s===2?"Sembra obeso":"Sembra in sovrappeso"}: camminare un po' di più, con aumenti piccoli, lo aiuta a tornare in forma (da ${kmN(from)} a ${kmN(target)} km). Il peso però si perde soprattutto con la dieta: chiedi al veterinario quanto deve mangiare.`}))}
+  if(k.heart||k.senior||k.joint)
+    out.push(Object.assign({},base,{title:"Mantenersi in forma",target:from,weeks:4,why:`${k.heart?"Con problemi di cuore o di respiro":k.joint?"Con problemi alle articolazioni":"Per un cane anziano"} la cosa più utile è la regolarità: la stessa distanza, divisa bene nella settimana, con giorni di riposo. Senza aumenti.`}));
+  else{
+    if(mv.n>=3&&mv.min<M.a*.7&&!(W.s>=1)){const target=up(1.3);
+      out.push(Object.assign({},base,{title:"Più movimento ogni giorno",target,weeks:6,why:`Nelle ultime due settimane, nelle passeggiate salvate, ha camminato in media ${Math.round(mv.min)} minuti al giorno: meno dei ${M.a}-${M.b} che servono a un cane come lui. Arrivare a ${kmN(target)} km lo aiuta.`}))}
+    if((W.s==null||W.s===0)&&from<cap.km*.9){const target=up(1.5);
+      out.push(Object.assign({},base,{title:"Pronto per le escursioni",target,weeks:8,why:`Per fare sentieri più lunghi in sicurezza: arrivare a ${kmN(target)} km, entro il limite prudente di ${kmN(cap.km)} km che l'app calcola per lui.`}))}
+  }
+  return out;
+}
+function showHealth(){
+  const d=dog(),k=dogKind(d),nm=dn(),W=weightState(d),M=moveNeed(d,k),mv=moveNow(),cap=capacity(d),P=pats(d),G=healthGoals(d,k);
+  const wTxt=W.s==null?{c:"",t:"Non so ancora dirti se è in forma: fai la prova delle costole qui sotto."}
+    :[{c:"c1",t:`${nm} sembra magro.`},{c:"c0",t:`${nm} sembra in forma.`},{c:"c1",t:`${nm} sembra in sovrappeso.`},{c:"c2",t:`${nm} sembra obeso.`}][W.s+1];
+  let mvTxt;
+  if(M.puppy)mvTxt=`È un cucciolo: circa 5 minuti di passeggiata per ogni mese di età, una o due volte al giorno (per ${nm} circa ${Math.max(10,Math.round(d.age*12)*5)} minuti), più il gioco libero.`;
+  else if(mv.n<3)mvTxt=`Non ho ancora abbastanza passeggiate salvate per dirti se cammina abbastanza. Salvale con «Avvia percorso» o aggiungile in Obiettivi.`;
+  else if(mv.min<M.a*.7)mvTxt=`<span class="c1">Nelle ultime due settimane ha camminato in media ${Math.round(mv.min)} minuti al giorno: avrebbe bisogno di muoversi di più.</span> Se fai anche uscite che non salvi, contale.`;
+  else if(mv.min>M.b*1.3&&(k.heart||k.joint||k.senior||k.brachy))mvTxt=`<span class="c1">Nelle ultime due settimane ha camminato in media ${Math.round(mv.min)} minuti al giorno: per lui forse è tanto.</span> Meglio uscite più corte e più riposo, e chiedi al veterinario.`;
+  else mvTxt=`<span class="c0">Nelle ultime due settimane ha camminato in media ${Math.round(mv.min)} minuti al giorno: va bene.</span>`;
+  const wl=HS.w.slice(0,6);
+  $("he-main").innerHTML=`<p class="muted" style="margin-top:6px">Quanto deve muoversi ${nm} in base a peso, taglia, età e salute, e gli obiettivi che ti consiglio.</p>
+    <div class="box" style="margin-top:14px"><h2>Peso e forma</h2>
+      <p style="margin-top:6px"><b class="${wTxt.c}">${wTxt.t}</b></p>
+      ${W.why.length?`<ul class="plain small" style="margin-top:6px">${W.why.map(x=>`<li>${esc(x[0].toUpperCase()+x.slice(1))}.</li>`).join("")}</ul>`:""}
+      <p class="small muted" style="margin-top:6px">Taglia ${sizeName(d.weight)}${d.breed?" · "+esc(d.breed):""}${W.br?"":(d.breed&&!/meticc/i.test(d.breed)?" (razza che non conosco: uso la prova delle costole)":" · per i meticci conta la prova delle costole")}.</p>
+      <p class="flabel">La prova delle costole</p>
+      <p class="small muted" style="margin-top:4px">Passa le mani sui suoi fianchi e guardalo dall'alto e di lato. Quale descrizione gli somiglia di più?</p>
+      <div class="stack" style="margin-top:8px;gap:6px">${BCS.map((b,i)=>`<button type="button" class="opt-b${HS.bcs===i+1?" on":""}" data-bcs="${i+1}"><b>${b[0]}</b><small>${b[1]}</small></button>`).join("")}</div>
+      <p class="flabel">Il suo peso</p>
+      <div class="row" style="margin-top:6px"><input class="field" id="he-w" type="number" inputmode="decimal" min="0.5" max="120" step="0.1" placeholder="Peso di oggi in kg" style="flex:1"><button class="btn pri" id="he-wsave" type="button">Salva</button></div>
+      ${wl.length?`<ul class="wk small" style="margin-top:8px">${wl.map((x,i)=>{const pr=HS.w[i+1],df=pr?r1(x.kg-pr.kg):0;return `<li><span>${fmtDay(x.t)}</span><span>${kmN(x.kg)} kg</span><span class="muted">${pr&&df?(df>0?"+":"")+kmN(df):""}</span></li>`}).join("")}</ul>`:`<p class="small muted" style="margin-top:6px">Pesalo ogni 2-4 settimane, sempre alla stessa ora: così vedi se sta andando nella direzione giusta.</p>`}
+    </div>
+    <div class="box" style="margin-top:12px"><h2>Quanto movimento gli serve</h2>
+      ${M.puppy?"":`<p style="margin-top:6px">A un cane come ${nm} servono circa <b>${M.a}-${M.b} minuti</b> di passeggiata al giorno, meglio divisi in 2-3 uscite.</p>`}
+      <p style="margin-top:6px">${mvTxt}</p>
+      <p class="small muted" style="margin-top:6px">Valori indicativi per razza, taglia, età e salute: ogni cane è diverso, osserva come sta.</p>
+    </div>
+    <div class="box" style="margin-top:12px"><h2>Salute</h2>
+      ${P.length?`<p style="margin-top:6px">Hai segnato: <b>${esc(P.join(", "))}</b>. Per questo l'app usa limiti più prudenti: al massimo circa ${kmN(cap.km)} km e ${cap.up} m di salita in una passeggiata${cap.notes.length?", perché "+esc(cap.notes.join(", ")):""}.</p><p class="small muted" style="margin-top:6px">Prima di aumentare lo sforzo parlane con il veterinario.</p>`
+        :`<p style="margin-top:6px">Non hai segnato problemi di salute. Limite prudente dell'app: circa ${kmN(cap.km)} km e ${cap.up} m di salita in una passeggiata${cap.notes.length?" ("+esc(cap.notes.join(", "))+")":""}.</p>`}
+      <a class="btn sm" href="#cane" style="margin-top:10px">Cambia salute e peso in Il mio cane</a>
+    </div>
+    <div class="block"><h2>Obiettivi consigliati</h2>
+      ${k.puppy?`<p class="muted">È ancora un cucciolo: niente obiettivi di resistenza. Intanto c'è l'<a href="#addestramento">Addestramento</a>.</p>`:k.p.conv?`<p class="muted">È in convalescenza: niente obiettivi finché il veterinario non dà il via libera.</p>`
+        :W.s===-1?`<div class="note">Sembra magro: prima di aumentare il movimento fallo vedere al veterinario.</div>`:""}
+      ${G.map((x,i)=>`<div class="box" style="margin-top:10px"><h3>${esc(x.title)}</h3><p class="small muted" style="margin-top:2px">${x.target>x.from?`Da ${kmN(x.from)} a ${kmN(x.target)} km`:`Mantenere ${kmN(x.from)} km`} · in circa ${x.weeks} settimane</p><p style="margin-top:6px;font-size:15px">${esc(x.why)}</p><button class="btn pri sm" data-hg="${i}" style="margin-top:10px">${icon("target")}Usa questo obiettivo</button></div>`).join("")}
+      ${!G.length&&!k.puppy&&!k.p.conv&&W.s!==-1?`<p class="muted">Cammina già vicino al suo limite prudente: l'obiettivo migliore è mantenersi così. Puoi sempre crearne uno a mano in <a href="#obiettivi">Obiettivi</a>.</p>`:""}
+    </div>`;
+  $("he-main").querySelectorAll("[data-bcs]").forEach(b=>b.onclick=()=>{const v=+b.dataset.bcs;HS.bcs=HS.bcs===v?null:v;saveHS();showHealth()});
+  $("he-wsave").onclick=()=>{const v=parseFloat($("he-w").value.replace(",","."));if(!(v>=.5&&v<=120)){toast("Scrivi il peso in kg");return}
+    HS.w.unshift({t:Date.now(),kg:r1(v)});HS.w=HS.w.slice(0,60);saveHS();S.dog=Object.assign({},dog(),{weight:r1(v)});store.set("alldogs-dog",S.dog);toast("Peso salvato");showHealth()};
+  $("he-main").querySelectorAll("[data-hg]").forEach(b=>b.onclick=()=>{S.goalDraft=G[+b.dataset.hg];location.hash="obiettivi"});
+}
+// Esplora: in evidenza la lezione di oggi e la passeggiata di oggi del calendario
 function homeExtra(){
   if(!S.dog){$("home-extra").innerHTML="";return}
   const d=dog(),k=dogKind(d),T=todayLesson();let h="";
-  if(GOAL&&!k.puppy&&!k.p.conv){const G=goalNow(GOAL,d,k),kd=WEEK_TPL[(new Date().getDay()-GOAL.longDow+7)%7];
-    if(G.r)h+=`<a class="hx" href="#obiettivi">${icon("target")}<span>Obiettivo di oggi: <b>${SESS[kd].t.toLowerCase()}</b>, circa ${kmN(r1(Math.max(.3,G.L*SESS[kd].f)))} km</span><i>›</i></a>`}
+  if(GOAL&&!k.puppy&&!k.p.conv){const x=goalNow(GOAL,d,k).today;
+    if(x)h+=`<a class="hx" href="#obiettivi">${icon("target")}<span>Obiettivo di oggi: <b>${SESS[x.kd].t.toLowerCase()}</b>${x.kd==="riposo"?"":`, circa ${kmN(x.km)} km`}</span><i>›</i></a>`}
   h+=`<a class="hx" href="#addestramento">${icon("cap")}<span>Lezione di oggi: <b>${esc(T.t)}</b>${TRS.st[T.id]&&TRS.st[T.id].ok?' <span class="c0">✓</span>':""}</span><i>›</i></a>`;
   $("home-extra").innerHTML=h;
 }
