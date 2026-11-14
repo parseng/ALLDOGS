@@ -48,7 +48,7 @@ def log(*a):
 
 
 def fetch(city):
-    c = CITIES[city]
+    c = CITIES[city] if isinstance(city, str) else city; city = c["key"] if not isinstance(city, str) else city
     os.makedirs(RAW, exist_ok=True)
     B = ",".join(str(x) for x in c["bbox"])
     f = os.path.join(RAW, f"{city}_roads.json")
@@ -262,8 +262,8 @@ def segments(nodes, pos, E):
     return [bd.thin([[round(p[0], 5), round(p[1], 5)] for p in w], 12) for w in ways], sf
 
 
-def build(city):
-    c = CITIES[city]
+def build(city, quick=False):
+    c = CITIES[city] if isinstance(city, str) else city; city = c["key"] if not isinstance(city, str) else city
     pos, adj, E = graph(city)
     ng = NodeGrid(pos, adj)
     out = []
@@ -275,9 +275,9 @@ def build(city):
         for L in LENGTHS:
             best = None
             # le strade di città girano molto: provo 12 direzioni e 4 distanze dei punti di passaggio
-            for mul in (1.0, .8, .65, 1.25):
-                for k in range(12):
-                    nodes = loop(pos, adj, E, s, L, k * math.pi / 6, ng, mul)
+            for mul in ((1.0, .75, 1.25) if quick else (1.0, .8, .65, 1.25)):
+                for k in range(8 if quick else 12):
+                    nodes = loop(pos, adj, E, s, L, k * math.pi / (4 if quick else 6), ng, mul)
                     if not nodes:
                         continue
                     j = judge(nodes, E, L)
@@ -340,7 +340,97 @@ def build(city):
     log(len(out), "giri in città scritti in", ", ".join(by_cell))
 
 
+# ---------- tutti i capoluoghi ----------
+def capitals():
+    """Capoluoghi di provincia e di regione (OpenStreetMap: place=city/town con capital=2, 4 o 6)."""
+    f = os.path.join(RAW, "capoluoghi.json")
+    if not os.path.exists(f):
+        os.makedirs(RAW, exist_ok=True)
+        bi.curl_overpass('[out:json][timeout:180];area["ISO3166-1"="IT"][admin_level=2]->.it;(node["place"~"^(city|town)$"]["capital"~"^(2|4|6)$"](area.it););out;', f)
+    out = []
+    for e in json.load(open(f, encoding="utf-8"))["elements"]:
+        t = e["tags"]
+        nm = t.get("name:it") or t["name"].split(" - ")[0].split("/")[-1].strip()
+        out.append((nm, e["lat"], e["lon"]))
+    if not any(o[0] == "Roma" for o in out):  # a Roma in OpenStreetMap manca il segno "capital"
+        out.append(("Roma", 41.8933, 12.4829))
+    return sorted(out)
+
+
+def parks_near(lat, lon, r=3500):
+    """Le ville comunali e i parchi più grandi vicino al centro, da data/p (creati da build_city.py)."""
+    pdir = os.path.join(bd.ROOT, "data", "p")
+    got = []
+    for a in (-1, 0, 1):
+        for b in (-1, 0, 1):
+            k = bi.key(bi.cell_of((lat + a * bi.CELL * .5, lon + b * bi.CELL * .5)))
+            fn = os.path.join(pdir, k + ".json")
+            if not os.path.exists(fn):
+                continue
+            for p in json.load(open(fn, encoding="utf-8"))["poi"]:
+                if p[0] == "g" and p[3] and bd.hav((lat, lon), (p[1], p[2])) <= r and not p[3].lower().startswith(("piazza", "largo", "aiuola", "rotatoria")):
+                    got.append(p)
+    uniq = {}
+    for p in got:
+        uniq[(p[1], p[2])] = p
+    return sorted(uniq.values(), key=lambda p: -(p[6] or 0))
+
+
+def auto_city(nm, lat, lon):
+    seeds = [(f"Centro di {nm}", lat, lon)]
+    for p in parks_near(lat, lon):
+        if len(seeds) >= 4:
+            break
+        if (p[6] or 0) < 180:
+            break
+        if all(bd.hav((p[1], p[2]), (s[1], s[2])) > 900 for s in seeds):
+            seeds.append((p[3][:50], p[1], p[2]))
+    key_ = "".join(ch for ch in nm.lower() if ch.isalnum())
+    return {"key": key_, "zone": nm, "bbox": (round(lat - .045, 4), round(lon - .06, 4), round(lat + .045, 4), round(lon + .06, 4)), "seeds": seeds}
+
+
+def all_cities(skip=("Napoli",), publish_every=15):
+    import subprocess
+    done_f = os.path.join(RAW, "done.json")
+    done = set(json.load(open(done_f))) if os.path.exists(done_f) else set()
+    todo = [c for c in capitals() if c[0] not in skip and c[0] not in done]
+    log(len(todo), "capoluoghi da fare")
+    n = 0
+    for nm, la, lo in todo:
+        c = auto_city(nm, la, lo)
+        log(f"== {nm}: {len(c['seeds'])} partenze ({', '.join(s[0] for s in c['seeds'])})")
+        try:
+            fetch(c)
+            build(c, quick=True)
+        except Exception as e:  # noqa
+            log("   non riuscito:", str(e)[:120])
+            continue
+        done.add(nm); json.dump(sorted(done), open(done_f, "w"))
+        n += 1
+        if n % publish_every == 0 or n == len(todo):
+            publish(f"Giri in città: altri capoluoghi ({len(done)} fatti)")
+    publish(f"Giri in città in tutti i capoluoghi ({len(done)})")
+    log("FINE")
+
+
+def publish(msg):
+    import subprocess
+    run = lambda *a: subprocess.run(["git", "-C", bd.ROOT] + list(a), capture_output=True, text=True)
+    run("add", "data/c", "data/index.json")
+    if run("diff", "--cached", "--quiet").returncode == 0:
+        return
+    run("commit", "-q", "-m", msg + "\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>")
+    for t in range(4):
+        r1 = run("pull", "-q", "--rebase")
+        r2 = run("push", "-q", "origin", "main")
+        if r2.returncode == 0:
+            log("pubblicato"); return
+        log("push non riuscito, riprovo:", (r1.stderr + r2.stderr)[:120]); time.sleep(10 * (t + 1))
+
+
 if __name__ == "__main__":
+    if sys.argv[1:2] == ["tutti"]:
+        all_cities(); sys.exit()
     cmd, city = (sys.argv[1:3] + ["", ""])[:2]
     if cmd == "fetch" and city in CITIES:
         fetch(city)
