@@ -72,7 +72,8 @@ def rule_for(name):
 # ---------- scaricamento ----------
 def fetch(only=None):
     os.makedirs(DOGS_RAW, exist_ok=True)
-    order, _ = bi.cells_todo()
+    # tutti i riquadri che hanno sentieri nell'app (anche quelli di confine)
+    order = sorted((tuple(map(float, f[:-5].split("_"))) for f in os.listdir(DATA) if f.endswith(".json")), key=lambda c: bd.hav(c, bi.HOME))
     if only:
         order = [c for c in order if bi.key(c) in only]
     for n, c in enumerate(order):
