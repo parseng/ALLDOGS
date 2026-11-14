@@ -1337,15 +1337,16 @@ const pace=()=>{const p=paceInfo();return p?p.pace:DEF_PACE};
 // giudizio su distanza, salita, difficoltà, caldo. item = {len (m), up (m o null), scale, start [lat,lon], loop, dogs}
 function verdict(it,d,day){
   const cap=capacity(d),why=[],add=(lvl,txt)=>why.push({lvl,txt}),k=it.len/1000,nm=esc(d.name||"il tuo cane");
-  if(k<=cap.km)add(0,`${km(it.len)} km: dentro le possibilità di ${nm} (fino a circa ${kmN(cap.km)} km).`);
-  else if(k<=cap.km*1.3)add(1,`${km(it.len)} km: un po' oltre il limite consigliato di circa ${kmN(cap.km)} km. Prevedi pause lunghe.`);
-  else add(2,`${km(it.len)} km: troppo lungo, il limite consigliato per ${nm} è circa ${kmN(cap.km)} km.`);
-  if(it.loop===false)why[why.length-1].txt+=" Non è un anello: se torni a piedi la distanza raddoppia.";
+  const ar=it.loop===false?" andata e ritorno":"";
+  if(k<=cap.km)add(0,`${km(it.len)} km${ar}: dentro le possibilità di ${nm} (fino a circa ${kmN(cap.km)} km).`);
+  else if(k<=cap.km*1.3)add(1,`${km(it.len)} km${ar}: un po' oltre il limite consigliato di circa ${kmN(cap.km)} km. Prevedi pause lunghe.`);
+  else add(2,`${km(it.len)} km${ar}: troppo lungo, il limite consigliato per ${nm} è circa ${kmN(cap.km)} km.`);
+  if(it.loop===false)why[why.length-1].txt+=` Non è un anello: ho contato anche il ritorno alla partenza (${km(it.one||it.len/2)} km all'andata).`;
   const up=it.up;
   if(up!=null){
-    if(up<=cap.up)add(0,`${up} m di salita: va bene (fino a circa ${cap.up} m).`);
-    else if(up<=cap.up*1.3)add(1,`${up} m di salita: impegnativo (limite consigliato circa ${cap.up} m).`);
-    else add(2,`${up} m di salita: troppo (limite consigliato circa ${cap.up} m).`);
+    if(up<=cap.up)add(0,`${up} m di salita${ar}: va bene (fino a circa ${cap.up} m).`);
+    else if(up<=cap.up*1.3)add(1,`${up} m di salita${ar}: impegnativo (limite consigliato circa ${cap.up} m).`);
+    else add(2,`${up} m di salita${ar}: troppo (limite consigliato circa ${cap.up} m).`);
   } else add(-1,"Sto calcolando il dislivello…");
   const s=it.scale;
   if(s==="EEA")add(2,"Difficoltà EEA: tratti attrezzati con cavi o scalette, i cani non possono farli.");
@@ -1416,7 +1417,12 @@ async function overpass(q){
 // Sentieri di tutta Italia, divisi in riquadri di mezzo grado (data/c/<lat>_<lon>.json, creati da tools/build_italy.py).
 // L'app scarica solo i riquadri che la mappa sta inquadrando. Dislivelli (e), fondo (sf) e particolarità (f) sono già calcolati dentro ogni sentiero.
 const CELL=.5,TR=new Map(),cellState={},elev={};let FT={},IDX=null;
-const item=tr=>({len:tr.len,up:elev[tr.id]?elev[tr.id].up:null,scale:tr.scale,start:tr.start,loop:tr.loop,dogs:tr.dogs});
+// Percorsi lineari (non ad anello): per tornare alla macchina si rifà la strada al contrario.
+// Quindi km, salita, tempo, acqua e verdetto contano SEMPRE andata e ritorno; la discesa dell'andata diventa salita al ritorno.
+function dnOf(tr){const e=elev[tr.id];if(!e)return null;if(!e.p||e.p.length<3)return e.up;let up=0,dw=0;for(let i=1;i<e.p.length;i++){const x=e.p[i]-e.p[i-1];if(x>0)up+=x;else dw-=x}return Math.round(dw*(up?e.up/up:1))}
+const totLen=tr=>tr.loop===false?tr.len*2:tr.len;
+function totUp(tr){const e=elev[tr.id];if(!e)return null;if(tr.loop!==false)return e.up;const dn=dnOf(tr);return e.up+(dn??e.up)}
+const item=tr=>({len:totLen(tr),one:tr.len,up:totUp(tr),scale:tr.scale,start:tr.start,loop:tr.loop,dogs:tr.dogs});
 const cellKey=(la,lo)=>(Math.floor(la/CELL)*CELL).toFixed(1)+"_"+(Math.floor(lo/CELL)*CELL).toFixed(1);
 const cellOf=store.get("alldogs-cellof")||{}; // in quale riquadro sta ogni sentiero aperto o salvato (per ritrovarlo dopo)
 function rememberCell(tr){if(tr&&tr.cell&&cellOf[tr.id]!==tr.cell){cellOf[tr.id]=tr.cell;store.set("alldogs-cellof",cellOf)}}
@@ -1494,7 +1500,7 @@ async function findTrail(id){ // per aprire un sentiero salvato o un indirizzo d
 
 // attività giudicate per IL CANE (in base al suo impegno), non per la persona
 function acts(tr,res){
-  const up=elev[tr.id]?elev[tr.id].up:null,k=tr.len/1000,f=FT[tr.id]?FT[tr.id].f:[],o=new Set(),e=res.effort,known=res.v>=0;
+  const up=totUp(tr),k=totLen(tr)/1000,f=FT[tr.id]?FT[tr.id].f:[],o=new Set(),e=res.effort,known=res.v>=0;
   if(known&&e===0&&k<=6)o.add("facile");
   if(known&&res.v<2&&(e===1||(e===0&&k>6)))o.add("escursione");
   if(known&&e===2)o.add("trekking");
@@ -2124,7 +2130,7 @@ function cardHTML(tr,res,title){
   return `<article class="tcard" data-id="${tr.id}"><div class="img">${svgThumb(tr.path)}<img loading="lazy" alt="" src="${staticImg(tr.path)}" onerror="this.remove()">${badge}
     <button class="round ${sv?"saved":""}" data-save="${tr.id}" aria-label="${sv?"Togli dai salvati":"Salva"}">${icon("heart")}</button></div>
     <h3>${esc(title||tr.name)}</h3><p class="sub">${[title?esc(tr.name):"",esc(tr.zone),tr.ref?"sentiero "+esc(tr.ref):"",tr.scale?"CAI "+tr.scale:""].filter(Boolean).join(", ")}</p>
-    <p class="meta"><span class="sign">${fmtH(res.hours)} con ${dn()}</span><span>${km(tr.len)} km</span>${e?`<span>↑ ${e.up} m</span>`:""}${res.v>=0?`<span class="c${res.effort}"><b>${EFFORT[res.effort]}</b> per lui</span>`:""}</p>${featLine(tr)}</article>`;
+    <p class="meta"><span class="sign">${fmtH(res.hours)} con ${dn()}</span><span>${km(totLen(tr))} km${tr.loop===false?" a/r":""}</span>${e?`<span>↑ ${totUp(tr)} m</span>`:""}${res.v>=0?`<span class="c${res.effort}"><b>${EFFORT[res.effort]}</b> per lui</span>`:""}</p>${featLine(tr)}</article>`;
 }
 function placeCard(f,i){
   return `<article class="tcard" data-place="${i}"><div class="img"><img loading="lazy" alt="" src="${staticPlace(f.c)}" onerror="this.remove()"><span class="badge vw">Sentieri vicini</span></div>
@@ -2159,7 +2165,7 @@ function filtered(){
   for(const tr of S.trails){
     if(!S.near&&!q){if(S.wide){if(hav(tr.start,S.wide.c)>S.wide.r*1000)continue}else if(!inView(tr))continue} // la zona inquadrata, o il cerchio allargato quando con i filtri non c'era niente
     if(q&&!(tr.name+" "+tr.ref+" "+tr.zone+" "+tr.from+" "+tr.to+" "+(FT[tr.id]&&FT[tr.id].n?Object.values(FT[tr.id].n).flat().join(" "):"")).toLowerCase().includes(q))continue;
-    if(len!=="all"){const [a,b]=len.split("-").map(Number);if(tr.len<a*1000||tr.len>=b*1000)continue}
+    if(len!=="all"){const [a,b]=len.split("-").map(Number);const L=totLen(tr);if(L<a*1000||L>=b*1000)continue}
     if(upf!=="all"){const e=elev[tr.id];if(!e)continue;const [a,b]=upf.split("-").map(Number);if(e.up<a||e.up>=b)continue}
     if(dif!=="all"&&tr.scale!==dif)continue;
     if(zone!=="all"&&tr.zone!==zone)continue;
@@ -2281,10 +2287,10 @@ function detailHTML(o){
   const d=dog(),res=verdict(o.it,d,S.day),st=steps(o.it.len,d);
   const vb=res.v<0?`<span class="verdict vw">Sto valutando…</span>`:`<span class="verdict v${res.v}">${VLABEL[res.v]} per ${dn()}</span>`;
   return `<h1>${esc(o.title)}</h1><p class="muted" style="margin-top:6px">${o.sub}</p>${vb}
-    <div class="stats"><div><b>${km(o.it.len)} km</b><span>Lunghezza</span></div><div><b>${o.it.up!=null?o.it.up+" m":"…"}</b><span>Dislivello</span></div><div class="dg"><b>${fmtH(res.hours)}</b><span>Con ${dn()}</span></div><div class="dg"><b class="${res.v>=0?"c"+res.effort:""}">${res.v>=0?EFFORT[res.effort]:"…"}</b><span>Per ${dn()}</span></div></div>
-    <p class="small muted">${o.it.loop===false?"Percorso lineare (andata e ritorno raddoppia la distanza)":"Percorso ad anello"}. Tutte le valutazioni sono fatte sui limiti di ${dn()}, non su quelli di una persona.</p>
+    <div class="stats"><div><b>${km(o.it.len)} km</b><span>${o.it.loop===false?"Andata e ritorno":"Lunghezza"}</span></div><div><b>${o.it.up!=null?o.it.up+" m":"…"}</b><span>${o.it.loop===false?"Salita a/r":"Dislivello"}</span></div><div class="dg"><b>${fmtH(res.hours)}</b><span>Con ${dn()}</span></div><div class="dg"><b class="${res.v>=0?"c"+res.effort:""}">${res.v>=0?EFFORT[res.effort]:"…"}</b><span>Per ${dn()}</span></div></div>
+    <p class="small muted">${o.it.loop===false?`Percorso lineare: ${km(o.it.one||o.it.len/2)} km all'andata, poi si torna indietro alla partenza. Km, salita, tempo e acqua contano andata e ritorno`:"Percorso ad anello"}. Tutte le valutazioni sono fatte sui limiti di ${dn()}, non su quelli di una persona.</p>
     ${o.tools||""}
-    ${o.prof?`<div class="block"><h2>Dislivello lungo il percorso</h2>${elevChart(o.prof,o.it.len,d)}</div>`:""}
+    ${o.prof?`<div class="block"><h2>Dislivello lungo il percorso${o.it.loop===false?" (andata)":""}</h2>${elevChart(o.prof,o.it.one||o.it.len,d)}</div>`:""}
     <div class="block dogb"><h2>Per ${dn()}</h2>
       ${res.v>=0?`<p style="margin-bottom:10px">Impegno per ${dn()}: <b class="c${res.effort}">${EFFORT[res.effort]}</b> · ${dayName(S.day,res.w&&res.w.daily).toLowerCase()}</p>`:""}
       <ul class="why">${res.why.map(x=>`<li><i class="dot ${x.lvl<0?"bw":"b"+x.lvl}"></i><span>${x.txt}</span></li>`).join("")}</ul>
@@ -2442,7 +2448,7 @@ async function showTrail(id){
     $("det").querySelectorAll("[data-steps]").forEach(b=>b.onclick=()=>stepsPreview(tr));
     bindOff($("det"),()=>navObjTrail(tr));
     paintTS(tr);
-    $("det").querySelectorAll("[data-pack]").forEach(b=>b.onclick=()=>{const f2=FT[id]||{f:[],w:[]},e2=elev[id];packSheet({km:tr.len/1000,p:tr.start,day:S.day,title:tr.name,water:(f2.w||[]).length,mount:!!((e2&&(e2.up>=300||e2.max>=900))||f2.f.includes("vette")),beach:f2.f.includes("spiaggia"),lake:f2.f.includes("laghi")||f2.f.includes("fiumi")})});
+    $("det").querySelectorAll("[data-pack]").forEach(b=>b.onclick=()=>{const f2=FT[id]||{f:[],w:[]},e2=elev[id];packSheet({km:totLen(tr)/1000,p:tr.start,day:S.day,title:tr.name,water:(f2.w||[]).length,mount:!!((e2&&(e2.up>=300||e2.max>=900))||f2.f.includes("vette")),beach:f2.f.includes("spiaggia"),lake:f2.f.includes("laghi")||f2.f.includes("fiumi")})});
   };
   paint();
   $("bar-go").href=`https://www.google.com/maps/dir/?api=1&destination=${tr.start[0]},${tr.start[1]}`;
@@ -2639,7 +2645,7 @@ async function generate(o){
   ok.forEach(r=>{r.stops=stopsFor(r,d,o.aiStops);r.cmds=o.aiCmds||null;r.note=o.note||"";r.source=o.source});
   S.gen=ok;S.genIdx=0;showGen();
 }
-function genItem(r){return {len:r.len,up:r.up,scale:"CITY",start:r.path[0],loop:r.loop!==false}}
+function genItem(r){const lin=r.loop===false;return {len:lin?r.len*2:r.len,one:r.len,up:lin&&r.up!=null?r.up+(r.dn??r.up):r.up,scale:"CITY",start:r.path[0],loop:!lin}}
 function showGen(){
   const r=S.gen[S.genIdx],d=dog(),res=verdict(genItem(r),d,0),sp=steps(r.len,d);
   if(!r.stops)r.stops=stopsFor(r,d);
@@ -3687,7 +3693,7 @@ function paintTS(tr){
   const ts=$("tsheet"),e=elev[tr.id],d=dog(),res=verdict(item(tr),d,S.day),o=navObjTrail(tr),key=offKeyOf(o),has=!!OFF[key];
   let dn2=null;if(e&&e.p&&e.p.length>2){let up=0,dw=0;for(let i=1;i<e.p.length;i++){const x=e.p[i]-e.p[i-1];if(x>0)up+=x;else dw-=x}dn2=tr.loop!==false?e.up:Math.round(dw*(up?e.up/up:1))}
   ts.innerHTML=`<button class="grab" id="ts-grab" aria-label="Alza o abbassa la scheda"></button><div class="ts-hd"><button class="ts-name" id="ts-name"><h2>${esc(tr.name)}${icon("chevr")}</h2></button><button class="round" id="ts-x" aria-label="Chiudi la mappa">${icon("x")}</button></div>
-    <div class="ts-more"><div class="ts-st"><span>${icon("route")}${km(tr.len)} km</span>${e?`<span>${icon("up")}${e.up} m</span>`:""}${dn2!=null?`<span>${icon("dn")}${dn2} m</span>`:""}<span class="dg">${icon("clock")}${fmtH(res.hours)} con ${dn()}</span></div>
+    <div class="ts-more"><div class="ts-st"><span>${icon("route")}${km(totLen(tr))} km${tr.loop===false?" a/r":""}</span>${e?`<span>${icon("up")}${totUp(tr)} m</span>`:""}${dn2!=null?`<span>${icon("dn")}${tr.loop===false?totUp(tr):dn2} m</span>`:""}<span class="dg">${icon("clock")}${fmtH(res.hours)} con ${dn()}</span></div>
     ${e&&e.p?`<div style="margin-top:6px">${elevChart(e.p,tr.len,d,{bare:1})}</div>`:""}
     <div class="ts-row"><button class="btn" data-off="${key}">${icon("down")}${offBusy[key]?"Scarico…":has?"Scaricato":"Scarica"}</button><button class="btn pri" id="ts-go">${icon("play")}Avvia percorso</button></div></div>`;
   $("ts-grab").onclick=()=>tsMin(!ts.classList.contains("min"));
@@ -3809,7 +3815,7 @@ function turnIco(t,cls){
 // elenco completo delle indicazioni: svolte, tappe e arrivo (prog = metri già fatti, null = anteprima)
 function stepList(turns,stops,total,prog,loop){
   const L=turns.map(t=>Object.assign({},t)).concat((stops||[]).slice(1).map((x,i)=>({km:x.km,stop:1,text:`Tappa ${i+2}: ${x.t}`})));
-  L.push({km:total,end:1,text:loop?"Arrivo: sei tornato alla partenza":"Arrivo: fine del percorso"});
+  L.push({km:total,end:1,text:loop?"Arrivo: sei tornato alla partenza":"Metà strada: fine dell'andata, ora si torna indietro alla partenza"});
   L.sort((a,b)=>a.km-b.km);
   const nx=prog!=null?L.findIndex(t=>t.km>prog+5):-1;
   return `<ul class="steps">${L.map((t,i)=>{const past=prog!=null&&i<nx,dd=prog!=null?t.km-prog:t.km;
@@ -3847,12 +3853,12 @@ function startNav(o){
   nav={o,t0:Date.now(),run:0,since:Date.now(),paused:false,dist:0,track:[],idx:0,prog:0,gps:"wait",last:null,lastT:0,pos:null,water:0,off:null,tip:null};
   navPrep();navFollow=true;saveNav();$("nav-bot").classList.remove("open");$("s-vai").classList.remove("nbopen");location.hash="vai";
 }
-function saveNav(){if(!nav)return;navSaveT=Date.now();store.set(NAV_KEY,{o:nav.o,t0:nav.t0,run:navElapsed(),at:Date.now(),paused:nav.paused,dist:nav.dist,track:nav.track,idx:nav.idx,prog:nav.prog,share:nav.share||null,water:nav.water})}
+function saveNav(){if(!nav)return;navSaveT=Date.now();store.set(NAV_KEY,{o:nav.o,t0:nav.t0,run:navElapsed(),at:Date.now(),paused:nav.paused,dist:nav.dist,track:nav.track,idx:nav.idx,prog:nav.prog,share:nav.share||null,water:nav.water,back:!!nav.back})}
 function restoreNav(){
   const c=store.get(NAV_KEY);if(!c||!c.o||!c.o.path||Date.now()-c.at>6*3600e3){store.del(NAV_KEY);return false}
   // interruzione breve: il tempo continua a contare. Interruzione lunga: riparte in pausa, senza contare il buco.
   const gap=Date.now()-c.at,cont=!c.paused&&gap<10*60e3;
-  nav={o:c.o,t0:c.t0,run:c.run+(cont?gap:0),since:Date.now(),paused:!cont,dist:c.dist||0,track:c.track||[],idx:c.idx||0,prog:c.prog||0,gps:"wait",last:null,lastT:0,pos:null,water:c.water||0,off:null,tip:null};
+  nav={o:c.o,t0:c.t0,run:c.run+(cont?gap:0),since:Date.now(),paused:!cont,dist:c.dist||0,track:c.track||[],idx:c.idx||0,prog:c.prog||0,gps:"wait",last:null,lastT:0,pos:null,water:c.water||0,off:null,tip:null,back:!!c.back};
   navPrep();nav.idx=Math.min(nav.idx,nav.P.length-1);navFollow=true;nav.share=c.share||null;
   return true;
 }
@@ -3916,7 +3922,8 @@ function navCompass(){const b=M?M.getBearing():0;$("nav-comp").firstChild.style.
 function navProgress(p){
   const P=nav.P,C=nav.C;let bi=-1,bd=Infinity;
   const scan=(a,b)=>{for(let i=a;i<=b;i++){const d=hav(p,P[i]);if(d<bd){bd=d;bi=i}}};
-  let a=nav.idx,b=nav.idx;while(a>0&&C[nav.idx]-C[a]<150)a--;while(b<P.length-1&&C[b]-C[nav.idx]<400)b++;
+  const bk=nav.back?400:150,fw=nav.back?150:400; // al ritorno dei percorsi lineari si cammina all'indietro
+  let a=nav.idx,b=nav.idx;while(a>0&&C[nav.idx]-C[a]<bk)a--;while(b<P.length-1&&C[b]-C[nav.idx]<fw)b++;
   scan(a,b);
   if(bd>80){const wi=bi,wd=bd;bd=Infinity;scan(0,P.length-1);if(!(bd<wd-40)){bi=wi;bd=wd}}
   nav.off=bd;if(bd<=80){nav.idx=bi;nav.prog=C[bi]}
@@ -3967,7 +3974,7 @@ async function navWeather(){
 function paintNav(){
   if(!nav||!$("s-vai").classList.contains("on"))return;
   const o=nav.o,d=dog(),cap=capacity(d),el=navElapsed(),name=esc(d.name||"il cane"),done=nav.dist;
-  const res=verdict({len:o.len,up:o.up,scale:o.scale||"",start:o.path[0],loop:o.loop,dogs:o.dogs},d,0);
+  const lin=o.loop===false,res=verdict({len:lin?o.len*2:o.len,one:o.len,up:lin&&o.up!=null?o.up*2:o.up,scale:o.scale||"",start:o.path[0],loop:o.loop,dogs:o.dogs},d,0);
   $("nav-kicker").innerHTML=res.v<0?"In cammino":`<span class="c${res.v}"><i class="dot b${res.v}"></i>${VLABEL[res.v]} per ${name}</span> · ${km(o.len)} km${o.up?" · ↑ "+o.up+" m":""}`;
   document.querySelectorAll('[data-nv="time"]').forEach(x=>x.textContent=clock(el));$("nb-mini").classList.toggle("long",el>=3600e3||done>=1e4);
   document.querySelectorAll('[data-nv="km"]').forEach(x=>x.textContent=(done/1000).toFixed(2).replace(".",","));
@@ -3978,7 +3985,9 @@ function paintNav(){
   $("nb-pz").textContent=nav.paused?"In pausa":"";
   if(o.prof&&$("nav-bot").classList.contains("open")){const mk=nav.total?nav.prog/nav.total:0,ck=o.prof.length+"|"+Math.round(mk*200);if($("nb-chart").dataset.k!==ck){$("nb-chart").dataset.k=ck;$("nb-chart").innerHTML=elevChart(o.prof,o.len,d,{bare:1,mark:mk})}}
   const live=done>=300&&el>=180e3?Math.min(45,Math.max(8,el/60000/(done/1000))):pace();
-  const rem=Math.max(0,nav.total-nav.prog),arrived=nav.prog>0&&rem<30;
+  // percorso lineare: arrivati in fondo si torna indietro; i km mancanti contano anche il ritorno
+  if(lin&&!nav.back&&nav.prog>0&&nav.total-nav.prog<30){nav.back=true;nav.tip={t:"Fine dell'andata: ora si torna indietro per la stessa strada fino alla partenza.",until:Date.now()+60e3,cls:"c0"};say("Fine dell'andata. Ora si torna indietro fino alla partenza.")}
+  const rem=lin?(nav.back?Math.max(0,nav.prog):Math.max(0,nav.total-nav.prog)+nav.total):Math.max(0,nav.total-nav.prog),arrived=lin?nav.back&&nav.prog<30:nav.prog>0&&rem<30;
   $("nav-left").innerHTML=arrived?"Arrivati":km(rem)+"<small>km</small>";
   $("nav-steps").textContent=Math.round(done/dogStep(d.weight)).toLocaleString("it-IT");
   $("nav-info").textContent=`Tu circa ${Math.round(done/.75).toLocaleString("it-IT")} passi`+(arrived?"":` · arrivo tra circa ${fmtDur(rem/1000*live*60e3)}`);
@@ -4004,7 +4013,7 @@ function paintNav(){
   // prossima svolta (indicazioni passo-passo)
   let turn="";
   if(NS.turns&&!arrived&&!(nav.off>50&&nav.pos)){
-    const t=nav.turns.find(x=>x.km>nav.prog+5)||{km:nav.total,end:1,text:o.loop?"Arrivo: di nuovo alla partenza":"Arrivo: fine del percorso"},dd=t.km-nav.prog;
+    const t=nav.back?{km:0,end:1,text:"Ritorno alla partenza per la stessa strada"}:nav.turns.find(x=>x.km>nav.prog+5)||{km:nav.total,end:1,text:o.loop?"Arrivo: di nuovo alla partenza":"Metà strada: ora si torna indietro alla partenza"},dd=nav.back?nav.prog:t.km-nav.prog;
     turn=`${turnIco(t)}<div><b>${nav.pos&&dd<=30?"Adesso":fmtM(dd)}</b><span>${esc(t.text)}</span></div><svg class="tl"><use href="#i-list"/></svg>`;}
   const tb=$("nav-turn");tb.hidden=!turn;if(turn&&tb.dataset.h!==turn){tb.dataset.h=turn;tb.innerHTML=turn}
   $("nav-share").classList.toggle("on",!!nav.share);
@@ -4023,12 +4032,12 @@ $("nav-pause").onclick=()=>{if(!nav)return;nav.auto=false;nav.moveT=Date.now();i
 $("nav-end").onclick=()=>{
   if(!nav)return;
   const was=nav.paused;if(!was){nav.run=navElapsed();nav.paused=true}
-  const o=nav.o,el=nav.run,gpsOK=nav.dist>=100,differ=Math.abs(nav.dist-o.len)>o.len*.2;
+  const o=nav.o,el=nav.run,gpsOK=nav.dist>=100,full=o.loop===false?o.len*2:o.len,differ=Math.abs(nav.dist-full)>full*.2;
   $("nav-sheet-box").innerHTML=`<h2>Chiudere la passeggiata?</h2>
-    <div class="stats" style="grid-template-columns:repeat(3,minmax(0,1fr))"><div><b>${fmtDur(el)}</b><span>Durata</span></div><div><b>${km(nav.dist)} km</b><span>Misurati col GPS</span></div><div><b>${km(o.len)} km</b><span>Percorso previsto</span></div></div>
+    <div class="stats" style="grid-template-columns:repeat(3,minmax(0,1fr))"><div><b>${fmtDur(el)}</b><span>Durata</span></div><div><b>${km(nav.dist)} km</b><span>Misurati col GPS</span></div><div><b>${km(full)} km</b><span>${o.loop===false?"Previsti, andata e ritorno":"Percorso previsto"}</span></div></div>
     ${differ?`<p class="small muted" style="margin-top:8px">Quale distanza salvo?</p>
     <label><input type="radio" name="nsd" value="gps" ${gpsOK?"checked":""}>Quella misurata dal GPS (${km(nav.dist)} km)</label>
-    <label><input type="radio" name="nsd" value="plan" ${gpsOK?"":"checked"}>Ho fatto tutto il percorso (${km(o.len)} km)</label>`:""}
+    <label><input type="radio" name="nsd" value="plan" ${gpsOK?"":"checked"}>Ho fatto tutto il percorso${o.loop===false?", andata e ritorno":""} (${km(full)} km)</label>`:""}
     <label class="w" style="display:block;margin-top:12px;font-size:14px"><b>I tuoi passi veri (facoltativo)</b>
       <input class="field" id="ns-steps" inputmode="numeric" placeholder="Es. 4.500" style="margin-top:6px"></label>
     <p class="small muted" style="margin-top:6px">${HEALTH_HINT} Puoi aggiungerli anche dopo, dalla sezione Attività.</p>
@@ -4037,10 +4046,10 @@ $("nav-end").onclick=()=>{
   $("ns-cont").onclick=()=>{$("nav-sheet").hidden=true;if(!was){nav.paused=false;nav.since=Date.now()}paintNav()};
   $("ns-drop").onclick=()=>{if(!confirm("La passeggiata non verrà salvata. Confermi?"))return;if(nav.share)sharePub({k:"e",t:Date.now(),d:Math.round(nav.dist),e:Math.round(el/1000)});const back=o.kind==="trail"&&o.id?"s-"+o.id:"crea";stopNav();location.hash=back};
   $("ns-save").onclick=()=>{
-    const pick=document.querySelector('input[name="nsd"]:checked'),useGps=pick?pick.value==="gps":true,dist=Math.round(useGps?nav.dist:o.len);
+    const pick=document.querySelector('input[name="nsd"]:checked'),useGps=pick?pick.value==="gps":true,dist=Math.round(useGps?nav.dist:full);
     let tr=nav.track.length>1?thin(nav.track,15):[];if(tr.length>400)tr=sample(tr,400);
     const stp=parseSteps($("ns-steps").value);if($("ns-steps").value.trim()&&!stp){toast("Il numero dei passi non sembra giusto");return}
-    S.acts.unshift({dogs:DOGS.walk.slice(),t:nav.t0,name:o.name,kind:o.kind,id:o.id||null,dur:Math.round(el),dist,plan:o.len,up:Math.round((o.up||0)*Math.min(1,dist/Math.max(1,o.len))),gps:useGps,track:tr,steps:stp});
+    S.acts.unshift({dogs:DOGS.walk.slice(),t:nav.t0,name:o.name,kind:o.kind,id:o.id||null,dur:Math.round(el),dist,plan:full,up:Math.round((o.up||0)*(o.loop===false?2:1)*Math.min(1,dist/Math.max(1,full))),gps:useGps,track:tr,steps:stp});
     S.acts=S.acts.slice(0,200);
     if(!store.set("alldogs-acts",S.acts)){S.acts.slice(5).forEach(x=>delete x.track);store.set("alldogs-acts",S.acts)}
     if(nav.share)sharePub({k:"e",t:Date.now(),d:dist,e:Math.round(el/1000)});
