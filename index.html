@@ -198,6 +198,52 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
 .sugg{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
 
 
+
+/* zampe, quando uscire, promemoria, diario, zaino, soccorso, regole */
+.paw{display:flex;gap:8px;align-items:flex-start;margin-top:10px;padding:9px 12px;border-radius:12px;background:var(--surface);border:1px solid var(--line);font-size:14px}
+.paw svg{width:18px;height:18px;flex:none;margin-top:2px;color:var(--ok)}
+.paw.p1 svg{color:var(--warn)} .paw.p2{border-color:var(--no)} .paw.p2 svg{color:var(--no)}
+.haz svg{width:18px;height:18px;flex:none;color:var(--accent)}
+.hbar{display:flex;gap:2px;margin-top:10px}
+.hbar i{flex:1;height:26px;border-radius:5px;background:var(--ok)}
+.hbar i.s1{background:var(--warn)} .hbar i.s2{background:var(--no)} .hbar i.past{opacity:.25}
+.hbar i.dk{background-image:repeating-linear-gradient(135deg,rgba(0,0,0,.38) 0 3px,transparent 3px 6px)}
+.hlab{position:relative;height:16px;font-size:11px;color:var(--muted);margin-top:3px}
+.hlab span{position:absolute;transform:translateX(-50%)}
+.rem{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:var(--surface)}
+.rem small{display:block;font-size:13px;color:var(--muted)}
+.rem.soon{border-color:var(--warn)} .rem.late{border-color:var(--no);background:var(--no-bg)}
+.rem .round{width:38px;height:38px}
+.rem .round svg{width:18px;height:18px}
+.hx.late{border-color:var(--no)}
+.dtrace{float:right;width:64px;height:64px;margin:0 0 6px 10px;border-radius:12px;background:var(--accent-soft);padding:4px}
+.dtrace svg{width:100%;height:100%}
+.dtrace polyline{fill:none;stroke:var(--accent);stroke-width:3;stroke-linejoin:round;stroke-linecap:round}
+.dph{display:block;width:100%;max-height:260px;object-fit:cover;border-radius:14px;margin-top:10px}
+.dnote{margin-top:8px;font-size:14.5px;white-space:pre-line}
+.mood{display:inline-block;font-size:12.5px;font-weight:700;padding:2px 9px;border-radius:999px;background:var(--ok-bg);color:var(--ok)}
+.mood.tired{background:var(--warn-bg);color:var(--warn)} .mood.bad{background:var(--no-bg);color:var(--no)}
+.tag[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+button.tag{font:inherit;font-size:14px;color:var(--ink);cursor:pointer}
+.pack{display:flex;flex-direction:column;margin-top:10px}
+.pk{display:flex;gap:12px;align-items:flex-start;padding:10px 2px;border-bottom:1px solid var(--line);cursor:pointer}
+.pk:last-child{border-bottom:0}
+.pk input{width:22px;height:22px;flex:none;margin-top:1px;accent-color:var(--ok)}
+.pk small{display:block;color:var(--muted);font-size:13px}
+.pk input:checked+span b{text-decoration:line-through;color:var(--muted)}
+.sosbig{background:var(--no);border-color:var(--no);color:#fff;font-weight:700}
+.sosbig svg{width:20px;height:20px}
+.aid{border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+.aid summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:12px 14px}
+.aid summary::-webkit-details-marker{display:none}
+.aid summary span{flex:1;min-width:0} .aid summary b{display:block}
+.aid summary small{display:block;font-size:12.5px;color:var(--muted)}
+.aid.u2 summary small{color:var(--no);font-weight:600} .aid.u1 summary small{color:var(--warn)}
+.aid summary i{font-style:normal;color:var(--muted);transition:transform .2s} .aid[open] summary i{transform:rotate(90deg)}
+.aid.u2{border-left:4px solid var(--no)} .aid.u1{border-left:4px solid var(--warn)}
+.aidb{padding:0 14px 14px;font-size:15px}
+.aidb h4{margin:10px 0 4px;font-size:14.5px}
+.aidb ol,.aidb ul,.rul{margin:0;padding-left:20px} .aidb li,.rul li{margin:3px 0}
 /* menu Mappe a schede */
 .msheet{position:fixed;inset:0;z-index:965;background:rgba(10,14,28,.32);display:flex;align-items:flex-end;justify-content:center}
 .msbox{width:100%;max-width:560px;max-height:62vh;overflow-y:auto;overscroll-behavior:contain;background:var(--surface);border-radius:26px 26px 0 0;padding:8px 18px calc(18px + env(safe-area-inset-bottom,0px));box-shadow:0 -10px 34px rgba(0,0,0,.25);animation:msup .22s ease-out}
@@ -433,6 +479,11 @@ h2 .dot{width:12px;height:12px;margin-right:8px}
     <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
     <symbol id="i-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".8" fill="currentColor"/></symbol>
     <symbol id="i-cap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 9 12 4.5 21.5 9 12 13.5 2.5 9Z"/><path d="M6.5 11v4.5c1.5 1.6 3.4 2.4 5.5 2.4s4-.8 5.5-2.4V11M21.5 9v5"/></symbol>
+    <symbol id="i-drop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11Z"/></symbol>
+    <symbol id="i-bag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 8a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8Z"/><path d="M9 5V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1M9 13h6v3H9z"/></symbol>
+    <symbol id="i-aid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="3"/><path d="M9 6V4h6v2M12 10v6M9 13h6"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2V5Z"/><path d="M4 20a2 2 0 0 0 2 1h13v-3M8 7h7"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4l2-2Z"/><path d="M10 21h4"/></symbol>
     <symbol id="i-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2Z"/><path d="M6 12h3l1.5-2.5 2 5 1.5-2.5h4"/></symbol>
   </defs>
 </svg>
@@ -550,7 +601,7 @@ h2 .dot{width:12px;height:12px;margin-right:8px}
 <section class="screen" id="s-attivita">
   <div class="hd"><button class="round mbtn" data-menu aria-label="Apri il menu"><svg><use href="#i-menu"/></svg></button><h1>Attività</h1></div>
   <div class="box" id="pace-box" style="margin-top:16px"></div>
-  <div class="block"><h2>Passeggiate fatte</h2><div id="act-list" class="stack"></div></div>
+  <div class="block"><h2>Diario delle uscite</h2><div id="act-list" class="stack"></div></div>
   <div class="box" id="steps-box" style="margin-top:22px"></div>
 </section>
 
@@ -565,6 +616,7 @@ h2 .dot{width:12px;height:12px;margin-right:8px}
 <!-- SALUTE: peso, movimento, obiettivi consigliati -->
 <section class="screen" id="s-salute">
   <div class="hd"><button class="round mbtn" data-menu aria-label="Apri il menu"><svg><use href="#i-menu"/></svg></button><h1>Salute</h1></div>
+  <div id="he-rem"></div>
   <div id="he-main"></div>
   <p class="small muted" style="margin-top:22px">Sono <b>indicazioni prudenti, non una visita</b>. Peso giusto, dieta e attività adatte le decide il veterinario, che conosce il tuo cane.</p>
 </section>
@@ -575,6 +627,25 @@ h2 .dot{width:12px;height:12px;margin-right:8px}
   <div id="tr-main"></div>
   <div class="block"><h2>Chiedi all'educatore</h2><div id="tr-chat"></div></div>
   <p class="small muted" style="margin-top:22px">Solo metodi gentili, con premi e mai punizioni. Per paure forti, aggressività o problemi seri chiedi a un educatore cinofilo o a un veterinario esperto di comportamento.</p>
+</section>
+
+<!-- ZAINO PRONTO -->
+<section class="screen" id="s-zaino">
+  <div class="hd"><button class="round mbtn" data-menu aria-label="Apri il menu"><svg><use href="#i-menu"/></svg></button><h1>Zaino pronto</h1></div>
+  <div id="zn-main"></div>
+</section>
+
+<!-- PRONTO SOCCORSO -->
+<section class="screen" id="s-soccorso">
+  <div class="hd"><button class="round mbtn" data-menu aria-label="Apri il menu"><svg><use href="#i-menu"/></svg></button><h1>Pronto soccorso</h1></div>
+  <div id="ps-main" style="margin-top:14px"></div>
+  <p class="small muted" style="margin-top:22px">Sono <b>primi aiuti in attesa del veterinario</b>, non una cura. In ogni dubbio chiama subito il veterinario.</p>
+</section>
+
+<!-- REGOLE DEL POSTO -->
+<section class="screen" id="s-regole">
+  <div class="hd"><button class="round mbtn" data-menu aria-label="Apri il menu"><svg><use href="#i-menu"/></svg></button><h1>Regole del posto</h1></div>
+  <div id="rg-main"></div>
 </section>
 
 <!-- IN CAMMINO -->
@@ -661,6 +732,9 @@ h2 .dot{width:12px;height:12px;margin-right:8px}
   <div class="dtop"><b>AllDogs</b><button class="round" id="drawer-x" aria-label="Chiudi il menu">✕</button></div>
   <a href="#obiettivi" data-d="obiettivi"><svg><use href="#i-target"/></svg><span><b>Obiettivi</b><small>Allenamento graduale su misura</small></span></a>
   <a href="#salute" data-d="salute"><svg><use href="#i-pulse"/></svg><span><b>Salute</b><small>Peso, movimento e obiettivi consigliati</small></span></a>
+  <a href="#zaino" data-d="zaino"><svg><use href="#i-bag"/></svg><span><b>Zaino pronto</b><small>Cosa portare, col meteo di oggi</small></span></a>
+  <a href="#soccorso" data-d="soccorso"><svg><use href="#i-aid"/></svg><span><b>Pronto soccorso</b><small>Cosa fare subito in emergenza</small></span></a>
+  <a href="#regole" data-d="regole"><svg><use href="#i-book"/></svg><span><b>Regole del posto</b><small>Guinzaglio, spiagge, parchi, pascoli</small></span></a>
   <a href="#addestramento" data-d="addestramento"><svg><use href="#i-cap"/></svg><span><b>Addestramento</b><small>Una lezione nuova ogni giorno</small></span></a>
 </aside>
 <!-- Menu "Mappe": schede con anteprima -->
@@ -675,7 +749,7 @@ h2 .dot{width:12px;height:12px;margin-right:8px}
   <h3>Rilievo</h3>
   <div class="mgrid"><button class="mcard" data-st="3d"><span class="mi"><img src="img/maps/3d.jpg" alt="" loading="lazy"></span><span class="mt">Rilievo 3D</span><small>Inclina la mappa</small></button><button class="mcard" data-st="hill"><span class="mi"><img src="img/maps/hill.jpg" alt="" loading="lazy"></span><span class="mt">Ombre del rilievo</span><small>Valli e creste</small></button></div>
   <h3>Sulla mappa</h3>
-  <div class="mtog"><button data-st="trails"><i class="dot" style="background:var(--ok)"></i><span>Sentieri</span><i class="tg"></i></button><button data-st="poi-a"><i class="dot" style="background:#1f8a4c"></i><span>Aree cani</span><i class="tg"></i></button><button data-st="poi-v"><i class="dot" style="background:#d9483b"></i><span>Veterinari</span><i class="tg"></i></button><button data-st="poi-s"><i class="dot" style="background:#1e88e5"></i><span>Spiagge per cani</span><i class="tg"></i></button><button data-st="poi-g"><i class="dot" style="background:#6a9f2a"></i><span>Ville comunali e parchi</span><i class="tg"></i></button></div>
+  <div class="mtog"><button data-st="trails"><i class="dot" style="background:var(--ok)"></i><span>Sentieri</span><i class="tg"></i></button><button data-st="poi-a"><i class="dot" style="background:#1f8a4c"></i><span>Aree cani</span><i class="tg"></i></button><button data-st="poi-v"><i class="dot" style="background:#d9483b"></i><span>Veterinari</span><i class="tg"></i></button><button data-st="poi-s"><i class="dot" style="background:#1e88e5"></i><span>Spiagge per cani</span><i class="tg"></i></button><button data-st="poi-g"><i class="dot" style="background:#6a9f2a"></i><span>Ville comunali e parchi</span><i class="tg"></i></button><button data-st="poi-w"><i class="dot" style="background:#1e88e5"></i><span>Fontanelle e punti acqua</span><i class="tg"></i></button></div>
   <button class="btn wide" data-st="legend" style="margin-top:14px">Legenda della mappa</button>
   <p class="small muted" style="margin-top:12px">Una mappa meteo o satellite alla volta. Fonti gratuite: Open-Meteo, RainViewer, NASA, Sentinel-2 di EOX.</p>
 </div></div>
@@ -911,7 +985,7 @@ function loadCell(k){
 // Luoghi utili per il cane (aree cani, veterinari, spiagge per cani) e parchi: data/p/<riquadro>.json, creati da tools/build_city.py
 const PL={},plState={},POI_T={a:["Area cani","#1f8a4c"],v:["Veterinario","#d9483b"],s:["Spiaggia per cani","#1e88e5"],g:["Villa comunale o parco","#6a9f2a"]};
 const poiOld=store.get("alldogs-poi")!==false;
-const poiK=Object.assign({a:poiOld,v:poiOld,s:poiOld,g:poiOld},store.get("alldogs-poik")||{}); // quali luoghi mostrare sulla mappa
+const poiK=Object.assign({a:poiOld,v:poiOld,s:poiOld,g:poiOld,w:true},store.get("alldogs-poik")||{}); // quali luoghi mostrare sulla mappa
 let trailsOn=store.get("alldogs-trailson")!==false;
 function loadPlaces(k){
   if(plState[k])return plState[k];
@@ -1102,6 +1176,7 @@ function initMap(){
   M.on("mouseenter","ad-trails-hit",()=>M.getCanvas().style.cursor="pointer");M.on("mouseleave","ad-trails-hit",()=>M.getCanvas().style.cursor="");
   M.on("moveend",()=>{clearTimeout(vxT);vxT=setTimeout(vxView,600)});
   M.on("moveend",gridMoved);
+  M.on("moveend",()=>{clearTimeout(wtT);wtT=setTimeout(wtView,700)});
   M.on("moveend",()=>{if(scene.mode!=="explore"||!curHost||curHost.id!=="hostExplore")return;clearTimeout(viewT);viewT=setTimeout(viewChanged,350)});
   M.once("load",()=>{if(scene.mode==="explore"&&curHost&&curHost.id==="hostExplore")viewChanged()});
   M.on("click",e=>{
@@ -1161,6 +1236,7 @@ function addLayers(){
     M.addImage("ad-arrow",g.getImageData(0,0,40,40),{pixelRatio:2})}
   M.addLayer({id:"ad-sel-arrows",type:"symbol",source:"selpath",minzoom:12,layout:{"symbol-placement":"line","symbol-spacing":110,"icon-image":"ad-arrow","icon-size":.9,"icon-allow-overlap":true,"icon-ignore-placement":true}});
   M.addLayer({id:"ad-track",type:"line",source:"track",layout:{"line-cap":"round","line-join":"round"},paint:{"line-color":"#2f7bff","line-width":5,"line-opacity":.9}});
+  wtLayers();
   M.addLayer({id:"ad-water",type:"circle",source:"water",paint:{"circle-color":"#1e88e5","circle-radius":6,"circle-stroke-color":"#fff","circle-stroke-width":2}});
   overlays();
 }
@@ -1298,13 +1374,13 @@ function setStyleKind(k){
   else if(k==="hill"){hillOn=!hillOn;store.set("alldogs-hill",hillOn);overlays()}
   else if(OVNAME[k]){wxOv=wxOv===k?null:k;if(M){overlays();if(wxOv&&M.getZoom()>(k==="ndvi"?11:9.5))M.easeTo({zoom:k==="ndvi"?10.5:k==="rain"?7.5:9})}if(wxOv)toast(OVNAME[k])}
   else if(k==="trails"){trailsOn=!trailsOn;store.set("alldogs-trailson",trailsOn);applyScene();toast(trailsOn?"Sentieri sulla mappa":"Sentieri nascosti: restano nell'elenco qui sotto")}
-  else if(k.startsWith("poi-")){const t=k.slice(4);poiK[t]=!poiK[t];store.set("alldogs-poik",poiK);poiData();if(t==="v")vxView();
-    toast((poiK[t]?"":"Nascosti: ")+({a:"Aree cani",v:"Veterinari",s:"Spiagge per cani",g:"Ville comunali e parchi"})[t]+(poiK[t]?(t==="g"?": avvicinati alla mappa per vederle":" sulla mappa"):""))}
+  else if(k.startsWith("poi-")){const t=k.slice(4);poiK[t]=!poiK[t];store.set("alldogs-poik",poiK);poiData();if(t==="v")vxView();if(t==="w"){wtData();wtView()}
+    toast((poiK[t]?"":"Nascosti: ")+({a:"Aree cani",v:"Veterinari",s:"Spiagge per cani",g:"Ville comunali e parchi",w:"Fontanelle e punti acqua"})[t]+(poiK[t]?(t==="g"||t==="w"?": avvicinati alla mappa per vederle":" sulla mappa"):""))}
   else if(k==="legend"){$("layers").hidden=true;showLegend()}
   else if(k!==mapStyle&&STYLES[k]){mapStyle=k;store.set("alldogs-mapstyle",k);styleOK=false;M.setStyle(STYLES[k],{diff:false})}
   syncLayersMenu();
 }
-function syncLayersMenu(){document.querySelectorAll("#layers [data-st]").forEach(b=>b.setAttribute("aria-pressed",({"3d":map3d,hill:hillOn,trails:trailsOn,"poi-a":poiK.a,"poi-v":poiK.v,"poi-s":poiK.s,"poi-g":poiK.g,legend:false})[b.dataset.st]??(OVNAME[b.dataset.st]?wxOv===b.dataset.st:b.dataset.st===mapStyle)))}
+function syncLayersMenu(){document.querySelectorAll("#layers [data-st]").forEach(b=>b.setAttribute("aria-pressed",({"3d":map3d,hill:hillOn,trails:trailsOn,"poi-a":poiK.a,"poi-v":poiK.v,"poi-s":poiK.s,"poi-g":poiK.g,"poi-w":poiK.w,legend:false})[b.dataset.st]??(OVNAME[b.dataset.st]?wxOv===b.dataset.st:b.dataset.st===mapStyle)))}
 const fc=f=>({type:"FeatureCollection",features:f});
 const lineF=(ways,props)=>({type:"Feature",properties:props||{},geometry:{type:"MultiLineString",coordinates:ways.map(w=>w.map(ll))}});
 function setData(src,data){const s=M.getSource(src);if(s)s.setData(data)}
@@ -1504,7 +1580,7 @@ $("m-loc").onclick=async()=>{
   try{const p=await getPos();showMe(p);if(scene.mode==="crea")setStart(p);else M.flyTo({center:ll(p),zoom:Math.max(M.getZoom(),13)})}catch(e){toast("Non riesco a leggere la posizione")}};
 
 // ================= Navigazione =================
-const SCREENS=["esplora","sentiero","crea","salvati","attivita","cane","vai","segui","obiettivi","addestramento","salute"];
+const SCREENS=["esplora","sentiero","crea","salvati","attivita","cane","vai","segui","obiettivi","addestramento","salute","zaino","soccorso","regole"];
 let lastList=0;
 function route(){
   let h=location.hash.slice(1)||"esplora";
@@ -1534,7 +1610,10 @@ function route(){
   if(scr==="attivita")showAct();
   if(scr==="obiettivi")showGoals();
   if(scr==="addestramento")showTrain();
-  if(scr==="salute")showHealth();
+  if(scr==="salute"){showHealth();renderRem()}
+  if(scr==="zaino")showPack();
+  if(scr==="soccorso")showAid();
+  if(scr==="regole")showRules();
   if(scr!=="obiettivi"){S.goalDraft=null;S.goalEdit=false}
   if(scr==="vai")showNav();
   if(scr==="segui")showFollow(arg);else stopFollow();
@@ -1722,9 +1801,11 @@ function renderToday(){
     const st=now.f>lim+4?2:now.f>lim||now.rain>=60?1:0,night=hr>=22||hr<5;
     const head=st===2?`Adesso fa troppo caldo per ${dn()}`:now.rain>=60?"Adesso è probabile la pioggia":st===1?`Adesso fa caldo per ${dn()}: solo un giro breve`:night?`Temperatura buona per ${dn()}`:`Adesso è un buon momento per uscire con ${dn()}`;
     const best=!wins.length?(night?"":"Oggi non ci sono più ore davvero adatte: solo uscite brevi."):wins[0][0]<=hr&&wins[0][1]>=23?"Va bene per tutto il resto della giornata.":"Ore buone oggi: "+wins.slice(0,3).map(x=>x[0]<=hr?`fino alle ${x[1]}:00`:x[1]>=23?`dalle ${x[0]}:00 in poi`:`${x[0]}:00–${x[1]}:00`).join(", ")+".";
-    box.innerHTML=`<div class="today s${st}"><div class="row"><b class="big">${Math.round(now.f)}°</b><div class="sp"><b>${head}</b><p class="small">${best} Pioggia ${now.rain}%.${now.t>=25?" Asfalto: prova dei 5 secondi con il dorso della mano.":""}</p></div></div>${hzBtn}</div>`;
+    const pw=pawInfo(w,hr,d);
+    box.innerHTML=`<div class="today s${st}"><div class="row"><b class="big">${Math.round(now.f)}°</b><div class="sp"><b>${head}</b><p class="small">${best} Pioggia ${now.rain}%.</p></div></div>${pw?`<p class="paw p${pw.lvl}">${icon("paw")}<span><b>Zampe:</b> ${pw.t.join(" ")}</span></p>`:""}<button class="haz" id="when-btn">${icon("sun")}<span>Quando uscire oggi e domani, ora per ora</span>›</button>${hzBtn}</div>`;
   }
   const b=$("haz-btn");if(b)b.onclick=()=>hazSheet(hz);
+  const wb=$("when-btn");if(wb)wb.onclick=whenSheet;
   const ph=store.get("alldogs-photo"),av=$("home-av");av.style.backgroundImage=ph?`url(${ph})`:"";av.textContent=ph?"":(d.name||"?").trim().charAt(0).toUpperCase();
 }
 // ---- Emergenza: chiamare il veterinario, trovarne uno vicino, mandare la posizione ----
@@ -1820,14 +1901,15 @@ async function showTrail(id){
     const shade=!f?"…":f.wood>=.6?"Tanta (bosco)":f.wood>=.3?"In parte":"Poca";
     const sh=surfShare(tr),dom=sh&&SFK.slice().sort((a,b)=>sh[b]-sh[a])[0];
     $("det").innerHTML=detailHTML({title:tr.name,ft:f,prof:elev[id]&&elev[id].p,
-      tools:`<div class="row" style="margin-top:14px;flex-wrap:wrap"><button class="btn sm" data-3d>${icon("layers")}Anteprima 3D</button>${sh?`<button class="btn sm" data-surf>${icon("surf")}Colora il fondo</button>`:""}<button class="btn sm" data-edit>${icon("edit")}Modifica percorso</button></div>`,sub:[esc(tr.zone),tr.ref?"sentiero n. "+esc(tr.ref):"",tr.cai?"CAI":"",tr.scale?"difficoltà "+tr.scale:""].filter(Boolean).join(" · "),it:item(tr),
+      tools:`<div class="row" style="margin-top:14px;flex-wrap:wrap"><button class="btn sm" data-3d>${icon("layers")}Anteprima 3D</button>${sh?`<button class="btn sm" data-surf>${icon("surf")}Colora il fondo</button>`:""}<button class="btn sm" data-edit>${icon("edit")}Modifica percorso</button><button class="btn sm" data-pack>${icon("bag")}Zaino pronto</button></div>`,sub:[esc(tr.zone),tr.ref?"sentiero n. "+esc(tr.ref):"",tr.cai?"CAI":"",tr.scale?"difficoltà "+tr.scale:""].filter(Boolean).join(" · "),it:item(tr),
       sections:`${(hz=>hz.length?`<div class="block"><h2>Attenzione in questo periodo</h2><div class="tags">${hz.map(h=>`<span class="tag">${h.t}</span>`).join("")}</div><button class="btn sm" data-haz style="margin-top:10px">Leggi i consigli</button></div>`:"")(trailHaz(tr))}${sh?`<div class="block"><h2>Fondo del percorso</h2>${surfBlock(sh,dog())}</div>`:""}<div class="block"><h2>Particolarità</h2>${tags}<p class="small muted" style="margin-top:8px">Ricavate in automatico da OpenStreetMap: elementi segnati vicino al tracciato.</p></div>
       <div class="block"><h2>Scheda per il cane</h2><div class="tiles"><div class="tile"><span>Acqua lungo il percorso</span><b>${water}</b></div><div class="tile"><span>Ombra (stima)</span><b>${shade}</b></div><div class="tile"><span>Fondo prevalente</span><b>${sh?SFL[dom]:"Da verificare"}</b></div><div class="tile"><span>Punti critici</span><b>Da verificare</b></div></div>
-      <p class="small muted" style="margin-top:8px">${f&&f.w.length?"Le fontanelle sono i punti blu sulla mappa. ":""}Acqua e ombra sono stime dai dati di OpenStreetMap: verificale sul posto. Il sentiero non è ancora stato provato con un cane.</p></div>`})+
+      <p class="small muted" style="margin-top:8px">${f&&f.w.length?"Le fontanelle sono i punti blu sulla mappa. ":""}Acqua e ombra sono stime dai dati di OpenStreetMap: verificale sul posto. Il sentiero non è ancora stato provato con un cane.</p></div>${trailRules(tr)}`})+
       reviewHTML(tr.id)+`<p class="small block"><a href="https://www.openstreetmap.org/relation/${tr.id}" target="_blank" rel="noopener">Vedi i dati del sentiero su OpenStreetMap</a></p>`;
     bindReview(tr.id);
     bindDays($("det"),paint);syncSave();bindTools($("det"));
     $("det").querySelectorAll("[data-haz]").forEach(b=>b.onclick=()=>hazSheet(trailHaz(tr)));
+    $("det").querySelectorAll("[data-pack]").forEach(b=>b.onclick=()=>{const f2=FT[id]||{f:[],w:[]},e2=elev[id];packSheet({km:tr.len/1000,p:tr.start,day:S.day,title:tr.name,water:(f2.w||[]).length,mount:!!((e2&&(e2.up>=300||e2.max>=900))||f2.f.includes("vette")),beach:f2.f.includes("spiaggia"),lake:f2.f.includes("laghi")||f2.f.includes("fiumi")})});
   };
   paint();
   $("bar-go").href=`https://www.google.com/maps/dir/?api=1&destination=${tr.start[0]},${tr.start[1]}`;
@@ -2044,8 +2126,9 @@ function showGen(){
     <div class="block"><h2>Tappe e giochi</h2><ol class="stops">${r.stops.map(s=>`<li><div><b>${s.t}</b> <span class="muted small">· km ${km(s.km)}</span><br>${s.d}</div></li>`).join("")}</ol>
       <p class="small muted" style="margin-top:10px">${r.source==="chat"?"Tappe proposte dall'assistente AI, distribuite lungo il giro.":"Tappe proposte con regole fisse."} I numeri corrispondono a quelli sulla mappa.</p></div>
     ${cmds}
-    <div class="row" style="margin-top:16px;flex-wrap:wrap"><button class="btn pri" id="gen-start">${icon("play")}Avvia percorso</button><button class="btn" id="gen-save">${icon("heart")}Salva il giro</button>${S.gen.length>1?`<button class="btn" id="gen-next">Prova un altro giro</button>`:""}<a class="btn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${r.path[0][0]},${r.path[0][1]}">${icon("nav")}Portami alla partenza</a><button class="btn" data-3d>${icon("layers")}Anteprima 3D</button>${gsh?`<button class="btn" data-surf>${icon("surf")}Colora il fondo</button>`:""}<button class="btn" id="gen-clear">✕ Rimuovi percorso</button></div></div>`;
+    <div class="row" style="margin-top:16px;flex-wrap:wrap"><button class="btn pri" id="gen-start">${icon("play")}Avvia percorso</button><button class="btn" id="gen-save">${icon("heart")}Salva il giro</button>${S.gen.length>1?`<button class="btn" id="gen-next">Prova un altro giro</button>`:""}<a class="btn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${r.path[0][0]},${r.path[0][1]}">${icon("nav")}Portami alla partenza</a><button class="btn" data-3d>${icon("layers")}Anteprima 3D</button>${gsh?`<button class="btn" data-surf>${icon("surf")}Colora il fondo</button>`:""}<button class="btn" id="gen-pack">${icon("bag")}Zaino pronto</button><button class="btn" id="gen-clear">✕ Rimuovi percorso</button></div></div>`;
   bindTools($("gen-out"));
+  $("gen-pack").onclick=()=>packSheet({km:r.len/1000,p:r.path[0],title:r.name||"Giro di "+km(r.len)+" km",mount:(r.up||0)>=300});
   $("gen-start").onclick=()=>startNav({name:r.name||"Giro di "+km(r.len)+" km",kind:"giro",ways:[r.path],path:r.path,len:r.len,up:r.up,stops:r.stops.map(s=>({p:s.p,km:s.km,t:s.t,d:s.d})),water:[],scale:"CITY",loop:r.loop!==false,turns:r.turns||null});
   $("gen-clear").onclick=clearGen;
   $("gen-save").onclick=()=>{S.routes.unshift({t:Date.now(),name:`Giro di ${km(r.len)} km`,len:r.len,up:r.up,hard:r.hard,soft:r.soft,green:r.green,path:thin(r.path,15),stops:r.stops.map(s=>({p:s.p,km:s.km,t:s.t,d:s.d})),cmds:r.cmds||null,source:r.source,loop:r.loop!==false,turns:r.turns||null,prof:r.prof||null,segs:r.segs?r.segs.map(g=>({c:g.c,pts:g.pts.length>2?thin(g.pts,15):g.pts})):null});S.routes=S.routes.slice(0,20);store.set("alldogs-routes",S.routes);toast("Giro salvato")};
@@ -2200,7 +2283,7 @@ function showAct(){
     return `<article class="box act"><div class="row"><div class="sp" style="min-width:0"><h3>${esc(x.name)}</h3><p class="small muted">${new Date(x.t).toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long"})} · ore ${new Date(x.t).toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"})}</p></div><button class="round" data-del="${i}" aria-label="Elimina la passeggiata">✕</button></div>
     <div class="stats"><div><b>${km(x.dist)} km</b><span>Distanza</span></div><div><b>${fmtDur(x.dur)}</b><span>Durata</span></div><div><b>${p?p+" min":"…"}</b><span>Per 1 km</span></div><div><b>${Math.round(x.dist/dogStep(d.weight)).toLocaleString("it-IT")}</b><span>Passi del cane</span></div></div>
     <p class="small muted">${x.steps?`<b style="color:var(--ink)">I tuoi passi: ${x.steps.toLocaleString("it-IT")}</b> (dall'app Salute)`:`Tu circa ${Math.round(x.dist/myStride()).toLocaleString("it-IT")} passi (stima)`} · ${x.gps?"distanza misurata col GPS":"distanza del percorso previsto"}${x.up?" · ↑ circa "+x.up+" m":""}</p>
-    <button class="btn sm" data-steps="${i}" style="margin-top:8px">${x.steps?"Cambia i passi":"Aggiungi i passi di Salute"}</button></article>`}).join(""):`<p class="muted">Ancora nessuna passeggiata. Le trovi qui dopo aver toccato <b>Chiudi attività</b> alla fine di un percorso.</p>`;
+    ${diaryHTML(x,i)} <button class="btn sm" data-steps="${i}" style="margin-top:8px">${x.steps?"Cambia i passi":"Aggiungi i passi di Salute"}</button></article>`}).join(""):`<p class="muted">Ancora nessuna passeggiata. Le trovi qui dopo aver toccato <b>Chiudi attività</b> alla fine di un percorso.</p>`;
   $("act-list").querySelectorAll("[data-steps]").forEach(b=>b.onclick=()=>{
     const x=S.acts[+b.dataset.steps],d0=new Date(x.t),d1=new Date(x.t+x.dur);
     openSheet(`<h2>I tuoi passi</h2><p class="small muted" style="margin-top:6px">${esc(x.name)} · ${d0.toLocaleDateString("it-IT",{day:"numeric",month:"long"})}, dalle ${d0.toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"})} alle ${d1.toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"})}</p>
@@ -2209,7 +2292,8 @@ function showAct(){
     $("st-ok").onclick=()=>{const v=parseSteps($("st-in").value);if(!v){toast("Scrivi un numero di passi valido");return}x.steps=v;store.set("alldogs-acts",S.acts);$("sheet").hidden=true;showAct();toast("Passi salvati")};
     const dl=$("st-del");if(dl)dl.onclick=()=>{delete x.steps;store.set("alldogs-acts",S.acts);$("sheet").hidden=true;showAct()};
   });
-  $("act-list").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{if(!confirm("Eliminare questa passeggiata?"))return;S.acts.splice(+b.dataset.del,1);store.set("alldogs-acts",S.acts);showAct();toast("Passeggiata eliminata")});
+  $("act-list").querySelectorAll("[data-dia]").forEach(b=>b.onclick=()=>diarySheet(+b.dataset.dia));diaryPhotos($("act-list"));
+  $("act-list").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{if(!confirm("Eliminare questa passeggiata?"))return;const gone=S.acts.splice(+b.dataset.del,1)[0];if(gone&&gone.ph)photoPut(String(gone.t),null).catch(()=>{});store.set("alldogs-acts",S.acts);showAct();toast("Passeggiata eliminata")});
   $("steps-box").innerHTML=`<h2>Quanti passi fa ${dn()}?</h2><p style="margin-top:8px">In una passeggiata di 5 km tu fai circa <b>${s.me.toLocaleString("it-IT")}</b> passi, ${dn()} circa <b>${s.dog.toLocaleString("it-IT")}</b>.</p><p class="small muted" style="margin-top:6px">${myStride()!==.75?`Il tuo passo misurato è di circa ${Math.round(myStride()*100)} cm, ricavato dai passi di Salute che hai scritto.`:"Per te uso un passo medio di 75 cm: scrivendo i passi dell'app Salute nelle passeggiate, l'app impara il tuo."} Per ${dn()} è una stima dalla taglia.</p>`;
 }
 
@@ -2688,9 +2772,287 @@ function homeExtra(){
   const d=dog(),k=dogKind(d),T=todayLesson();let h="";
   if(GOAL&&!k.puppy&&!k.p.conv){const x=goalNow(GOAL,d,k).today;
     if(x)h+=`<a class="hx" href="#obiettivi">${icon("target")}<span>Obiettivo di oggi: <b>${SESS[x.kd].t.toLowerCase()}</b>${x.kd==="riposo"?"":`, circa ${kmN(x.km)} km`}</span><i>›</i></a>`}
+  const due=remList().filter(r=>r.dd<=7);
+  if(due.length)h=`<a class="hx${due[0].dd<=0?" late":""}" href="#salute">${icon("bell")}<span>Promemoria: <b>${esc(due[0].n)}</b> ${remWhen(due[0].dd,due[0].d)}${due.length>1?` e altri ${due.length-1}`:""}</span><i>›</i></a>`+h;
   h+=`<a class="hx" href="#addestramento">${icon("cap")}<span>Lezione di oggi: <b>${esc(T.t)}</b>${TRS.st[T.id]&&TRS.st[T.id].ok?' <span class="c0">✓</span>':""}</span><i>›</i></a>`;
   $("home-extra").innerHTML=h;
 }
+
+// ================= Zampe e orario migliore =================
+// Temperatura dell'asfalto stimata: aria + sole. Con 25° e sole pieno d'estate a mezzogiorno l'asfalto arriva a circa 50°.
+const SUNM=[.55,.62,.75,.87,.96,1,1,.96,.85,.72,.6,.53];
+function sunAt(h,sr,ss){if(h<sr||h>=ss)return 0;return Math.max(0,Math.sin(Math.PI*(h+.5-sr)/Math.max(1,ss-sr)))}
+const cloudF=c=>c==null?.7:c===0?1:c===1?.85:c===2?.6:c===3?.3:c<=48?.25:.1;
+function asphaltT(x,sr,ss,mon){return x.t+26*sunAt(x.h,sr,ss)*SUNM[mon]*cloudF(x.c)}
+// sotto questa temperatura percepita il cane soffre il freddo
+function coldLim(d){const k=dogKind(d);return d.weight<8||k.puppy||k.senior||(d.coat!=="lungo"&&d.weight<20)?3:d.coat==="lungo"?-8:-3}
+const isSnow=c=>(c>=71&&c<=77)||c===85||c===86;
+// giudizio di un'ora per il cane: 0 buona, 1 con prudenza, 2 da evitare; con i motivi
+function hourJudge(x,w,d,mon){
+  const cap=capacity(d),cl=coldLim(d),a=asphaltT(x,w.sr,w.ss,mon),why=[];let s=0;
+  const up=(v,t)=>{if(v>s)s=v;why.push(t)};
+  if(x.f>cap.heat+4)up(2,"troppo caldo");else if(x.f>cap.heat)up(1,"caldo");
+  if(a>=45)up(2,"asfalto bollente");else if(a>=38)up(1,"asfalto caldo");
+  if(x.rain>=70)up(2,"pioggia");else if(x.rain>=40)up(1,"forse pioggia");
+  if(x.f<=cl-6)up(2,"troppo freddo");else if(x.f<=cl)up(1,"freddo");
+  return {s,why,a,dark:x.h<w.sr||x.h>=w.ss};
+}
+function pawInfo(w,hr,d){
+  const x=w.H[hr];if(!x)return null;const mon=new Date().getMonth(),a=asphaltT({...x,h:hr},w.sr,w.ss,mon),cl=coldLim(d),out=[];let lvl=0;
+  if(a>=52){lvl=2;out.push(`Asfalto a circa ${Math.round(a)}°: scotta, può ustionare i polpastrelli in pochi secondi. Solo erba, terra o ombra.`)}
+  else if(a>=45){lvl=2;out.push(`Asfalto a circa ${Math.round(a)}°: troppo caldo per le zampe. Cammina su erba o terra, all'ombra.`)}
+  else if(a>=38){lvl=1;out.push(`Asfalto a circa ${Math.round(a)}°: caldo. Prova dei 5 secondi col dorso della mano e preferisci l'erba.`)}
+  if(isSnow(x.c)){lvl=Math.max(lvl,1);out.push("Neve: tra i polpastrelli si formano palline di ghiaccio. Crema protettiva o calzari, e controlla le zampe spesso.")}
+  if(x.t<=1){lvl=Math.max(lvl,1);out.push("Possibile ghiaccio e sale antighiaccio sulle strade: al rientro sciacqua e asciuga bene le zampe.")}
+  if(x.f<=cl){lvl=Math.max(lvl,x.f<=cl-6?2:1);out.push(`Fa freddo per ${dn()}: giro più corto${d.coat!=="lungo"?", con un cappottino":""}, e non fermarti a lungo.`)}
+  if(!out.length&&x.t>=15)out.push(`Asfalto a circa ${Math.round(a)}°: va bene per le zampe.`);
+  return out.length?{lvl,t:out}:null;
+}
+// prima cerco ore buone e con la luce; se non ce ne sono, vanno bene anche col buio (con una luce)
+function bestWindows(J,from){for(const [m,l] of [[0,true],[0,false],[1,true],[1,false]]){const w=bw(J,from,m,l);if(w.length){w.lvl=m;return w}}return []}
+function bw(J,from,mx,light){const wins=[];let a=null;for(const j of J){if(j.h<from)continue;if(j.s<=mx&&!(light&&j.dark)){if(a==null)a=j.h}else if(a!=null){wins.push([a,j.h]);a=null}}if(a!=null)wins.push([a,23]);return wins.sort((x,y)=>(y[1]-y[0])-(x[1]-x[0]))}
+const hh=h=>String(h).padStart(2,"0")+":00";
+function whenSheet(){
+  const d=dog(),mon=new Date().getMonth(),hr=new Date().getHours();
+  const day=i=>{const w=dayWx(S.view.c,i);if(!w)return "";
+    const J=[];for(let h=5;h<=22;h++)if(w.H[h])J.push({h,...hourJudge(w.H[h],w,d,mon)});
+    const wins=bestWindows(J,i?0:hr),bad={};J.filter(j=>j.s&&(i||j.h>=hr)).forEach(j=>j.why.forEach(t=>bad[t]=(bad[t]||0)+1));
+    const best=wins[0];
+    return `<div class="block"><h3>${dayName(i,w.daily)}</h3>
+      <div class="hbar">${J.map(j=>`<i class="s${j.s}${j.dark?" dk":""}${!i&&j.h<hr?" past":""}" title="${hh(j.h)}: ${j.why.concat(j.dark?["buio"]:[]).join(", ")||"buona"}"></i>`).join("")}</div>
+      <div class="hlab">${J.filter(j=>j.h%3===0).map(j=>`<span style="left:${(j.h-5+.5)/J.length*100}%">${j.h}</span>`).join("")}</div>
+      <p style="margin-top:10px">${best?`<b class="${wins.lvl?"c1":"c0"}">${wins.lvl?"Con prudenza, meglio":"Meglio"} ${best[1]>=23?`dalle ${hh(best[0])} in poi`:`dalle ${hh(best[0])} alle ${hh(best[1])}`}</b>${wins[1]?`, oppure ${wins[1][1]>=23?"dalle "+hh(wins[1][0])+" in poi":hh(wins[1][0])+"–"+hh(wins[1][1])}`:""}.`:`<b class="c1">${i?"Domani":"Oggi"} non ci sono ore davvero adatte: solo uscite brevi per i bisogni.</b>`}${best&&wins.lvl?` <span class="small">Nessuna ora è perfetta per ${dn()}: uscite più corte.</span>`:""}</p>
+      ${Object.keys(bad).length?`<p class="small muted" style="margin-top:4px">Ore da evitare per: ${Object.keys(bad).sort((a,b)=>bad[b]-bad[a]).join(", ")}.</p>`:""}
+      <p class="small muted" style="margin-top:4px">Buio prima delle ${hh(w.sr)} e dopo le ${hh(w.ss)} (caselle a righe): se esci, luce o collare luminoso.</p></div>`};
+  openSheet(`<h2>Quando uscire con ${dn()}</h2><p class="small muted" style="margin-top:6px">Ogni casella è un'ora, dalle 5 alle 22. Verde: buona. Arancione: con prudenza. Rosso: da evitare. A righe: è buio. Conto caldo e freddo per ${dn()}, asfalto al sole e pioggia.</p>
+    ${day(0)}${day(1)}<p class="small muted" style="margin-top:12px">Meteo per la zona della mappa. L'asfalto è una stima: in dubbio fai la prova dei 5 secondi con il dorso della mano.</p>`);
+}
+
+// ================= Fontanelle e punti acqua (OpenStreetMap, dal vivo) =================
+// Si chiedono a Overpass solo guardando la mappa da vicino (zoom 13 o più); ogni riquadro di 0,05° resta sul telefono 30 giorni.
+const WT={},wtState={},WTK="alldogs-wt",WT_S=.05,OVP=["https://overpass-api.de/api/interpreter","https://overpass.kumi.systems/api/interpreter"];
+let wtCache=store.get(WTK)||{},wtT=null;
+async function wtTile(k,b){
+  const c=wtCache[k];if(c&&Date.now()-c.t<30*864e5){WT[k]=c.v;wtData();return}
+  if(wtState[k])return;wtState[k]=1;
+  const bb=`${b[0]},${b[1]},${b[2]},${b[3]}`,q=`[out:json][timeout:20];(node["amenity"="drinking_water"](${bb});node["amenity"="water_point"](${bb});node["amenity"="fountain"]["drinking_water"="yes"](${bb});node["natural"="spring"]["drinking_water"="yes"](${bb});node["man_made"="water_tap"]["drinking_water"!="no"](${bb}););out;`;
+  for(const u of OVP){
+    try{const r=await getJSON(u,{method:"POST",body:"data="+encodeURIComponent(q),headers:{"Content-Type":"application/x-www-form-urlencoded"}});
+      const v=(r.elements||[]).filter(e=>e.lat!=null).map(e=>{const t=e.tags||{};return [+e.lat.toFixed(5),+e.lon.toFixed(5),(t.name||"").slice(0,60),t.natural==="spring"?"s":"f",t.dog==="yes"||t["drinking_water:dog"]==="yes"?1:0,t.seasonal&&t.seasonal!=="no"?1:0,t.check_date||t["survey:date"]||""]});
+      WT[k]=v;wtCache[k]={t:Date.now(),v};
+      const ks=Object.keys(wtCache);if(ks.length>150)ks.sort((x,y)=>wtCache[x].t-wtCache[y].t).slice(0,ks.length-150).forEach(x=>delete wtCache[x]);
+      store.set(WTK,wtCache);wtData();return}catch(e){console.warn("Fontanelle:",u,e.status||e)}}
+  setTimeout(()=>delete wtState[k],60e3);
+}
+function wtView(){
+  if(!M||!poiK.w||M.getZoom()<13)return;
+  const b=M.getBounds(),i0=Math.floor(b.getSouth()/WT_S),i1=Math.floor(b.getNorth()/WT_S),j0=Math.floor(b.getWest()/WT_S),j1=Math.floor(b.getEast()/WT_S);
+  if((i1-i0+1)*(j1-j0+1)>12)return;
+  for(let i=i0;i<=i1;i++)for(let j=j0;j<=j1;j++){const k=i+"_"+j;if(!WT[k])wtTile(k,[i*WT_S,j*WT_S,(i+1)*WT_S,(j+1)*WT_S])}
+}
+function wtData(){if(!M||!styleOK||!M.getSource("wpts"))return;const F=[];
+  if(poiK.w)for(const k in WT)for(const x of WT[k])F.push({type:"Feature",properties:{n:x[2],k:x[3],dog:x[4],se:x[5],cd:x[6]},geometry:{type:"Point",coordinates:[x[1],x[0]]}});
+  setData("wpts",fc(F))}
+function wtLayers(){
+  if(!M.getSource("wpts"))M.addSource("wpts",{type:"geojson",data:fc([])});
+  M.addLayer({id:"ad-wt",type:"circle",source:"wpts",minzoom:12.5,paint:{"circle-color":["match",["get","k"],"s","#0f9d8a","#1e88e5"],"circle-radius":["interpolate",["linear"],["zoom"],12.5,3.5,16,7],"circle-stroke-color":"#fff","circle-stroke-width":2}});
+  M.addLayer({id:"ad-wt-l",type:"symbol",source:"wpts",minzoom:15,layout:{"text-field":"acqua","text-size":10.5,"text-offset":[0,1.1],"text-anchor":"top","text-font":["DIN Pro Medium","Arial Unicode MS Regular"]},paint:{"text-color":"#155fa0","text-halo-color":"#fff","text-halo-width":1.4}});
+  M.on("click","ad-wt",e=>{if(scene.mode==="nav"||(scene.mode==="crea"&&drawing()))return;const f=e.features[0],c=f.geometry.coordinates,p=f.properties,g=`${c[1].toFixed(5)},${c[0].toFixed(5)}`;
+    openSheet(`<p class="small muted">${p.k==="s"?"Sorgente":"Fontanella o punto acqua"}${p.dog==1?" · segnata anche per cani":""}</p><h2>${esc(p.n||"Acqua potabile")}</h2>
+      <p style="margin-top:8px">Segnata come acqua potabile su OpenStreetMap${p.se==1?", ma <b>solo in alcuni periodi dell'anno</b>":""}.${p.cd?` Ultimo controllo segnato: ${esc(p.cd)}.`:""} Può essere chiusa o rotta: porta sempre acqua con te.</p>
+      <p class="small muted" style="margin-top:6px">Fai bere ${dn()} dalla ciotola, non direttamente dal getto, e lascia pulito.</p>
+      <div class="stack" style="margin-top:14px"><a class="btn pri wide" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${g}&travelmode=walking">Portami lì a piedi</a></div>`)});
+  wtData();setTimeout(wtView,1500);
+}
+
+// ================= Libretto sanitario e promemoria =================
+const REM_P=[["Antipulci e zecche",30],["Filaria",30],["Sverminazione",90],["Vaccino",365],["Visita di controllo",365],["Taglio delle unghie",30]];
+const REP=[[0,"Non si ripete"],[30,"Ogni mese"],[90,"Ogni 3 mesi"],[180,"Ogni 6 mesi"],[365,"Ogni anno"]];
+const ymd=t=>{const x=new Date(t);return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0")};
+const dayDiff=s=>Math.round((new Date(s+"T12:00")-new Date(ymd(Date.now())+"T12:00"))/864e5);
+function remList(){const h=(dog().health)||{},o=[];
+  (h.vax||[]).forEach((v,i)=>{if(v.d)o.push({src:"vax",i,n:"Vaccino"+(v.n?": "+v.n:""),d:v.d,ev:365})});
+  if(h.antipdate)o.push({src:"antip",n:"Antiparassitario"+(h.antip?": "+h.antip:""),d:h.antipdate,ev:+h.antipev||30});
+  (h.rem||[]).forEach((r,i)=>{if(r.d)o.push({src:"rem",i,n:r.n,d:r.d,ev:r.ev||0})});
+  return o.map(r=>({...r,dd:dayDiff(r.d)})).sort((a,b)=>a.dd-b.dd)}
+function remWhen(dd,d){return dd<0?`<b class="c2">scaduto da ${-dd} ${-dd===1?"giorno":"giorni"}</b>`:dd===0?`<b class="c2">oggi</b>`:dd===1?`<b class="c1">domani</b>`:dd<=14?`<b class="c1">tra ${dd} giorni</b>`:"il "+new Date(d+"T12:00").toLocaleDateString("it-IT",{day:"numeric",month:"long",year:"numeric"})}
+function saveDogHealth(h){S.dog=Object.assign({},dog(),{health:h});store.set("alldogs-dog",S.dog)}
+function remDone(r){const h=Object.assign({},dog().health||{});
+  const next=ymd(Date.now()+(r.ev||0)*864e5); // la prossima volta si conta da oggi, il giorno in cui l'hai fatto
+  if(r.src==="vax"){h.vax=(h.vax||[]).map((v,i)=>i===r.i?{...v,d:next}:v)}
+  else if(r.src==="antip"){h.antipdate=next}
+  else{h.rem=(h.rem||[]).slice();if(r.ev)h.rem[r.i]={...h.rem[r.i],d:next};else h.rem.splice(r.i,1)}
+  saveDogHealth(h);toast(r.ev?"Fatto! Prossima volta: "+new Date(next+"T12:00").toLocaleDateString("it-IT",{day:"numeric",month:"long"}):"Fatto");renderRem();homeExtra()}
+function icsFor(r){const d=r.d.replace(/-/g,""),nm=(dog().name||"cane").replace(/[,;\\]/g," "),t=(r.n+" per "+nm).replace(/[,;\\]/g," ");
+  const rr=r.ev===30?"RRULE:FREQ=MONTHLY\r\n":r.ev===90?"RRULE:FREQ=MONTHLY;INTERVAL=3\r\n":r.ev===180?"RRULE:FREQ=MONTHLY;INTERVAL=6\r\n":r.ev===365?"RRULE:FREQ=YEARLY\r\n":"";
+  const ics=`BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//AllDogs//IT\r\nBEGIN:VEVENT\r\nUID:${Date.now()}-${Math.random().toString(36).slice(2)}@alldogs\r\nDTSTAMP:${new Date().toISOString().replace(/[-:]/g,"").slice(0,15)}Z\r\nDTSTART;VALUE=DATE:${d}\r\nSUMMARY:${t}\r\n${rr}BEGIN:VALARM\r\nACTION:DISPLAY\r\nDESCRIPTION:${t}\r\nTRIGGER:-PT15H\r\nEND:VALARM\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n`;
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([ics],{type:"text/calendar"}));a.download="promemoria-"+r.n.toLowerCase().replace(/[^a-z0-9]+/g,"-").slice(0,30)+".ics";document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000);
+  toast("Aprilo per aggiungerlo al calendario: ti avviserà il giorno prima")}
+function renderRem(){
+  const el=$("he-rem");if(!el)return;const L=remList(),h=dog().health||{};
+  el.innerHTML=`<div class="block"><h2>Libretto e promemoria</h2>
+    ${L.length?`<div class="stack" style="margin-top:10px">${L.map((r,i)=>`<div class="rem${r.dd<0?" late":r.dd<=14?" soon":""}"><div class="sp" style="min-width:0"><b>${esc(r.n)}</b><small>${remWhen(r.dd,r.d)}${r.ev?" · "+REP.find(x=>x[0]===r.ev)?.[1].toLowerCase():""}</small></div>
+      <div class="row"><button class="btn sm" data-rd="${i}">Fatto</button><button class="round" data-rc="${i}" aria-label="Aggiungi al calendario">${icon("bell")}</button>${r.src==="rem"?`<button class="round" data-rx="${i}" aria-label="Elimina">✕</button>`:""}</div></div>`).join("")}</div>`
+    :`<p class="muted" style="margin-top:8px">Nessun promemoria. Aggiungi antipulci, filaria, vaccini e visite: te li ricordo qui e nella pagina iniziale.</p>`}
+    <button class="btn wide" id="rem-add" style="margin-top:12px">${icon("plus")}Aggiungi un promemoria</button>
+    <p class="small muted" style="margin-top:8px">«Fatto» sposta la data alla prossima volta. Con la campanella lo metti nel calendario del telefono, che ti avvisa anche ad app chiusa. Microchip, veterinario e vaccini si cambiano in <a href="#cane">Il mio cane</a>.</p>
+    ${h.chip||h.vet?`<p class="small" style="margin-top:8px">${h.chip?"Microchip "+esc(h.chip):""}${h.chip&&h.vet?" · ":""}${h.vet?"Veterinario "+esc(h.vet)+(h.vettel?` (<a href="tel:${esc(String(h.vettel).replace(/[^+0-9]/g,""))}">${esc(h.vettel)}</a>)`:""):""}</p>`:""}</div>`;
+  el.querySelectorAll("[data-rd]").forEach(b=>b.onclick=()=>remDone(L[+b.dataset.rd]));
+  el.querySelectorAll("[data-rc]").forEach(b=>b.onclick=()=>icsFor(L[+b.dataset.rc]));
+  el.querySelectorAll("[data-rx]").forEach(b=>b.onclick=()=>{const r=L[+b.dataset.rx];if(!confirm("Eliminare il promemoria «"+r.n+"»?"))return;const hh2=Object.assign({},dog().health||{});hh2.rem=(hh2.rem||[]).filter((_,i)=>i!==r.i);saveDogHealth(hh2);renderRem();homeExtra()});
+  $("rem-add").onclick=remAdd;
+}
+function remAdd(){
+  openSheet(`<h2>Nuovo promemoria</h2><div class="tags" style="margin-top:12px">${REM_P.map((p,i)=>`<button class="tag" data-rp="${i}">${p[0]}</button>`).join("")}</div>
+    <div class="form" style="margin-top:12px"><label class="w">Cosa<input id="rm-n" autocomplete="off" placeholder="Es. Antipulci"></label>
+    <label>Quando<input id="rm-d" type="date" value="${ymd(Date.now())}"></label><label>Si ripete<select id="rm-e">${REP.map(r=>`<option value="${r[0]}">${r[1]}</option>`).join("")}</select></label></div>
+    <p class="small muted" style="margin-top:8px" id="rm-hint"></p><button class="btn pri wide" id="rm-ok" style="margin-top:12px">Salva il promemoria</button>`);
+  $("sheet-box").querySelectorAll("[data-rp]").forEach(b=>b.onclick=()=>{const p=REM_P[+b.dataset.rp];$("rm-n").value=p[0];$("rm-e").value=p[1];
+    $("rm-hint").textContent=p[0]==="Filaria"?"Di solito da aprile-maggio a novembre-dicembre: chiedi al veterinario il periodo giusto per la tua zona.":p[0]==="Antipulci e zecche"?"Ogni prodotto ha la sua durata: controlla sulla confezione.":""});
+  $("rm-ok").onclick=()=>{const n=$("rm-n").value.trim(),d=$("rm-d").value,ev=+$("rm-e").value;if(!n||!d){toast("Scrivi cosa e quando");return}
+    const h=Object.assign({},dog().health||{});h.rem=(h.rem||[]).concat([{n:n.slice(0,60),d,ev}]);saveDogHealth(h);$("sheet").hidden=true;renderRem();homeExtra();toast("Promemoria salvato")};
+}
+
+// ================= Diario delle uscite =================
+// Note e umore restano con la passeggiata; le foto in IndexedDB (più spazio del normale salvataggio).
+const MOODS=[["ok","Benissimo"],["tired","Stanco"],["bad","Ha avuto problemi"]];
+function idb(){return new Promise((res,rej)=>{const r=indexedDB.open("alldogs",1);r.onupgradeneeded=()=>r.result.createObjectStore("photos");r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+async function photoGet(k){try{const db=await idb();return await new Promise(r=>{const q=db.transaction("photos").objectStore("photos").get(k);q.onsuccess=()=>r(q.result||null);q.onerror=()=>r(null)})}catch(e){return null}}
+async function photoPut(k,v){const db=await idb();return new Promise((res,rej)=>{const t=db.transaction("photos","readwrite");v?t.objectStore("photos").put(v,k):t.objectStore("photos").delete(k);t.oncomplete=res;t.onerror=()=>rej(t.error)})}
+function shrinkPhoto(file){return new Promise((res,rej)=>{const im=new Image();im.onload=()=>{const s=Math.min(1,1000/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext("2d").drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(im.src);res(c.toDataURL("image/jpeg",.75))};im.onerror=rej;im.src=URL.createObjectURL(file)})}
+function diaryHTML(x,i){const m=MOODS.find(m=>m[0]===x.mood);
+  return `${x.track&&x.track.length>2?`<div class="dtrace">${svgThumb(x.track)}</div>`:""}${x.ph?`<img class="dph" data-ph="${x.t}" alt="Foto della passeggiata">`:""}
+    ${m||x.note?`<p class="dnote">${m?`<span class="mood ${m[0]}">${m[1]}</span> `:""}${esc(x.note||"")}</p>`:""}
+    <button class="btn sm" data-dia="${i}" style="margin-top:8px">${m||x.note||x.ph?"Modifica il diario":"Scrivi com'è andata"}</button>`}
+function diaryPhotos(root){root.querySelectorAll("img[data-ph]").forEach(async im=>{const v=await photoGet(im.dataset.ph);if(v)im.src=v;else im.remove()})}
+function diarySheet(i){const x=S.acts[i];if(!x)return;let mood=x.mood||"",ph=null,phChanged=false;
+  openSheet(`<h2>Com'è andata?</h2><p class="small muted" style="margin-top:6px">${esc(x.name)} · ${new Date(x.t).toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long"})} · ${km(x.dist)} km</p>
+    <p style="margin-top:14px"><b>Come stava ${dn()}?</b></p><div class="tags" style="margin-top:8px">${MOODS.map(m=>`<button class="tag" data-mood="${m[0]}" aria-pressed="${mood===m[0]}">${m[1]}</button>`).join("")}</div>
+    <label style="display:block;margin-top:14px"><b>Note</b><textarea class="field" id="dia-n" rows="3" placeholder="Es. ha fatto il bagno nel torrente, tanta ombra, attenzione alle mucche" style="margin-top:6px">${esc(x.note||"")}</textarea></label>
+    <div style="margin-top:12px"><b>Una foto</b><div id="dia-pv" style="margin-top:8px"></div><div class="row" style="margin-top:8px"><button class="btn sm" id="dia-pb" type="button">Scegli una foto</button><button class="btn sm" id="dia-px" type="button" hidden>Togli la foto</button></div><input type="file" id="dia-pi" accept="image/*" hidden></div>
+    <button class="btn pri wide" id="dia-ok" style="margin-top:16px">Salva nel diario</button>`);
+  const pv=v=>{$("dia-pv").innerHTML=v?`<img src="${v}" alt="" class="dph">`:"";$("dia-px").hidden=!v};
+  if(x.ph)photoGet(x.t).then(v=>{if(!phChanged){ph=v;pv(v)}});
+  $("sheet-box").querySelectorAll("[data-mood]").forEach(b=>b.onclick=()=>{mood=mood===b.dataset.mood?"":b.dataset.mood;$("sheet-box").querySelectorAll("[data-mood]").forEach(y=>y.setAttribute("aria-pressed",y.dataset.mood===mood))});
+  $("dia-pb").onclick=()=>$("dia-pi").click();
+  $("dia-pi").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{ph=await shrinkPhoto(f);phChanged=true;pv(ph)}catch(err){toast("Non riesco ad aprire questa foto")}};
+  $("dia-px").onclick=()=>{ph=null;phChanged=true;pv(null)};
+  $("dia-ok").onclick=async()=>{x.mood=mood||undefined;x.note=$("dia-n").value.trim().slice(0,600)||undefined;
+    if(phChanged){try{await photoPut(String(x.t),ph);x.ph=ph?1:undefined}catch(e){toast("Non c'è spazio per la foto")}}
+    store.set("alldogs-acts",S.acts);$("sheet").hidden=true;if(location.hash==="#attivita")showAct();toast("Salvato nel diario")};
+}
+
+// ================= Zaino pronto =================
+function packItems(o){
+  const d=dog(),cap=capacity(d),w=dayWx(o.p||S.view.c,o.day||0),nm=esc(d.name||"il cane"),k=o.km||5,hours=k*(paceInfo()?paceInfo().pace:DEF_PACE)/60;
+  const H=w?w.H.slice(7,20):[],maxF=H.length?Math.max(...H.map(x=>x.f)):18,minF=H.length?Math.min(...H.map(x=>x.f)):10,rain=H.length?Math.max(...H.map(x=>x.rain)):0,snow=H.some(x=>isSnow(x.c));
+  const hot=maxF>cap.heat-2,cold=minF<=coldLim(d)+3,mon=new Date().getMonth();
+  let L=Math.max(.5,d.weight*.025*hours*(hot?1.5:1));L=Math.ceil(L*4)/4;
+  const I=[];const add=(id,t,why)=>I.push({id,t,why});
+  add("acqua",`Acqua per ${nm}: almeno ${L===1?"1 litro":String(L).replace(".",",")+" litri"}`,o.water?"Ci sono fontanelle segnate, ma possono essere chiuse.":"Più la tua.");
+  add("ciotola","Ciotola pieghevole");add("guinz","Pettorina e guinzaglio (massimo 1,5 m in città)");add("sacch","Sacchetti per i bisogni");
+  add("medag","Medaglietta col tuo numero di telefono","Il microchip lo legge solo il veterinario.");
+  add("premi","Premietti"+(hours>=2?" e un pasto leggero":""));
+  if(k>=3||o.mount)add("kit","Kit di primo soccorso","Garze, benda autoadesiva, disinfettante senza alcol, pinzetta tirazecche, soluzione fisiologica.");
+  add("tel","Telefono carico con il numero del veterinario");
+  if(hot)add("asci","Asciugamano o bandana da bagnare","Per rinfrescarlo nelle pause, all'ombra.");
+  if(cold)add("capp",d.coat!=="lungo"?"Cappottino":"Asciugamano per asciugarlo","Fa freddo per "+nm+".");
+  if(rain>=40&&!hot)add("asc2","Asciugamano e impermeabile","Probabile pioggia ("+rain+"%).");
+  if(snow||(o.mount&&mon>=10)||(o.mount&&mon<=3))add("calz","Calzari o crema per i polpastrelli","Neve e ghiaccio feriscono le zampe.");
+  if(o.mount){add("rocc","Calzari se il fondo è roccioso"+(cap.agil==="bassa"?" (consigliati per lui)":""));add("cop","Coperta isotermica","Pesa pochi grammi: serve se dovete fermarvi a lungo.")}
+  if(o.beach){add("omb","Ombrellone o telo per fare ombra");add("dolce","Acqua dolce in più per sciacquare sale e sabbia","E non fargli bere acqua di mare.")}
+  if(o.lake)add("asc3","Asciugamano: vorrà fare il bagno","Attenzione alle correnti e all'acqua ferma e verde (alghe tossiche).");
+  if(mon>=9||mon<=1)add("luce","Luce o collare luminoso","Le giornate sono corte: al ritorno può essere buio.");
+  if(mon>=2&&mon<=9)add("zecc","Pinzetta tirazecche","Controllalo bene al ritorno, anche tra le dita: zecche e forasacchi.");
+  return {I,w,maxF,minF,rain};
+}
+function packHTML(o){const {I,w,maxF,minF,rain}=packItems(o),sig=ymd(Date.now())+"|"+(o.title||""),sv=store.get("alldogs-pack")||{},ck=sv.sig===sig?sv.ck||{}:{};
+  return `<p class="small muted" style="margin-top:6px">${w?`Previsioni: da ${Math.round(minF)}° a ${Math.round(maxF)}° percepiti${rain>=20?`, pioggia fino al ${rain}%`:""}. `:""}Tocca per spuntare quello che hai già messo nello zaino.</p>
+    <div class="pack" data-sig="${esc(sig)}">${I.map(x=>`<label class="pk"><input type="checkbox" data-pk="${x.id}" ${ck[x.id]?"checked":""}><span><b>${x.t}</b>${x.why?`<small>${x.why}</small>`:""}</span></label>`).join("")}</div>`}
+function bindPack(root){root.querySelectorAll("[data-pk]").forEach(c=>c.onchange=()=>{const box=c.closest(".pack"),sig=box.dataset.sig,sv=store.get("alldogs-pack")||{},ck=sv.sig===sig?sv.ck||{}:{};ck[c.dataset.pk]=c.checked;store.set("alldogs-pack",{sig,ck});
+  if([...box.querySelectorAll("[data-pk]")].every(y=>y.checked))toast("Zaino pronto, buona passeggiata!")})}
+function packSheet(o){openSheet(`<h2>Zaino pronto</h2><p style="margin-top:4px"><b>${esc(o.title||"")}</b></p>${packHTML(o)}`);bindPack($("sheet-box"))}
+let packKind=store.get("alldogs-packkind")||"city",packKm=5;
+function showPack(){const K=[["city","Città o parco"],["mount","Montagna"],["beach","Mare"],["lake","Lago o fiume"]];
+  $("zn-main").innerHTML=`<p class="muted" style="margin-top:6px">Una lista su misura per ${dn()}, per il meteo di oggi nella zona della mappa e per il posto dove andate.</p>
+    <div class="tags" style="margin-top:14px">${K.map(k=>`<button class="tag" data-pkk="${k[0]}" aria-pressed="${packKind===k[0]}">${k[1]}</button>`).join("")}</div>
+    <div class="tags" style="margin-top:8px">${[3,5,10,15].map(v=>`<button class="tag" data-pkm="${v}" aria-pressed="${packKm===v}">${v} km</button>`).join("")}</div>
+    <div class="box" style="margin-top:14px">${packHTML({km:packKm,mount:packKind==="mount",beach:packKind==="beach",lake:packKind==="lake",title:packKind+packKm})}</div>`;
+  $("zn-main").querySelectorAll("[data-pkk]").forEach(b=>b.onclick=()=>{packKind=b.dataset.pkk;store.set("alldogs-packkind",packKind);showPack()});
+  $("zn-main").querySelectorAll("[data-pkm]").forEach(b=>b.onclick=()=>{packKm=+b.dataset.pkm;showPack()});
+  bindPack($("zn-main"));
+}
+
+// ================= Pronto soccorso =================
+const FA=[
+ {t:"Colpo di calore",u:2,s:"Ansima forte e non si calma, lingua e gengive rosso scuro o violacee, bava densa, barcolla, vomita o si accascia.",
+  f:["Portalo subito all'ombra o al fresco, in un posto ventilato.","Bagnalo con acqua fresca, non gelata: soprattutto pancia, inguine, ascelle e zampe. Poi fai aria.","Se è sveglio, offrigli poca acqua alla volta.","Vai subito dal veterinario anche se sembra riprendersi: i danni possono arrivare nelle ore dopo."],
+  n:["Non usare ghiaccio o acqua gelata.","Non lasciargli addosso un asciugamano bagnato per molto tempo: trattiene il calore.","Non forzarlo a bere."]},
+ {t:"Forasacco (spighe secche)",u:1,s:"Scuote la testa o la tiene piegata, si gratta un orecchio, starnuta forte, si lecca tra le dita, tiene un occhio chiuso e lacrima.",
+  f:["Se la spiga si vede appena e sta fuori dalla pelle, puoi toglierla con delicatezza.","Se è entrata in orecchio, naso, occhio o sotto la pelle: dal veterinario in giornata."],
+  n:["Non cercare di estrarla da orecchio, naso o occhio: rischi di spingerla più dentro."],p:"Da maggio ad agosto controllalo dopo ogni uscita, soprattutto tra le dita e nelle orecchie."},
+ {t:"Zecca",u:0,s:"Una pallina grigia o scura attaccata alla pelle, spesso su testa, orecchie, collo, ascelle e tra le dita.",
+  f:["Toglila con la pinzetta tirazecche o l'uncino: prendila vicino alla pelle e tira o ruota con calma, senza strappare.","Disinfetta e lavati le mani.","Segna la data. Nelle 3 settimane dopo, se ha febbre, è abbattuto, zoppica o ha urine scure, vai dal veterinario."],
+  n:["Non schiacciarla e non metterci prima olio, alcol o il calore di un accendino."]},
+ {t:"Taglio, spina o vetro nella zampa",u:1,s:"Zoppica all'improvviso, si lecca la zampa, sangue sui polpastrelli.",
+  f:["Sciacqua con acqua pulita o soluzione fisiologica.","Se c'è una spina piccola e ben visibile, toglila con la pinzetta.","Se sanguina, premi con una garza pulita per 5 minuti, poi fascia senza stringere.","Taglio profondo, sangue che non si ferma o zoppia che non passa: veterinario."],
+  n:["Non usare disinfettanti con alcol sulla ferita aperta."]},
+ {t:"Morso di vipera",u:2,s:"Gonfiore rapido e doloroso, spesso sul muso o su una zampa, a volte due forellini; poi abbattimento, vomito, gengive pallide.",
+  f:["Tienilo fermo e calmo: se puoi, portalo in braccio.","Vai subito dal veterinario e telefona mentre arrivi.","Togli il collare se il gonfiore è sul collo o sul muso."],
+  n:["Non incidere, non succhiare, non mettere lacci o ghiaccio.","Non dargli farmaci di tua iniziativa."]},
+ {t:"Processionaria (bruchi pelosi in fila)",u:2,s:"Tanta bava, lingua gonfia o con macchie, si struscia il muso, vomita. Succede soprattutto in pinete e querceti, da febbraio a maggio.",
+  f:["Con i guanti, sciacqua bocca e muso con tanta acqua, senza strofinare.","Corri dal veterinario: la lingua può essere danneggiata."],
+  n:["Non toccare i bruchi o i peli a mani nude.","Non strofinare la lingua."]},
+ {t:"Ha mangiato qualcosa di pericoloso",u:2,s:"Esche avvelenate, lumachicidi, topicidi, cioccolato, uva e uvetta, dolci con xilitolo, farmaci. Possono comparire tremori, bava, vomito, convulsioni o sanguinamenti.",
+  f:["Chiama subito il veterinario e digli cosa e quanto ha mangiato.","Porta con te la confezione o un pezzo di quello che ha mangiato.","Se sospetti un'esca avvelenata, segnalala ai Carabinieri forestali o alla polizia locale."],
+  n:["Non farlo vomitare di tua iniziativa: niente sale, acqua ossigenata o latte."]},
+ {t:"Punture di api o vespe",u:1,s:"Gonfiore e dolore nel punto della puntura, si lecca o si gratta.",
+  f:["Togli il pungiglione se si vede, raschiandolo con un'unghia o una carta.","Impacco freddo per 10 minuti.","Se la puntura è in bocca o in gola, se il muso si gonfia sempre di più, se respira male, vomita o crolla: veterinario subito."]},
+ {t:"Zoppia o storta",u:1,s:"Non appoggia bene una zampa dopo un salto o una caduta.",
+  f:["Fermatevi e non forzarlo a camminare.","Controlla i polpastrelli: spine, tagli, palline di ghiaccio.","Se non appoggia la zampa, è gonfia o gli fa molto male, portalo in braccio o su una giacca usata come barella e vai dal veterinario."]},
+ {t:"Pancia gonfia e conati a vuoto",u:2,s:"Pancia gonfia e dura, prova a vomitare ma non esce niente, bava, agitazione. Succede soprattutto ai cani grandi col torace profondo.",
+  f:["È un'emergenza (torsione dello stomaco): vai subito dal veterinario più vicino aperto."],p:"Niente corse e giochi intensi per 1-2 ore dopo il pasto."},
+ {t:"Freddo forte (ipotermia)",u:2,s:"Trema forte, è rigido, lento, assonnato.",
+  f:["Portalo al riparo e asciugalo.","Avvolgilo in una coperta asciutta o in quella isotermica e scaldalo piano piano, anche col tuo corpo.","Poi vai dal veterinario."],
+  n:["Non usare fonti di calore forte a contatto con la pelle (phon caldo vicino, borse bollenti)."]},
+ {t:"Convulsioni",u:2,s:"Cade su un fianco, scatti delle zampe, bava, non risponde.",
+  f:["Allontana oggetti e spigoli, non tenerlo fermo.","Guarda l'orologio: quanto dura.","Dopo, tienilo al buio e in silenzio.","Se dura più di 3-5 minuti o se ne arriva un'altra: veterinario subito."],
+  n:["Non mettere le mani nella sua bocca: non si soffoca con la lingua."]},
+ {t:"Ha bevuto acqua di mare",u:1,s:"Vomito, diarrea, sete fortissima.",
+  f:["Offrigli acqua dolce, poca alla volta, e fallo riposare all'ombra.","Se ne ha bevuta tanta, è abbattuto, trema o barcolla: veterinario."]},
+];
+function showAid(){
+  $("ps-main").innerHTML=`<button class="btn wide sosbig" id="ps-sos">${icon("bell")}Emergenza: chiama il veterinario</button>
+    <p class="muted" style="margin-top:12px">Cosa fare subito, mentre chiami o raggiungi il veterinario. Tocca un problema per aprirlo.</p>
+    <div class="stack" style="margin-top:12px">${FA.map(x=>`<details class="aid u${x.u}"><summary><span><b>${x.t}</b><small>${x.u===2?"Emergenza: veterinario subito":x.u===1?"Spesso serve il veterinario":"Di solito lo risolvi tu"}</small></span><i>›</i></summary>
+      <div class="aidb"><p><b>Come lo riconosci.</b> ${x.s}</p><h4>Cosa fare</h4><ol>${x.f.map(y=>`<li>${y}</li>`).join("")}</ol>${x.n?`<h4>Cosa non fare</h4><ul>${x.n.map(y=>`<li>${y}</li>`).join("")}</ul>`:""}${x.p?`<p class="small muted" style="margin-top:6px"><b>Per prevenire:</b> ${x.p}</p>`:""}</div></details>`).join("")}</div>
+    <div class="box" style="margin-top:18px"><h2>Il kit da portare</h2><p style="margin-top:6px">Garze sterili, benda autoadesiva (quella che non si attacca al pelo), disinfettante senza alcol, soluzione fisiologica, pinzetta tirazecche, forbicine con punte arrotondate, guanti, coperta isotermica, il numero del veterinario.</p></div>`;
+  $("ps-sos").onclick=()=>sosSheet(null);
+}
+
+// ================= Regole del posto =================
+const RULES=[
+ ["In città","Guinzaglio lungo al massimo 1,5 metri nei luoghi pubblici e museruola sempre con te, da mettere se te la chiedono o se il cane può mordere (regola nazionale del Ministero della Salute). Raccogli sempre i bisogni: molti comuni chiedono anche una bottiglietta d'acqua per la pipì. Le multe le decide il comune."],
+ ["Aree cani","Qui può stare senza guinzaglio. Rispetta orari e regolamento del cartello all'ingresso, entra se il tuo cane va d'accordo con gli altri e tieni d'occhio il gioco."],
+ ["Parchi nazionali e riserve","Quasi sempre guinzaglio obbligatorio, anche sui sentieri. In alcune zone protette i cani sono vietati del tutto. Leggi il regolamento del parco o i cartelli all'ingresso prima di partire."],
+ ["Montagna, pascoli e animali","Vicino a mucche, pecore e capre tieni il cane corto e passa largo, mai in mezzo al gregge. I cani da guardia del gregge (spesso maremmani) lo difendono: fermati, tieni il tuo cane vicino, non fissarli e allontanati con calma. Se una mucca carica, lascia il guinzaglio e mettiti al sicuro: il cane è più veloce di te. In primavera molti animali selvatici hanno i piccoli: guinzaglio."],
+ ["Stagione di caccia","Più o meno da settembre a gennaio, con regole diverse in ogni regione. Resta sui sentieri, metti al cane un colore vivace (bandana o pettorina arancione) e tienilo vicino nei boschi."],
+ ["Spiagge","D'estate i cani in genere sono vietati sulle spiagge libere e negli stabilimenti, tranne nelle spiagge per cani e negli stabilimenti che li accettano. Fuori stagione spesso si può: decide l'ordinanza balneare del comune, controllala."],
+ ["Treni, autobus e traghetti","Di solito: cani piccoli nel trasportino, cani grandi con guinzaglio, museruola e spesso un biglietto. Ogni compagnia ha le sue regole: controllale prima di partire."],
+ ["Rifugi, bar e ristoranti","Chiedi prima di entrare. In molti rifugi i cani non possono dormire nelle camerate comuni: cerca quelli che li accettano o prenota una camera."],
+ ["Documenti","Microchip e iscrizione all'anagrafe canina sono obbligatori in Italia. Per andare all'estero serve il passaporto europeo per animali, con la vaccinazione antirabbica valida."],
+];
+function showRules(){$("rg-main").innerHTML=`<p class="muted" style="margin-top:6px">Le regole cambiano da posto a posto: qui trovi quelle più comuni in Italia. Vale sempre il cartello all'ingresso o l'ordinanza del comune.</p>
+  <div class="stack" style="margin-top:12px">${RULES.map((r,i)=>`<details class="aid"${i<1?" open":""}><summary><span><b>${r[0]}</b></span><i>›</i></summary><div class="aidb"><p>${r[1]}</p></div></details>`).join("")}</div>`}
+// riquadro "Regole del posto" nella scheda di un sentiero
+function trailRules(tr){const f=FT[tr.id]||{f:[]},e=elev[tr.id],L=[];
+  const dg={no:"<b class=\"c2\">Secondo OpenStreetMap su questo sentiero i cani non sono ammessi.</b> Controlla i cartelli.",leashed:"<b>Cani ammessi al guinzaglio</b> (dati OpenStreetMap).",yes:"<b class=\"c0\">Cani ammessi</b> (dati OpenStreetMap)."}[tr.dogs];
+  if(dg)L.push(dg);
+  if(f.f.includes("spiaggia"))L.push("Passa vicino a una spiaggia: d'estate i cani di solito ci sono vietati, salvo spiagge per cani.");
+  if((e&&e.max>=1000)||f.f.includes("vette"))L.push("In montagna puoi incontrare mucche, pecore e cani da guardia del gregge: cane corto e passa largo.");
+  if(f.f.includes("citta"))L.push("Tratti in città: guinzaglio al massimo 1,5 m e raccogli i bisogni.");
+  L.push("Nei parchi e nelle riserve il guinzaglio è quasi sempre obbligatorio: guarda i cartelli all'ingresso.");
+  return `<div class="block"><h2>Regole del posto</h2><ul class="rul">${L.map(x=>`<li>${x}</li>`).join("")}</ul><a class="btn sm" href="#regole" style="margin-top:8px">Tutte le regole</a></div>`}
 
 // ================= In cammino (Avvia percorso) =================
 // Mappa dal vivo con posizione GPS, tempo, strada fatta e mancante, passi stimati, meteo e avvisi per il cane.
@@ -2901,7 +3263,7 @@ $("nav-end").onclick=()=>{
     S.acts=S.acts.slice(0,200);
     if(!store.set("alldogs-acts",S.acts)){S.acts.slice(5).forEach(x=>delete x.track);store.set("alldogs-acts",S.acts)}
     if(nav.share)sharePub({k:"e",t:Date.now(),d:dist,e:Math.round(el/1000)});
-    stopNav();location.hash="attivita";toast("Passeggiata salvata nelle attività");
+    stopNav();location.hash="attivita";toast("Passeggiata salvata nel diario");setTimeout(()=>diarySheet(0),500);
   };
 };
 
