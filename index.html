@@ -600,7 +600,7 @@ body.noscroll{overflow:hidden}
 .ehd{display:flex;align-items:center;gap:12px}
 /* filtri su una sola riga che scorre */
 .frow{margin-top:12px}
-.frow select{border:0;background-color:var(--surface);height:42px;padding-top:0;padding-bottom:0}
+.frow select{border:0;background-color:var(--surface);height:42px;padding-top:0;padding-bottom:0;max-width:62vw;text-overflow:ellipsis}
 .frow .dd{border:0!important}
 .frow .fall{flex:none;display:inline-flex;align-items:center;gap:8px;border:0;background:var(--surface);border-radius:12px;padding:0 14px;height:42px;font-size:15px;font-weight:600;color:var(--ink)}
 .frow .fall svg{width:20px;height:20px}
@@ -1652,6 +1652,8 @@ function initMap(){
   });
   ["mousedown","touchstart","wheel"].forEach(ev=>M.on(ev,()=>{if(fly&&fly.playing&&fly.started){fly.playing=false;paintFly()}}));
   M.on("dragstart",()=>{if(scene.mode==="nav")navFollow=false});
+  // se sposti la mappa tu, l'elenco torna a seguire la zona inquadrata
+  ["dragstart","zoomstart","rotatestart"].forEach(ev=>M.on(ev,e=>{if(e&&e.originalEvent&&S.wide){S.wide=null}}));
   M.on("rotate",()=>{if(scene.mode==="nav"){navCompass();meDir()}});
 }
 // Scala dei km in basso: barra lunga al massimo 170 pixel, con valori tondi (1, 2, 5, 10…)
@@ -2155,7 +2157,7 @@ function filtered(){
   const d=dog(),q=$("q").value.trim().toLowerCase(),fit=$("f-fit").value,len=$("f-len").value,upf=$("f-up").value,dif=$("f-dif").value,zone=$("f-zone").value,eff=$("f-eff").value;
   const rows=[];
   for(const tr of S.trails){
-    if(!S.near&&!q&&!inView(tr))continue; // l'elenco mostra i sentieri della zona inquadrata (con la ricerca: tutti quelli caricati)
+    if(!S.near&&!q){if(S.wide){if(hav(tr.start,S.wide.c)>S.wide.r*1000)continue}else if(!inView(tr))continue} // la zona inquadrata, o il cerchio allargato quando con i filtri non c'era niente
     if(q&&!(tr.name+" "+tr.ref+" "+tr.zone+" "+tr.from+" "+tr.to+" "+(FT[tr.id]&&FT[tr.id].n?Object.values(FT[tr.id].n).flat().join(" "):"")).toLowerCase().includes(q))continue;
     if(len!=="all"){const [a,b]=len.split("-").map(Number);if(tr.len<a*1000||tr.len>=b*1000)continue}
     if(upf!=="all"){const e=elev[tr.id];if(!e)continue;const [a,b]=upf.split("-").map(Number);if(e.up<a||e.up>=b)continue}
@@ -2211,7 +2213,11 @@ function renderWho(){const el=$("who");el.hidden=DOGS.list.length<2||!S.dog;if(e
     if(i>=0){if(DOGS.walk.length===1){toast("Almeno un cane deve venire");return}DOGS.walk.splice(i,1)}else DOGS.walk.push(id);
     dogsSave();S.limit=20;renderWho();renderList();renderToday();const g=dog();if(g.group)toast(`Sentieri giudicati su ${g.lead}`)})}
 function fitLabels(){const n=dog().name||"il cane",o=$("f-fit").options;o[0].text=`Per ${n}: tutti`;o[1].text=`Adatti a ${n}`;o[2].text=`Adatti a ${n} o con prudenza`}
-function renderList(){paintFAll();fitLabels();
+// i menu della fila filtri larghi quanto la scelta fatta (non quanto la voce più lunga), così si vede che la fila continua
+let _mctx=null;
+function sizeSels(){const sels=document.querySelectorAll(".frow select");if(!sels.length)return;_mctx=_mctx||document.createElement("canvas").getContext("2d");
+  sels.forEach(sel=>{const o=sel.options[sel.selectedIndex];if(!o)return;const cs=getComputedStyle(sel);_mctx.font=`${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;sel.style.width=Math.ceil(_mctx.measureText(o.text).width+48)+"px"})}
+function renderList(){paintFAll();fitLabels();setTimeout(sizeSels,0);
   $("hello").textContent=`Dove andiamo con ${dog().name||"il tuo cane"}?`;
   renderToday();
   renderPills();
@@ -2232,14 +2238,17 @@ function renderList(){paintFAll();fitLabels();
   $("reco-box").hidden=!fam.length;
   if(fam.length){const d=dog();$("reco").innerHTML=fam.map(m=>m.tr?cardHTML(m.tr,verdict(item(m.tr),d,S.day),m.f.n):placeCard(m.f,m.i)).join("");bindCards($("reco"))}
   renderParks();
+  if(!af)S.wide=null;
   const rows=filtered();S.rows=rows;
   {const cnt={};rows.slice(0,40).forEach(r=>{if(r.tr.zone)cnt[r.tr.zone]=(cnt[r.tr.zone]||0)+1});const top=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0];
     $("where").textContent=S.far||!top?"Italia":"Zona di "+top}
   if(S.far){const tot=IDX?Object.values(IDX.cells).reduce((a,b)=>a+b,0):0;
+    if(af&&!S.near&&!S.wide&&!widening){widen();$("count").textContent="Cerco entro 100 km…";$("list").innerHTML=`<div class="skel"></div><div class="skel"></div>`;return}
     $("count").textContent="Sentieri d'Italia";$("more").hidden=true;S.rows=[];
     $("list").innerHTML=`<div class="note"><b>Avvicina la mappa</b> su una zona, tocca uno dei cerchi blu oppure cerca un luogo qui sopra: ti mostro i sentieri adatti a ${dn()}.<br><span class="small">Sentieri disponibili: ${tot.toLocaleString("it-IT")}${IDX&&IDX.todo?" · altre zone d'Italia sono in arrivo":""}.</span></div>`;
     if(scene.mode==="explore")applyScene();return}
-  $("count").textContent=af?(rows.length===1?"1 sentiero":rows.length+" sentieri"):`Sentieri in questa zona (${rows.length})`;
+  if(af&&!S.near&&!S.wide&&!widening&&!S.loadingView&&rows.length<5){widen();$("count").textContent="Cerco più lontano…";$("list").innerHTML=`<div class="skel"></div><div class="skel"></div>`;return}
+  $("count").textContent=af?(rows.length===1?"1 sentiero":rows.length+" sentieri")+(S.wide?` entro ${S.wide.r} km`:""):`Sentieri in questa zona (${rows.length})`;
   $("list").innerHTML=rows.slice(0,S.limit).map(r=>cardHTML(r.tr,r.res)).join("")||(S.loadingView?`<div class="skel"></div><div class="skel"></div>`:`<div class="empty"><p>${af?"Nessun sentiero con questi filtri in questa zona.":"In questa zona non ci sono ancora sentieri."}</p><p class="small">Sposta o allontana la mappa${IDX&&IDX.todo?": alcune zone d'Italia sono ancora in arrivo":""}. In città puoi creare un giro con il pulsante <b>+</b>.</p></div>`);
   $("more").hidden=rows.length<=S.limit;
   bindCards($("list"));
@@ -4301,8 +4310,28 @@ function viewChanged(){
   refreshView();
 }
 // carica i riquadri di sentieri inquadrati dalla mappa, poi il meteo per quelli in elenco
+// Con i filtri e pochi risultati nella zona inquadrata: allargo da solo il cerchio (30, 60, fino a 100 km) e allontano la mappa
+let widening=false;
+async function widen(){
+  if(widening||!IDX)return;widening=true;const c=S.view.c.slice();
+  try{
+    for(const r of [30,60,100]){
+      const dLa=r/111,dLo=r/(111*Math.cos(c[0]*Math.PI/180)),keys=viewCells([[c[0]-dLa,c[1]-dLo],[c[0]+dLa,c[1]+dLo]]).filter(k=>IDX.cells[k]);
+      await Promise.all(keys.map(k=>loadCell(k).catch(()=>0)));
+      const cand=S.trails.filter(t=>hav(t.start,c)<=r*1000);
+      try{await loadWeather(cand.map(t=>t.start))}catch(e){}
+      S.wide={r,c,keys};
+      if(!activeFilters()){S.wide=null;break}
+      if(filtered().length>=8)break;
+    }
+  }finally{widening=false}
+  if(S.wide&&M){const rows=filtered(),pts=rows.length?rows.slice(0,60).map(x=>x.tr.start):[c];let a=90,b=-90,e=180,w=-180;pts.concat([c]).forEach(p=>{a=Math.min(a,p[0]);b=Math.max(b,p[0]);e=Math.min(e,p[1]);w=Math.max(w,p[1])});
+    M.fitBounds([[e,a],[w,b]],{padding:40,maxZoom:12,duration:0})}
+  if(onList())renderList();
+}
 async function refreshView(){
   if(!S.ready)return;
+  if(S.wide){S.far=false;S.loadingView=false;if(onList())renderList();return} // cerchio allargato: i sentieri sono già caricati
   const my=++viewSeq,keys=viewCells(S.view.b);
   S.far=keys.length>12; // troppo lontano: si mostrano solo i cerchi con i numeri
   if(S.far){S.loadingView=false;if(onList())renderList();return}
