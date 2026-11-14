@@ -20,6 +20,7 @@ import json, math, os, re, sys, time, zipfile
 
 import build_data as bd
 import build_italy as bi
+import build_feats as bf
 
 DOGS_RAW = os.path.join(bd.CACHE, "dogs")
 DATA = os.path.join(bd.ROOT, "data", "c")
@@ -299,6 +300,53 @@ def apply(only=None):
     log("Fatto:", tot)
 
 
+def export():
+    """Solo i risultati {id: dg} in tools/dg.json.gz (piccolo, si può mettere su git e applicare su un altro computer con "import")."""
+    import gzip
+    out, n = {}, 0
+    for f in sorted(os.listdir(DATA)):
+        if not f.endswith(".json"):
+            continue
+        k = f[:-5]
+        c = tuple(map(float, k.split("_")))
+        wdog = way_dogs(c)
+        if wdog is None or not os.path.exists(os.path.join(DOGS_RAW, f"b_{k}.json")):
+            log(k, "senza dati: salto")
+            continue
+        for t in json.load(open(os.path.join(DATA, f), encoding="utf-8"))["trails"]:
+            out[str(t["id"])] = judge(t, c, wdog)
+            n += 1
+        log(k)
+    dst = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dg.json.gz")
+    with gzip.open(dst, "wt", encoding="utf-8") as fh:
+        json.dump(out, fh, ensure_ascii=False, separators=(",", ":"))
+    log("Scritto", dst, n, "sentieri")
+
+
+def import_dg():
+    import gzip, time as _t
+    src = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dg.json.gz")
+    m = json.load(gzip.open(src, "rt", encoding="utf-8"))
+    tot = {}
+    for f in sorted(os.listdir(DATA)):
+        if not f.endswith(".json"):
+            continue
+        fp = os.path.join(DATA, f)
+        d = json.load(open(fp, encoding="utf-8"))
+        for t in d["trails"]:
+            g = m.get(str(t["id"]))
+            if g:
+                t["dg"] = g
+                tot[g[0]] = tot.get(g[0], 0) + 1
+            t["d"] = bf.describe(t)
+        json.dump(d, open(fp, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+    idxf = os.path.join(bd.ROOT, "data", "index.json")
+    I = json.load(open(idxf))
+    I["t"] = int(_t.time() * 1000)
+    json.dump(I, open(idxf, "w"), separators=(",", ":"))
+    log("Fatto:", tot)
+
+
 def check(tid):
     for f in sorted(os.listdir(DATA)):
         d = json.load(open(os.path.join(DATA, f), encoding="utf-8"))
@@ -320,5 +368,9 @@ if __name__ == "__main__":
         apply(set(rest) or None)
     elif cmd == "check":
         check(rest[0])
+    elif cmd == "export":
+        export()
+    elif cmd == "import":
+        import_dg()
     else:
         print(__doc__)
