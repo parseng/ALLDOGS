@@ -177,6 +177,7 @@ body > #mapwrap{display:none}
 .carousel .tcard{flex:0 0 80%;max-width:360px;scroll-snap-align:start;margin-bottom:6px}
 /* primo avvio: solo nome, età, peso, allenamento e muso; il resto dopo («Completa il libretto») */
 .fold.onb .full{display:none}
+.fold:not(.onb) .onbonly{display:none}
 .qrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--line)}.qrow:last-child{border:0}.qbtn{display:flex;gap:6px;flex:none}
 .rphs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}.rphs:empty{display:none}.rph{position:relative}.rph img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;display:block}.rph .round{position:absolute;top:4px;right:4px;width:28px;height:28px}
 #rev-cam svg{width:18px;height:18px;margin-right:6px;vertical-align:-3px}
@@ -1090,6 +1091,7 @@ body{font-size:17px;line-height:1.5}
     </div>
   </div>
   <button class="btn pri wide" id="dog-save" style="margin-top:18px">Salva</button>
+  <p class="small muted onbonly" style="margin-top:10px;text-align:center">Toccando Inizia accetti le <a href="termini.html">condizioni d'uso</a>. I dati restano su questo telefono: <a href="privacy.html">informativa sulla privacy</a>.</p>
   <button class="btn wide" id="dog-del" type="button" hidden style="margin-top:10px">Togli questo cane dall'app</button>
   </div></details>
   <details class="fold" id="settings"><summary><span><b>Impostazioni</b><small>Chiavi dei servizi e avvertenze</small></span><i>›</i></summary><div class="foldb">
@@ -1103,7 +1105,8 @@ body{font-size:17px;line-height:1.5}
     </div>
     <div class="block small muted">
       <p>Il verdetto è un <b>consiglio prudente, non una garanzia</b>. Osserva sempre il tuo cane, fermati ai primi segni di stanchezza o affanno. L'app <b>non sostituisce il veterinario</b>: per qualsiasi dubbio sulla salute chiedi a lui.</p>
-      <p style="margin-top:10px">Sentieri © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> (ODbL) · Mappe © <a href="https://www.mapbox.com/about/maps/" target="_blank" rel="noopener">Mapbox</a> · Meteo e quote <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> · Percorsi <a href="https://openrouteservice.org" target="_blank" rel="noopener">OpenRouteService</a> · Chat Gemini (Google) · Meteo di riserva <a href="https://www.met.no/en" target="_blank" rel="noopener">MET Norway</a> · Radar pioggia RainViewer · Mappa topografica OpenTopoMap · Sentinel-2 cloudless 2024 di <a href="https://s2maps.eu" target="_blank" rel="noopener">EOX</a> (dati Copernicus modificati) · Neve, nuvole e vegetazione NASA GIBS</p>
+      <p style="margin-top:10px"><a href="privacy.html">Informativa sulla privacy</a> · <a href="termini.html">Condizioni d'uso</a></p>
+      <p style="margin-top:10px">Sentieri © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> (ODbL) · Mappe © <a href="https://www.mapbox.com/about/maps/" target="_blank" rel="noopener">Mapbox</a> · Meteo e quote <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> · Percorsi <a href="https://openrouteservice.org" target="_blank" rel="noopener">OpenRouteService</a> · Chat Gemini (Google) · Meteo di riserva <a href="https://www.met.no/en" target="_blank" rel="noopener">MET Norway</a> · Radar pioggia RainViewer · Mappa topografica OpenTopoMap · Sentinel-2 cloudless 2024 di <a href="https://s2maps.eu" target="_blank" rel="noopener">EOX</a> (dati Copernicus modificati) · Neve, nuvole e vegetazione NASA GIBS · Alberi e ombra ESA WorldCover 2021 (CC BY 4.0) · Regole per i cani: regolamenti dei parchi e OpenStreetMap</p>
     </div>
   </div></details>
 </section>

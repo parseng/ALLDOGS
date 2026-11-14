@@ -1,7 +1,7 @@
-# AllDogs – specifica della versione 3
+# AllDogs – specifica
 
 Utente: Giuseppe (Napoli), non informatico. Tutti i testi dell'app in italiano semplice.
-App: sentieri e passeggiate adatti al PROPRIO cane. Zona iniziale: Napoli/Campania.
+App: sentieri e passeggiate adatti al PROPRIO cane, in tutta Italia (dal 13/11/2026; prima solo Campania). Tutto va giudicato dal punto di vista del cane.
 Sito: https://parseng.github.io/ALLDOGS/ (GitHub Pages, branch `main`, file statici: `index.html`, `manifest.json`, icone).
 La versione 2 attuale è in `index.html` (un solo file, JavaScript semplice, senza build). Mantenere questa semplicità.
 
@@ -74,3 +74,28 @@ che mappa, miniature, filtri, scheda, meteo funzionino a larghezza telefono (390
 - Icona dell'app: `python tools/make_icon.py`.
 - Più cani: tutti in `alldogs-dogs` ({list, cur, walk}); `alldogs-dog` è la copia del cane scelto. Dati per cane (lezioni, obiettivo, salute, foto): primo cane con le chiavi di sempre, gli altri con "-<id>". In Esplora "Chi viene?": con più cani sentieri e giri si giudicano sul più delicato (quello che arriva meno lontano). Ogni uscita del diario salva quali cani c'erano; l'andatura è per cane.
 - Pagine vuote con un pulsante per cominciare; avvertenze in una riga in fondo alle pagine.
+
+## Aggiunte del 15 novembre 2026 (dopo il check-up, richieste da Giuseppe)
+- **Andata e ritorno**: nei sentieri non ad anello (partenza e arrivo a più di 500 m) km, salita (salita + discesa dell'andata), tempo, acqua, passi,
+  filtro lunghezza e verdetto contano SEMPRE andata e ritorno (`totLen`, `totUp`, `item()`). In cammino: avviso a fine andata, km mancanti col ritorno (`nav.back`).
+- **Cani ammessi** (priorità di Giuseppe: è il vantaggio dell'app): campo `dg` = [stato, testo, area] in ogni sentiero, da `tools/build_dogs.py`.
+  Stati: `no` vietati, `lim` solo alcuni sentieri/periodi, `lea` al guinzaglio, `ok` nessun divieto noto. Regole dei parchi scritte in `RULES`
+  (Gran Paradiso, Abruzzo-Lazio-Molise, Maiella con elenco «Sentieri a 6 zampe», Sibillini, Alpi Marittime, La Mandria, Maremma, Asinara,
+  Oasi WWF, riserve integrali) + aree protette e cartelli `dog=*` di OpenStreetMap. Filtro «Cani ammessi» (di base nasconde i vietati), avviso nel verdetto,
+  riquadro in cima alla scheda, etichetta sulle schede. Da ampliare: altri parchi regionali, spiagge per cani, regole raccolte dagli utenti.
+  Overpass non è raggiungibile dal cloud: il `fetch` si lancia sul PC di Giuseppe, poi `zip` e `apply`.
+- **Ombra**: prima si usavano i riquadri (bbox) dei boschi OSM, che facevano risultare ombreggiate anche cime spoglie (Gran Cono del Vesuvio: 100% → 2%).
+  Ora `tools/build_shade.py` legge ESA WorldCover 10 m: ogni 20 m, ombra se almeno 5 dei 9 quadratini intorno sono alberi. `f.wood` = quota all'ombra,
+  `f.sh` = striscia ombra/sole ogni 100 m (mostrata nella scheda). Soglie: tanta ≥ 70%, a tratti ≥ 35%.
+- **Corsa col cane**: il GPS accetta fino a 7 m/s (o 1,6× la velocità data dal GPS); un salto del GPS non sposta più il punto di riferimento, quindi il tratto non va perso.
+- **Recensioni**: domande con un tocco (scale, recinti/griglie, acqua, greggi/cani liberi, ombra, cartelli di divieto), foto del sentiero (fotocamera o galleria,
+  in IndexedDB `rv-<id>-<ora>`), foto scattate durante il giro (`nv-…`, con il punto GPS) che a fine giro si possono mettere nella recensione.
+  Le risposte compaiono in «Punti critici». Per ora tutto locale: con Supabase diventeranno pubbliche.
+- **Primo avvio corto**: nome, età, peso, allenamento, muso schiacciato. Il resto dopo, con l'invito «Completa il libretto di …» nella pagina del cane.
+- **Privacy e condizioni d'uso**: `privacy.html`, `termini.html` (bozze; mancano i dati del titolare). Link nel primo avvio e nelle Impostazioni.
+
+## Rimandato, deciso con Giuseppe (15/11/2026)
+- Dati solo sul telefono: va bene per l'alpha. Poi **account** (Supabase) con dati salvati per account, multi-cane e sync.
+- Chiavi OpenRouteService/Gemini: da nascondere dietro un servizio online prima di far provare l'app ad altri.
+- **App negli store** (Capacitor o simile): GPS in background e a schermo bloccato (background geolocation), passi dal telefono
+  (HealthKit / Health Connect), notifiche per promemoria. Una web app non può usare il GPS a schermo spento.
