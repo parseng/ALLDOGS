@@ -72,3 +72,5 @@ che mappa, miniature, filtri, scheda, meteo funzionino a larghezza telefono (390
 - Assistente AI solo dal bottone "Chiedi" (Crea giro, Obiettivi, Addestramento).
 - Diario: mappa grande di ogni uscita; toccandola si apre il percorso fatto a tutto schermo (`#u-<ora di inizio>`).
 - Icona dell'app: `python tools/make_icon.py`.
+- Più cani: tutti in `alldogs-dogs` ({list, cur, walk}); `alldogs-dog` è la copia del cane scelto. Dati per cane (lezioni, obiettivo, salute, foto): primo cane con le chiavi di sempre, gli altri con "-<id>". In Esplora "Chi viene?": con più cani sentieri e giri si giudicano sul più delicato (quello che arriva meno lontano). Ogni uscita del diario salva quali cani c'erano; l'andatura è per cane.
+- Pagine vuote con un pulsante per cominciare; avvertenze in una riga in fondo alle pagine.

@@ -644,6 +644,27 @@ body{font-size:17px;line-height:1.5}
 #hostOut #m-full{display:none}
 .outbar{padding:12px 16px calc(env(safe-area-inset-bottom,0px) + 12px);background:var(--surface);border-top:1px solid var(--line)}
 .outbar .stats{margin:12px 0 0}
+
+/* più cani */
+.who{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px}
+.whob{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 12px 3px 3px;font:inherit;font-size:15px;font-weight:600;color:var(--muted);cursor:pointer}
+.whob[aria-pressed=true]{border-color:var(--dog);background:var(--dog-soft);color:var(--ink)}
+.wav{width:30px;height:30px;border-radius:50%;background:var(--dog-soft) center/cover;color:var(--dog);display:grid;place-items:center;font:800 14px/1 var(--display);flex:none}
+.whob[aria-pressed=false] .wav{filter:grayscale(1);opacity:.6}
+.dpick{display:flex;gap:14px;overflow-x:auto;margin:0 -16px 14px;padding:2px 16px 4px;scrollbar-width:none}
+.dpick::-webkit-scrollbar{display:none}
+.dp{flex:none;display:flex;flex-direction:column;align-items:center;gap:5px;border:0;background:none;padding:0;font:inherit;color:var(--muted);cursor:pointer;width:62px}
+.dp .wav{width:52px;height:52px;font-size:22px;box-shadow:0 0 0 2px var(--bg),0 0 0 3px var(--line)}
+.dp.on .wav{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--dog)}
+.dp.on{color:var(--ink);font-weight:700}
+.dp small{font-size:13px;max-width:62px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dp.add .wav{background:var(--surface);color:var(--accent);border:1.5px dashed var(--line);box-shadow:none}
+.dp.add .wav svg{width:22px;height:22px}
+
+/* pagine vuote e avvertenze */
+.empty-a{display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:14px;border:1.5px dashed var(--line);border-radius:var(--r);color:var(--muted)}
+.empty-a .btn svg{width:16px;height:16px}
+.disc{margin-top:22px;padding-top:12px;border-top:1px solid var(--line)}
 </style>
 </head>
 <body>
@@ -710,6 +731,7 @@ body{font-size:17px;line-height:1.5}
 <!-- ESPLORA -->
 <section class="screen" id="s-esplora">
   <div class="ehd"><div class="sp" style="min-width:0"><p class="muted small" id="where">Italia</p><h1 id="hello">Dove andiamo oggi?</h1></div><a class="avatar sm" id="home-av" href="#cane" aria-label="Il mio cane"></a></div>
+  <div class="who" id="who" hidden></div>
   <div class="search" style="margin-top:14px"><svg width="22" height="22"><use href="#i-search"/></svg><input id="q" type="search" placeholder="Cerca un sentiero o una zona" aria-label="Cerca un sentiero o una zona"></div>
   <div class="hscroll" id="place-row" hidden></div>
   <div class="hscroll" id="near-row" hidden></div>
@@ -810,7 +832,7 @@ body{font-size:17px;line-height:1.5}
   <div class="hd"><h1>Allenati</h1></div>
   <div class="seg two subnav"><a href="#obiettivi" data-sub="obiettivi">Obiettivi</a><a href="#addestramento" data-sub="addestramento">Addestramento</a></div>
   <div id="ob-main"></div>
-  <p class="small muted" style="margin-top:22px">Il programma è un <b>consiglio prudente, non una garanzia</b>. Osserva sempre il tuo cane e fermati ai primi segni di stanchezza, affanno o zoppia. Non sostituisce il veterinario.</p>
+  <p class="small muted disc">Consiglio prudente, non una garanzia: fermati ai primi segni di stanchezza. Non sostituisce il veterinario.</p>
 </section>
 
 <!-- SALUTE: peso, movimento, obiettivi consigliati -->
@@ -818,7 +840,7 @@ body{font-size:17px;line-height:1.5}
   <div class="hd"><a class="round" href="#cane" aria-label="Indietro"><svg><use href="#i-back"/></svg></a><h1>Salute</h1></div>
   <div id="he-rem"></div>
   <div id="he-main"></div>
-  <p class="small muted" style="margin-top:22px">Sono <b>indicazioni prudenti, non una visita</b>. Peso giusto, dieta e attività adatte le decide il veterinario, che conosce il tuo cane.</p>
+  <p class="small muted disc">Indicazioni prudenti, non una visita: peso, dieta e attività le decide il veterinario.</p>
 </section>
 
 <!-- ADDESTRAMENTO: una lezione al giorno -->
@@ -826,7 +848,7 @@ body{font-size:17px;line-height:1.5}
   <div class="hd"><h1>Allenati</h1></div>
   <div class="seg two subnav"><a href="#obiettivi" data-sub="obiettivi">Obiettivi</a><a href="#addestramento" data-sub="addestramento">Addestramento</a></div>
   <div id="tr-main"></div>
-  <p class="small muted" style="margin-top:22px">Solo metodi gentili, con premi e mai punizioni. Per paure forti, aggressività o problemi seri chiedi a un educatore cinofilo o a un veterinario esperto di comportamento.</p>
+  <p class="small muted disc">Solo metodi gentili, con premi e mai punizioni. Per paure forti o aggressività chiedi a un educatore cinofilo.</p>
 </section>
 
 <!-- ZAINO PRONTO -->
@@ -839,7 +861,7 @@ body{font-size:17px;line-height:1.5}
 <section class="screen" id="s-soccorso">
   <div class="hd"><a class="round" href="#cane" aria-label="Indietro"><svg><use href="#i-back"/></svg></a><h1>Pronto soccorso</h1></div>
   <div id="ps-main" style="margin-top:14px"></div>
-  <p class="small muted" style="margin-top:22px">Sono <b>primi aiuti in attesa del veterinario</b>, non una cura. In ogni dubbio chiama subito il veterinario.</p>
+  <p class="small muted disc">Primi aiuti in attesa del veterinario, non una cura. Nel dubbio chiamalo subito.</p>
 </section>
 
 <!-- REGOLE DEL POSTO -->
@@ -863,7 +885,8 @@ body{font-size:17px;line-height:1.5}
 
 <!-- CANE -->
 <section class="screen" id="s-cane">
-  <div id="onb" hidden><h1>Parlami del tuo cane</h1><p class="muted" style="margin:8px 0 18px">Mi serve per dirti quali sentieri sono adatti a lui e quali no.</p></div>
+  <div class="dpick" id="dpick" hidden></div>
+  <div id="onb" hidden><h1 id="onb-t">Parlami del tuo cane</h1><p class="muted" style="margin:8px 0 18px">Mi serve per dirti quali sentieri sono adatti a lui e quali no.</p><button class="btn sm" id="add-cancel" type="button" hidden style="margin:-6px 0 16px">Annulla</button></div>
   <div class="row" id="dog-head"><div class="avatar" id="avatar" role="button" tabindex="0" aria-label="Cambia la foto del cane">L</div><div><h1 id="dog-title">Il mio cane</h1><p class="muted" id="dog-cap"></p>
     <div class="row" style="margin-top:8px"><button class="btn sm" id="photo-btn" type="button">Aggiungi una foto</button><button class="btn sm" id="photo-del" type="button" hidden>Togli la foto</button></div><input type="file" id="photo-in" accept="image/*" hidden></div></div>
   <p class="small" id="dog-alert" style="margin-top:10px"></p>
@@ -905,6 +928,7 @@ body{font-size:17px;line-height:1.5}
     </div>
   </div>
   <button class="btn pri wide" id="dog-save" style="margin-top:18px">Salva</button>
+  <button class="btn wide" id="dog-del" type="button" hidden style="margin-top:10px">Togli questo cane dall'app</button>
   </div></details>
   <details class="fold" id="settings"><summary><span><b>Impostazioni</b><small>Chiavi dei servizi e avvertenze</small></span><i>›</i></summary><div class="foldb">
     <div class="block"><h2>Chiavi dei servizi</h2>
@@ -1060,7 +1084,33 @@ const FEATL=Object.fromEntries(FEATS);
 const PATS=[["art","Articolazioni"],["cuore","Cuore"],["resp","Respirazione"],["peso","Sovrappeso"],["epi","Epilessia"],["diab","Diabete"],["conv","Convalescenza"],["altro","Altro"]];
 const VLABEL=["Fattibile","Con prudenza","Sconsigliato"];
 const EFFORT=["Facile","Media","Difficile"];
-const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));if(k==="alldogs-dog"&&v)dogsPut(v);return true}catch(e){return false}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+// ================= Più cani =================
+// Tutti i cani stanno in "alldogs-dogs" ({list, cur, walk}). "alldogs-dog" resta la copia del cane scelto, così il resto dell'app non cambia.
+// Dati per cane (lezioni, obiettivo, salute, foto): il primo cane usa le chiavi di sempre, gli altri la stessa chiave con "-<id>".
+// Pronto per quando ci sarà l'account: ogni cane ha già il suo id.
+const DOGS=(()=>{let o=null;try{o=JSON.parse(localStorage.getItem("alldogs-dogs"))}catch(e){}const one=store.get("alldogs-dog");
+  if(!o||!Array.isArray(o.list))o={list:one?[Object.assign({},one,{id:"d1"})]:[],cur:"d1"};
+  if(!o.list.some(x=>x.id===o.cur)&&o.list.length)o.cur=o.list[0].id;
+  o.walk=(o.walk||[]).filter(id=>o.list.some(x=>x.id===id));if(!o.walk.length)o.walk=[o.cur];
+  const c=o.list.find(x=>x.id===o.cur);
+  try{localStorage.setItem("alldogs-dogs",JSON.stringify(o));if(c)localStorage.setItem("alldogs-dog",JSON.stringify(c))}catch(e){}
+  return o})();
+let dogsVer=0;
+const dk=k=>DOGS.cur==="d1"?k:k+"-"+DOGS.cur;
+const PHK=dk("alldogs-photo");
+const phOf=id=>store.get(id==="d1"?"alldogs-photo":"alldogs-photo-"+id);
+function dogsSave(){dogsVer++;try{localStorage.setItem("alldogs-dogs",JSON.stringify(DOGS))}catch(e){}}
+function dogsPut(v){const i=DOGS.list.findIndex(x=>x.id===DOGS.cur),e=Object.assign({},v,{id:DOGS.cur});if(i>=0)DOGS.list[i]=e;else DOGS.list.push(e);dogsSave()}
+function walkers(){return DOGS.walk.map(id=>DOGS.list.find(x=>x.id===id)).filter(Boolean)}
+const andNames=a=>a.length<2?a.join(""):a.slice(0,-1).join(", ")+" e "+a[a.length-1];
+// Quando escono più cani insieme, sentieri e giri si giudicano sul più delicato del gruppo (quello che arriva meno lontano).
+let gdC=null,gdK="";
+function groupDog(){const k=DOGS.walk.join(",")+"|"+dogsVer;if(k===gdK)return gdC;gdK=k;
+  const W=walkers();if(!W.length){gdC=null;return null}if(W.length===1){gdC=W[0];return gdC}
+  let best=W[0],bc=capacity(best);for(const x of W.slice(1)){const c=capacity(x);if(c.km<bc.km||(c.km===bc.km&&c.heat<bc.heat)){best=x;bc=c}}
+  gdC=Object.assign({},best,{name:andNames(W.map(x=>x.name||"?")),lead:best.name,group:W.length});return gdC}
+const GROUPSCR=new Set(["esplora","sentiero","crea","vai"]);
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const km=m=>(m/1000).toFixed(1).replace(".",",");
@@ -1083,7 +1133,7 @@ const S={dog:store.get("alldogs-dog"),saved:store.get("alldogs-saved")||[],route
   // zona della mappa che si sta guardando: c = centro, z = zoom, b = [[sud,ovest],[nord,est]]
   view:(v=>v&&v.c&&v.b&&v.z?v:{c:[40.75,14.35],z:9,b:[[40.5,13.85],[41.02,14.85]]})(store.get("alldogs-view")),far:false};
 const DEF_DOG={name:"Luna",breed:"Meticcio",age:4,weight:22,train:"medio",agil:"media",coat:"corto",brachy:false,pat:{},patOther:"",health:{}};
-const dog=()=>S.dog||DEF_DOG;
+const dog=()=>{if(S.dog&&GROUPSCR.has(curScr)){const g=groupDog();if(g)return g}return S.dog||DEF_DOG};
 const dn=()=>esc(dog().name||"il tuo cane");
 const pats=d=>PATS.filter(p=>d.pat&&d.pat[p[0]]).map(p=>p[0]==="altro"&&d.patOther?"altro ("+d.patOther+")":p[1].toLowerCase());
 
@@ -1121,7 +1171,7 @@ const DEF_PACE=18;
 function paceInfo(){
   let k=0,m=0,u=0,n=0;
   for(const x of S.acts){
-    if(n>=10)break;if(!(x.dist>=300)||!(x.dur>=180e3))continue;
+    if(n>=10)break;if(!(x.dist>=300)||!(x.dur>=180e3))continue;if(x.dogs&&!x.dogs.includes(DOGS.cur))continue;
     const kk=x.dist/1000,mm=x.dur/60000,p=mm/kk;
     if(p<6||p>60)continue; // misure non credibili (GPS impazzito, attività dimenticata aperta)
     k+=kk;m+=mm;u+=x.up||0;n++}
@@ -1847,7 +1897,7 @@ $("m-loc").onclick=async()=>{
   try{const p=await getPos();showMe(p);if(scene.mode==="crea")setStart(p);else M.flyTo({center:ll(p),zoom:Math.max(M.getZoom(),13)})}catch(e){toast("Non riesco a leggere la posizione")}};
 
 // ================= Navigazione =================
-let curScr="esplora";
+var curScr="esplora";
 const TABOF={sentiero:"esplora",uscita:"attivita",obiettivi:"allenati",addestramento:"allenati",salute:"cane",zaino:"cane",soccorso:"cane",regole:"cane"};
 const SCREENS=["esplora","sentiero","crea","attivita","uscita","cane","vai","segui","obiettivi","addestramento","salute","zaino","soccorso","regole"];
 let lastList=0;
@@ -1874,7 +1924,7 @@ function route(){
   if(scr==="esplora"){
     // tornando da un sentiero o da un giro la mappa deve mostrare di nuovo tutti i sentieri, non solo l'ultimo percorso aperto
     if(scene.mode!=="explore"){scene={mode:"explore"};S.backView=true;fitPending=true}
-    mountMap($("hostExplore"),true);renderList();homeExtra();window.scrollTo(0,lastList)}
+    mountMap($("hostExplore"),true);renderWho();renderList();homeExtra();window.scrollTo(0,lastList)}
   else window.scrollTo(0,0);
   if(scr==="sentiero")showTrail(arg);
   if(scr==="crea")showCrea();
@@ -1989,6 +2039,12 @@ function renderPills(){
 }
 $("dd-act").onclick=()=>{ddOpen=ddOpen==="act"?null:"act";renderPills()};
 $("dd-feat").onclick=()=>{ddOpen=ddOpen==="feat"?null:"feat";renderPills()};
+function renderWho(){const el=$("who");el.hidden=DOGS.list.length<2||!S.dog;if(el.hidden)return;
+  el.innerHTML=`<span class="small muted">Chi viene?</span>`+DOGS.list.map(x=>{const on=DOGS.walk.includes(x.id),ph=phOf(x.id);
+    return `<button class="whob" type="button" data-w="${x.id}" aria-pressed="${on}"><span class="wav"${ph?` style="background-image:url(${ph})"`:""}>${ph?"":esc((x.name||"?").trim().charAt(0).toUpperCase())}</span>${esc(x.name||"?")}</button>`}).join("");
+  el.querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{const id=b.dataset.w,i=DOGS.walk.indexOf(id);
+    if(i>=0){if(DOGS.walk.length===1){toast("Almeno un cane deve venire");return}DOGS.walk.splice(i,1)}else DOGS.walk.push(id);
+    dogsSave();S.limit=20;renderWho();renderList();renderToday();const g=dog();if(g.group)toast(`Sentieri giudicati su ${g.lead}`)})}
 function fitLabels(){const n=dog().name||"il cane",o=$("f-fit").options;o[0].text=`Per ${n}: tutti`;o[1].text=`Adatti a ${n}`;o[2].text=`Adatti a ${n} o con prudenza`}
 function renderList(){fitLabels();
   $("hello").textContent=`Dove andiamo con ${dog().name||"il tuo cane"}?`;
@@ -2069,7 +2125,7 @@ function detailHTML(o){
 const HAZ=[
   {m:[2,3,4,5],t:"Processionaria",ok:c=>c.wood!==false,d:"Tra fine inverno e primavera i bruchi della processionaria scendono in fila dai pini e dalle querce. I loro peli sono molto pericolosi per la bocca e il naso del cane. Nelle pinete tienilo al guinzaglio e non farlo annusare a terra. Se la tocca o la lecca vai subito dal veterinario."},
   {m:[5,6,7,8,9],t:"Forasacchi",d:"Le spighe secche dell'erba alta si infilano tra le dita, nelle orecchie e nel naso. Evita i prati incolti e a fine giro controlla zampe, orecchie, naso e ascelle."},
-  {m:[3,4,5,6,7,8,9,10],t:"Zecche",d:"Stanno nell'erba alta e nel sottobosco. A fine giro passa le mani su tutto il corpo, soprattutto testa, orecchie, collo e zampe. Tieni aggiornato l'antiparassitario: la data la trovi nel libretto, in Il mio cane."},
+  {m:[3,4,5,6,7,8,9,10],t:"Zecche",d:"Stanno nell'erba alta e nel sottobosco. A fine giro passa le mani su tutto il corpo, soprattutto testa, orecchie, collo e zampe. Tieni aggiornato l'antiparassitario: la data la trovi nel libretto, nella pagina del cane."},
   {m:[6,7,8,9],t:"Caldo e asfalto",d:"Esci presto la mattina o la sera. Prova dei 5 secondi: appoggia il dorso della mano sull'asfalto, se scotta per te scotta anche per le sue zampe. Acqua sempre con te, ombra e pause."},
   {m:[6,7,8,9],t:"Greggi e cani da guardiania",ok:c=>c.alt==null||c.alt>=900,d:"In montagna d'estate i pascoli sono sorvegliati da cani da guardiania. Tieni il tuo cane al guinzaglio, gira largo attorno al gregge senza correre e non passare in mezzo agli animali."},
   {m:[4,5,6,7,8,9,10],t:"Vipere",ok:c=>!c.city,d:"Stanno al sole su sassi, muretti e cataste di legna. Sul sentiero tieni il cane vicino e non farlo frugare tra le pietre. In caso di morso tienilo fermo e calmo e portalo subito dal veterinario."},
@@ -2107,7 +2163,7 @@ function renderToday(){
   }
   const b=$("haz-btn");if(b)b.onclick=()=>hazSheet(hz);
   const wb=$("when-btn");if(wb)wb.onclick=whenSheet;
-  const ph=store.get("alldogs-photo"),av=$("home-av");av.style.backgroundImage=ph?`url(${ph})`:"";av.textContent=ph?"":(d.name||"?").trim().charAt(0).toUpperCase();
+  const ph=store.get(PHK),av=$("home-av");av.style.backgroundImage=ph?`url(${ph})`:"";av.textContent=ph?"":(d.name||"?").trim().charAt(0).toUpperCase();
 }
 // ---- Emergenza: chiamare il veterinario, trovarne uno vicino, mandare la posizione ----
 async function sosSheet(pos){
@@ -2117,7 +2173,7 @@ async function sosSheet(pos){
   const g=pos?`${pos[0].toFixed(5)},${pos[1].toFixed(5)}`:"";
   openSheet(`<h2>Emergenza</h2><p class="small muted" style="margin-top:6px">Se ${dn()} sta male, la cosa giusta è sentire subito un veterinario.</p>
     <div class="stack" style="margin-top:14px">
-      ${tel?`<a class="btn pri wide" href="tel:${tel}">Chiama ${esc(d.health.vet||"il veterinario")}</a>`:`<p class="small">Non hai ancora salvato il telefono del veterinario: aggiungilo in Il mio cane, nel libretto sanitario.</p>`}
+      ${tel?`<a class="btn pri wide" href="tel:${tel}">Chiama ${esc(d.health.vet||"il veterinario")}</a>`:`<p class="small">Non hai ancora salvato il telefono del veterinario: aggiungilo nella pagina del cane, nel libretto sanitario.</p>`}
       ${pos?allPoi().filter(p=>p[0]==="v").map(p=>({p,d:hav(pos,[p[1],p[2]])})).filter(x=>x.d<30000).sort((a,b)=>a.d-b.d).slice(0,3).map(({p,d:dd})=>`<div class="box"><b>${esc(p[3]||"Veterinario")}</b><p class="small muted">a circa ${km(dd)} km in linea d'aria${p[5]?" · segnato come pronto soccorso o sempre aperto":""}</p><div class="row" style="margin-top:8px">${p[4]?`<a class="btn sm pri" href="tel:${esc(p[4])}">Chiama</a>`:""}<a class="btn sm" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${p[1]},${p[2]}">Portami lì</a></div></div>`).join(""):""}
       <a class="btn wide" target="_blank" rel="noopener" href="https://www.google.com/maps/search/${encodeURIComponent("veterinario pronto soccorso aperto ora")}${pos?"/@"+g+",13z":""}">Cerca un veterinario aperto qui vicino</a>
       ${pos?`<button class="btn wide" id="sos-pos">Manda a qualcuno dove sono</button>`:`<p class="small muted">Posizione non disponibile.</p>`}
@@ -2282,7 +2338,7 @@ async function drawRoute(added){
     }
     if(!D.route){let len=0;for(let i=1;i<all.length;i++)len+=hav(all[i-1],all[i]);
       D.route={path:all,len:Math.round(len),up:0,hard:null,soft:null,green:null,segs:null,prof:null,straight:true};
-      if(follow&&!key)D.msg="Per seguire strade e sentieri serve la chiave di OpenRouteService (sezione Il mio cane): per ora unisco i punti con linee dritte."}
+      if(follow&&!key)D.msg="Per seguire strade e sentieri serve la chiave di OpenRouteService (pagina del cane, in Impostazioni): per ora unisco i punti con linee dritte."}
   }
   paintDraw();if(scene.mode==="crea")applyScene();
 }
@@ -2400,7 +2456,7 @@ async function generate(o){
   $("gen").disabled=false;
   const ok=rs.filter(r=>r.status==="fulfilled"&&r.value.features&&r.value.features.length).map(r=>parseRoute(r.value.features[0]));
   if(!ok.length){const e=(rs.find(r=>r.status==="rejected")||{}).reason||{};
-    out.innerHTML=`<div class="err">${e.status===401||e.status===403?"La chiave di OpenRouteService non è valida. Controllala nella sezione Il mio cane.":e.status===429?"Hai raggiunto il limite gratuito di oggi di OpenRouteService. Riprova domani.":e.status===404||e.status===400?"Da questo punto non riesco a creare un giro. Sposta il segnaposto su una strada o un sentiero.":"Non riesco a creare il giro. Controlla la connessione e che la chiave di OpenRouteService sia giusta (sezione Il mio cane)."}</div>`;return}
+    out.innerHTML=`<div class="err">${e.status===401||e.status===403?"La chiave di OpenRouteService non è valida. Controllala nella pagina del cane, in Impostazioni.":e.status===429?"Hai raggiunto il limite gratuito di oggi di OpenRouteService. Riprova domani.":e.status===404||e.status===400?"Da questo punto non riesco a creare un giro. Sposta il segnaposto su una strada o un sentiero.":"Non riesco a creare il giro. Controlla la connessione e che la chiave di OpenRouteService sia giusta (pagina del cane, in Impostazioni)."}</div>`;return}
   const sane=ok.filter(r=>r.len<=target*1.8+300);if(sane.length)ok.splice(0,ok.length,...sane); // scarta i giri assurdamente lunghi
   const n=nowWx(),hot=n&&n.t>=25;
   ok.forEach(r=>r.score=(r.hard??.5)*(hot?2:1)-(r.green??5)/10*(o.prefs&&o.prefs.green?1:.5)+Math.abs(r.len-target)/target*.5);
@@ -2549,7 +2605,7 @@ async function chatSend(text){
     }
   }catch(e){
     S.busy=false;const st=e.status,msg=e.body&&e.body.error&&e.body.error.message||"",seen=e.seen||[];console.warn("Gemini:",seen,e);
-    S.chat.push({r:"a",err:true,t:st===400&&/key/i.test(msg)||st===401||st===403?"La chiave Gemini non è valida. Controllala nella sezione Il mio cane.":seen.some(x=>x===503||x===500||x==="lento")?"L'assistente di Google è molto occupato in questo momento (succede con il servizio gratuito). Riprova tra un minuto, oppure usa il modo Automatico: quello funziona sempre.":seen.includes(429)||st===429?"Hai raggiunto il limite gratuito di Gemini per adesso. Riprova tra un po', oppure usa il modo Automatico.":"Non riesco a parlare con l'assistente. Controlla la connessione e riprova."});
+    S.chat.push({r:"a",err:true,t:st===400&&/key/i.test(msg)||st===401||st===403?"La chiave Gemini non è valida. Controllala nella pagina del cane, in Impostazioni.":seen.some(x=>x===503||x===500||x==="lento")?"L'assistente di Google è molto occupato in questo momento (succede con il servizio gratuito). Riprova tra un minuto, oppure usa il modo Automatico: quello funziona sempre.":seen.includes(429)||st===429?"Hai raggiunto il limite gratuito di Gemini per adesso. Riprova tra un po', oppure usa il modo Automatico.":"Non riesco a parlare con l'assistente. Controlla la connessione e riprova."});
     renderChat();
   }
 }
@@ -2558,7 +2614,7 @@ $("chat-form").onsubmit=e=>{e.preventDefault();chatSend($("chat-in").value)};
 // ================= Salvati =================
 function showSaved(){
   const d=dog();offList();
-  $("saved-routes").innerHTML=S.routes.length?S.routes.map((r,i)=>`<article class="tcard" data-r="${i}"><div class="img">${svgThumb(r.path)}<img loading="lazy" alt="" src="${staticImg(r.path)}" onerror="this.remove()"><button class="round" data-del="${i}" aria-label="Elimina"><svg><use href="#i-x"/></svg></button></div><h3>${esc(r.name)}</h3><p class="sub">${new Date(r.t).toLocaleDateString("it-IT",{day:"numeric",month:"long"})}${r.source==="chat"?" · creato con l'AI":""}</p><p class="meta">${km(r.len)} km · ↑ ${r.up} m</p></article>`).join(""):`<p class="muted">Ancora nessun giro. Creane uno con il pulsante <b>+</b> qui sotto.</p>`;
+  $("saved-routes").innerHTML=S.routes.length?S.routes.map((r,i)=>`<article class="tcard" data-r="${i}"><div class="img">${svgThumb(r.path)}<img loading="lazy" alt="" src="${staticImg(r.path)}" onerror="this.remove()"><button class="round" data-del="${i}" aria-label="Elimina"><svg><use href="#i-x"/></svg></button></div><h3>${esc(r.name)}</h3><p class="sub">${new Date(r.t).toLocaleDateString("it-IT",{day:"numeric",month:"long"})}${r.source==="chat"?" · creato con l'AI":""}</p><p class="meta">${km(r.len)} km · ↑ ${r.up} m</p></article>`).join(""):`<div class="empty-a"><p>Ancora nessun giro salvato. Quando crei un giro, tocca <b>Salva il giro</b> e lo ritrovi qui.</p><a class="btn sm pri" href="#crea">${icon("plus")}Crea un giro</a></div>`;
   $("saved-routes").querySelectorAll(".tcard").forEach(c=>c.onclick=ev=>{const del=ev.target.closest("[data-del]");
     if(del){ev.stopPropagation();S.routes.splice(+del.dataset.del,1);store.set("alldogs-routes",S.routes);showSaved();toast("Giro eliminato");return}
     const r=S.routes[+c.dataset.r];S.gen=[Object.assign({},r)];S.genIdx=0;S.start=r.path[0];location.hash="crea";setTimeout(showGen,150)});
@@ -2569,7 +2625,7 @@ function showSaved(){
     Promise.all(miss.map(id=>findTrail(id).catch(()=>null))).then(()=>{const st=S.saved.map(id=>TR.get(id)).filter(Boolean).map(t=>t.start);
       return loadWeather(st).catch(()=>{})}).then(()=>{if(curScr==="attivita")showSaved()})}
   const rows=S.saved.map(id=>TR.get(id)).filter(Boolean);
-  $("saved-trails").innerHTML=rows.length?rows.map(tr=>cardHTML(tr,verdict(item(tr),d,S.day))).join(""):`<p class="muted">${miss.length?"Sto caricando…":"Tocca il cuore su un sentiero per ritrovarlo qui."}</p>`;
+  $("saved-trails").innerHTML=rows.length?rows.map(tr=>cardHTML(tr,verdict(item(tr),d,S.day))).join(""):(miss.length?`<p class="muted">Sto caricando…</p>`:`<div class="empty-a"><p>Nessun sentiero salvato. Tocca il cuore su un sentiero per ritrovarlo qui.</p><a class="btn sm pri" href="#esplora">${icon("search")}Trova un sentiero</a></div>`);
   bindCards($("saved-trails"));
 }
 
@@ -2600,10 +2656,10 @@ function showAct(){
     :`<p style="margin-top:8px">Ancora nessuna misura: per ora uso una media di ${DEF_PACE} minuti al km.</p><p class="small muted" style="margin-top:6px">Apri un sentiero o crea un giro e tocca <b>Avvia percorso</b>. Dopo la prima passeggiata l'app impara l'andatura di ${dn()} e stima meglio i tempi.</p>`)
     +(A.length?`<div class="stats" style="grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:0"><div><b>${A.length}</b><span>${A.length===1?"Passeggiata":"Passeggiate"}</span></div><div><b>${kmN(tot.km.toFixed(1))} km</b><span>In totale</span></div><div><b>${fmtDur(tot.ms)}</b><span>In cammino</span></div></div>`:"");
   $("act-list").innerHTML=A.length?A.map((x,i)=>{const k=x.dist/1000,p=k>=.1?Math.round(x.dur/60000/k):null;
-    return `<article class="box act">${outMap(x)}<div class="row"><div class="sp" style="min-width:0"><h3>${esc(x.name)}</h3><p class="small muted">${new Date(x.t).toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long"})} · ore ${new Date(x.t).toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"})}</p></div><button class="round" data-del="${i}" aria-label="Elimina la passeggiata"><svg><use href="#i-x"/></svg></button></div>
+    return `<article class="box act">${outMap(x)}<div class="row"><div class="sp" style="min-width:0"><h3>${esc(x.name)}</h3><p class="small muted">${new Date(x.t).toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long"})}, ore ${new Date(x.t).toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"})}${x.dogs&&DOGS.list.length>1?", con "+esc(andNames(x.dogs.map(id=>(DOGS.list.find(y=>y.id===id)||{}).name).filter(Boolean))):""}</p></div><button class="round" data-del="${i}" aria-label="Elimina la passeggiata"><svg><use href="#i-x"/></svg></button></div>
     <div class="stats"><div><b>${km(x.dist)} km</b><span>Distanza</span></div><div><b>${fmtDur(x.dur)}</b><span>Durata</span></div><div><b>${p?p+" min":"…"}</b><span>Per 1 km</span></div><div><b>${Math.round(x.dist/dogStep(d.weight)).toLocaleString("it-IT")}</b><span>Passi del cane</span></div></div>
     <p class="small muted">${x.steps?`<b style="color:var(--ink)">I tuoi passi: ${x.steps.toLocaleString("it-IT")}</b> (dall'app Salute)`:`Tu circa ${Math.round(x.dist/myStride()).toLocaleString("it-IT")} passi (stima)`} · ${x.gps?"distanza misurata col GPS":"distanza del percorso previsto"}${x.up?" · ↑ circa "+x.up+" m":""}</p>
-    ${diaryHTML(x,i)} <button class="btn sm" data-steps="${i}" style="margin-top:8px">${x.steps?"Cambia i passi":"Aggiungi i passi di Salute"}</button></article>`}).join(""):`<p class="muted">Ancora nessuna passeggiata. Le trovi qui dopo aver toccato <b>Chiudi attività</b> alla fine di un percorso.</p>`;
+    ${diaryHTML(x,i)} <button class="btn sm" data-steps="${i}" style="margin-top:8px">${x.steps?"Cambia i passi":"Aggiungi i passi di Salute"}</button></article>`}).join(""):`<div class="empty-a"><p>Ancora nessuna uscita. Apri un sentiero o crea un giro e tocca <b>Avvia percorso</b>: alla fine, con <b>Chiudi attività</b>, l'uscita arriva qui con la mappa del percorso fatto.</p><a class="btn sm pri" href="#esplora">${icon("search")}Trova un sentiero</a></div>`;
   $("act-list").querySelectorAll("[data-steps]").forEach(b=>b.onclick=()=>{
     const x=S.acts[+b.dataset.steps],d0=new Date(x.t),d1=new Date(x.t+x.dur);
     openSheet(`<h2>I tuoi passi</h2><p class="small muted" style="margin-top:6px">${esc(x.name)} · ${d0.toLocaleDateString("it-IT",{day:"numeric",month:"long"})}, dalle ${d0.toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"})} alle ${d1.toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"})}</p>
@@ -2630,7 +2686,7 @@ function closeAI(){$("ai").hidden=true;document.body.classList.remove("noscroll"
 $("fab").onclick=openAI;$("ai-x").onclick=closeAI;$("ai").onclick=e=>{if(e.target.id==="ai")closeAI()};
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("ai").hidden)closeAI()});
 // la scheda del cane nella barra in basso porta il suo nome e la sua foto
-function syncTabDog(){const d=S.dog,ph=store.get("alldogs-photo"),av=$("tab-av");
+function syncTabDog(){const d=S.dog,ph=store.get(PHK),av=$("tab-av");
   $("tab-name").textContent=d&&d.name?d.name:"Il mio cane";av.style.backgroundImage=ph?`url(${ph})`:"";
   av.textContent=ph||!d?"":(d.name||"?").trim().charAt(0).toUpperCase()}
 
@@ -2658,7 +2714,7 @@ const MINI_SCHEMA={type:"OBJECT",properties:{reply:{type:"STRING",description:"R
 const MC={};
 const fold=(t,sub,body,open)=>`<details class="fold"${open?" open":""}><summary><span><b>${t}</b>${sub?`<small>${sub}</small>`:""}</span><i>›</i></summary><div class="foldb">${body}</div></details>`;
 function gemErr(e){const st=e.status,msg=e.body&&e.body.error&&e.body.error.message||"",seen=e.seen||[];
-  return st===400&&/key/i.test(msg)||st===401||st===403?"La chiave Gemini non è valida. Controllala nella sezione Il mio cane."
+  return st===400&&/key/i.test(msg)||st===401||st===403?"La chiave Gemini non è valida. Controllala nella pagina del cane, in Impostazioni."
     :seen.some(x=>x===503||x===500||x==="lento")?"L'assistente di Google è molto occupato in questo momento (succede con il servizio gratuito). Riprova tra un minuto."
     :seen.includes(429)||st===429?"Hai raggiunto il limite gratuito di Gemini per adesso. Riprova tra un po'.":"Non riesco a parlare con l'assistente. Controlla la connessione e riprova."}
 function miniChat(id,cfg){
@@ -2757,7 +2813,7 @@ function trAdvice(d,k){
   if(k.energy&&!k.senior)t.push("È di una razza che ama lavorare: l'addestramento lo stanca quanto una corsa e lo rende più sereno.");
   return t;
 }
-const TRK="alldogs-train";
+const TRK=dk("alldogs-train");
 let TRS=Object.assign({st:{},day:null},store.get(TRK)||{}); // st[id] = {s: giorno in cui l'ha vista, ok: imparata}
 const saveTR=()=>store.set(TRK,TRS);
 const trList=()=>{const k=dogKind(dog());return LESSONS.filter(L=>lessonOK(L,k))};
@@ -2812,7 +2868,7 @@ Regole:
 }
 
 // ================= Obiettivi =================
-const GK="alldogs-goal";
+const GK=dk("alldogs-goal");
 let GOAL=store.get(GK);
 if(GOAL&&!GOAL.end){GOAL.end=GOAL.want||addDays(GOAL.start,30);store.set(GK,GOAL)} // obiettivi creati con la prima versione
 const DOWN=["domenica","lunedì","martedì","mercoledì","giovedì","venerdì","sabato"];
@@ -2901,7 +2957,7 @@ function showGoals(){
   if(k.puppy){const mins=Math.max(10,Math.round(d.age*12)*5);
     box.innerHTML=`<div class="note" style="margin-top:14px"><b>${nm} è ancora in crescita: niente programmi di resistenza per ora.</b><p style="margin-top:6px">Le ossa e le articolazioni dei cuccioli si stanno ancora formando. Una regola prudente usata da molti veterinari: circa <b>5 minuti di passeggiata per ogni mese di età</b>, una o due volte al giorno. Per ${nm} vuol dire circa <b>${mins} minuti</b> a uscita, più il gioco libero.</p><p style="margin-top:6px">Intanto è il momento perfetto per l'<a href="#addestramento">Addestramento</a>. Quando sarà adulto, qui potrai creare il suo calendario.</p></div>
     ${fold("Come si allena bene un cane","Consigli pratici per "+dn(),`<ul class="plain">${fitTips(d,k).map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`)}`;
-  }else if(k.p.conv){box.innerHTML=`<div class="note" style="margin-top:14px"><b>${nm} è in convalescenza.</b> Niente programmi di allenamento finché il veterinario non dà il via libera. Quando sarà guarito, togli la spunta «Convalescenza» in <a href="#cane">Il mio cane</a>.</div>`}
+  }else if(k.p.conv){box.innerHTML=`<div class="note" style="margin-top:14px"><b>${nm} è in convalescenza.</b> Niente programmi di allenamento finché il veterinario non dà il via libera. Quando sarà guarito, togli la spunta «Convalescenza» nei <a href="#cane">dati del cane</a>.</div>`}
   else if(!GOAL||S.goalDraft||S.goalEdit){const dr=S.goalDraft;box.innerHTML=goalForm(d,k,dr);
     if(dr&&dr.dow!=null)$("g-dow").value=dr.dow;else if(GOAL)$("g-dow").value=GOAL.longDow;
     const c=$("g-cancel");if(c)c.onclick=()=>{S.goalDraft=null;S.goalEdit=false;showGoals()};
@@ -2949,7 +3005,7 @@ function showPlan(d,k){
   const sel=G.days.find(x=>x.t===calSel),nLong=G.days.filter(x=>x.kd==="lunga").length,nRest=G.days.filter(x=>x.kd==="riposo").length;
   $("ob-main").innerHTML=`<p class="muted" style="margin-top:6px">${g.title?`<b style="color:var(--ink)">${esc(g.title)}</b> · `:""}${maint?`Mantenere ${kmN(g.from)} km in una passeggiata`:`Da ${kmN(g.from)} a <b style="color:var(--ink)">${kmN(g.target)} km</b> in una passeggiata`}, entro il ${fmtDay(G.end)}.</p>
     ${G.late?`<div class="note" style="margin-top:14px">Volevi arrivarci entro il ${fmtDay(g.end)}. Per ${nm} servirebbero aumenti troppo rapidi (il limite prudente è circa il ${Math.round(G.r*100)}% in più a settimana), quindi il calendario arriva all'obiettivo il <b>${fmtDay(G.end)}</b>. Andare più veloce aumenta il rischio di farsi male.</div>`:""}
-    ${reached?`<div class="today" style="margin-top:14px"><h2>Obiettivo raggiunto!</h2><p>${nm} ha fatto ${kmN(r1(G.recent))} km. Per mantenerlo basta una passeggiata lunga a settimana. ${d.train!=="molto"?"Se ora cammina spesso, aggiorna «Allenamento» in Il mio cane.":""}</p></div>`:""}
+    ${reached?`<div class="today" style="margin-top:14px"><h2>Obiettivo raggiunto!</h2><p>${nm} ha fatto ${kmN(r1(G.recent))} km. Per mantenerlo basta una passeggiata lunga a settimana. ${d.train!=="molto"?"Se ora cammina spesso, aggiorna «Allenamento» nei dati del cane.":""}</p></div>`:""}
     ${G.behind&&!reached&&!over?`<div class="note" style="margin-top:12px">Nelle ultime due settimane la passeggiata più lunga salvata è di ${kmN(r1(G.recent))} km, meno di quanto previsto. Meglio non forzare e ripartire da lì.<br><button class="btn sm" id="g-recalc" style="margin-top:8px">Rifai il calendario da ${kmN(Math.max(.3,r1(G.recent)))} km</button></div>`:""}
     ${over?`<div class="note" style="margin-top:14px">Il calendario è finito il ${fmtDay(G.end)}. ${reached?"":"Puoi crearne uno nuovo partendo da quello che fa adesso."}</div>`:""}
     <div class="box" style="margin-top:14px">${G.today?dayBox(G.today,"Oggi, "+new Date(now).toLocaleDateString("it-IT",{weekday:"long",day:"numeric",month:"long"})):`<p>Il calendario inizia il ${fmtDay(G.days[0].t)}.</p>`}</div>
@@ -3012,7 +3068,7 @@ Regole:
 // Peso tipico di un adulto (kg) per le razze più comuni in Italia: indicativo, maschi e femmine insieme.
 const BREEDS=[["bulldog francese",8,14],["bulldog inglese",18,25],["bulldog",18,25],["bouledogue",8,14],["labrador",25,36],["golden",25,34],["retriever",25,36],["pastore tedesco",22,40],["pastore australiano",16,32],["australian",16,32],["maremmano",30,45],["pastore belga",20,30],["malinois",20,30],["border collie",12,20],["beagle",9,14],["bassotto",4,12],["jack russell",5,8],["chihuahua",1.5,3],["yorkshire",2,3.2],["maltese",3,4],["shih tzu",4,8],["carlino",6,9],["boxer",25,32],["cocker",12,15],["springer",18,25],["breton",14,18],["epagneul",14,18],["setter",25,32],["pointer",20,30],["bracco",25,40],["kurzhaar",25,32],["spinone",28,39],["segugio",18,28],["weimaraner",25,40],["dalmata",24,32],["husky",16,27],["malamute",34,43],["samoiedo",16,30],["akita",32,50],["shiba",8,11],["chow",20,32],["cane corso",40,50],["rottweiler",35,60],["dobermann",32,45],["alano",50,90],["san bernardo",60,90],["terranova",50,70],["bovaro",38,50],["bernese",38,50],["cavalier",5.5,8],["volpino",3,5.5],["pomerania",2,3.5],["west highland",6,10],["westie",6,10],["schnauzer nano",5,8],["schnauzer",14,20],["pinscher nano",4,6],["lagotto",11,16],["whippet",10,15],["levriero italiano",3,5],["corgi",10,14],["amstaff",25,35],["staffordshire",11,17],["pitbull",14,30],["bull terrier",20,32],["shar pei",18,25],["barboncino toy",2,4],["barboncino nano",4,7],["barbone",20,30],["boston",5,11],["pechinese",3,6],["lhasa",5,8],["bichon",3,5],["cirneco",8,12],["leonberger",45,75],["mastino",60,90]];
 const BCS=[["Troppo magro","Costole, spina dorsale e ossa del bacino si vedono anche da lontano."],["Magro","Le costole si vedono e si sentono subito, la vita è molto stretta."],["Giusto","Le costole si sentono facilmente sotto un sottile strato di grasso. Da sopra si vede la vita, di lato la pancia risale verso le zampe."],["Sovrappeso","Le costole si sentono a fatica, la vita si vede poco o per niente."],["Obeso","Le costole non si sentono, la pancia è tonda o pende, c'è grasso sulla schiena e alla base della coda."]];
-const HK="alldogs-salute";
+const HK=dk("alldogs-salute");
 let HS=Object.assign({bcs:null,w:[]},store.get(HK)||{});
 const saveHS=()=>store.set(HK,HS);
 function breedRange(d){const b=(d.breed||"").toLowerCase(),x=BREEDS.find(r=>b.includes(r[0]));return x?{n:x[0],min:x[1],max:x[2]}:null}
@@ -3086,7 +3142,7 @@ function showHealth(){
     <div class="box" style="margin-top:12px"><h2>Salute</h2>
       ${P.length?`<p style="margin-top:6px">Hai segnato: <b>${esc(P.join(", "))}</b>. Per questo l'app usa limiti più prudenti: al massimo circa ${kmN(cap.km)} km e ${cap.up} m di salita in una passeggiata${cap.notes.length?", perché "+esc(cap.notes.join(", ")):""}.</p><p class="small muted" style="margin-top:6px">Prima di aumentare lo sforzo parlane con il veterinario.</p>`
         :`<p style="margin-top:6px">Non hai segnato problemi di salute. Limite prudente dell'app: circa ${kmN(cap.km)} km e ${cap.up} m di salita in una passeggiata${cap.notes.length?" ("+esc(cap.notes.join(", "))+")":""}.</p>`}
-      <a class="btn sm" href="#cane" style="margin-top:10px">Cambia salute e peso in Il mio cane</a>
+      <a class="btn sm" href="#cane" style="margin-top:10px">Cambia salute e peso nei dati del cane</a>
     </div>
     <div class="block"><h2>Obiettivi consigliati</h2>
       ${k.puppy?`<p class="muted">È ancora un cucciolo: niente obiettivi di resistenza. Intanto c'è l'<a href="#addestramento">Addestramento</a>.</p>`:k.p.conv?`<p class="muted">È in convalescenza: niente obiettivi finché il veterinario non dà il via libera.</p>`
@@ -3760,7 +3816,7 @@ $("nav-end").onclick=()=>{
     const pick=document.querySelector('input[name="nsd"]:checked'),useGps=pick?pick.value==="gps":true,dist=Math.round(useGps?nav.dist:o.len);
     let tr=nav.track.length>1?thin(nav.track,15):[];if(tr.length>400)tr=sample(tr,400);
     const stp=parseSteps($("ns-steps").value);if($("ns-steps").value.trim()&&!stp){toast("Il numero dei passi non sembra giusto");return}
-    S.acts.unshift({t:nav.t0,name:o.name,kind:o.kind,id:o.id||null,dur:Math.round(el),dist,plan:o.len,up:Math.round((o.up||0)*Math.min(1,dist/Math.max(1,o.len))),gps:useGps,track:tr,steps:stp});
+    S.acts.unshift({dogs:DOGS.walk.slice(),t:nav.t0,name:o.name,kind:o.kind,id:o.id||null,dur:Math.round(el),dist,plan:o.len,up:Math.round((o.up||0)*Math.min(1,dist/Math.max(1,o.len))),gps:useGps,track:tr,steps:stp});
     S.acts=S.acts.slice(0,200);
     if(!store.set("alldogs-acts",S.acts)){S.acts.slice(5).forEach(x=>delete x.track);store.set("alldogs-acts",S.acts)}
     if(nav.share)sharePub({k:"e",t:Date.now(),d:dist,e:Math.round(el/1000)});
@@ -3841,21 +3897,37 @@ function healthAlerts(d){
   return out.join("<br>");
 }
 // Foto profilo del cane: ritagliata quadrata e rimpicciolita, salvata solo su questo telefono
-function syncPhoto(){syncTabDog();const ph=store.get("alldogs-photo"),a=$("avatar");a.style.backgroundImage=ph?`url(${ph})`:"";a.style.color=ph?"transparent":"";$("photo-btn").textContent=ph?"Cambia foto":"Aggiungi una foto";$("photo-del").hidden=!ph}
+function syncPhoto(){syncTabDog();const ph=store.get(PHK),a=$("avatar");a.style.backgroundImage=ph?`url(${ph})`:"";a.style.color=ph?"transparent":"";$("photo-btn").textContent=ph?"Cambia foto":"Aggiungi una foto";$("photo-del").hidden=!ph}
 $("photo-btn").onclick=$("avatar").onclick=()=>$("photo-in").click();
 $("photo-in").onchange=e=>{
   const fl=e.target.files[0];e.target.value="";if(!fl)return;
   const img=new Image(),u=URL.createObjectURL(fl);
   img.onload=()=>{const q=Math.min(img.width,img.height),c=document.createElement("canvas");c.width=c.height=320;
     c.getContext("2d").drawImage(img,(img.width-q)/2,(img.height-q)/2,q,q,0,0,320,320);URL.revokeObjectURL(u);
-    if(store.set("alldogs-photo",c.toDataURL("image/jpeg",.82))){syncPhoto();toast("Foto salvata")}else toast("Non c'è abbastanza spazio per salvare la foto")};
+    if(store.set(PHK,c.toDataURL("image/jpeg",.82))){syncPhoto();toast("Foto salvata")}else toast("Non c'è abbastanza spazio per salvare la foto")};
   img.onerror=()=>{URL.revokeObjectURL(u);toast("Non riesco a leggere questa immagine")};
   img.src=u;
 };
-$("photo-del").onclick=()=>{store.del("alldogs-photo");syncPhoto();toast("Foto tolta")};
+$("photo-del").onclick=()=>{store.del(PHK);syncPhoto();toast("Foto tolta")};
+function renderPick(){const el=$("dpick");el.hidden=!S.dog||!!S.addDog;if(el.hidden)return;
+  el.innerHTML=DOGS.list.map(x=>{const ph=phOf(x.id),on=x.id===DOGS.cur;
+    return `<button type="button" class="dp${on?" on":""}" data-dg="${x.id}" aria-pressed="${on}"><span class="wav"${ph?` style="background-image:url(${ph})"`:""}>${ph?"":esc((x.name||"?").trim().charAt(0).toUpperCase())}</span><small>${esc(x.name||"?")}</small></button>`}).join("")
+    +`<button type="button" class="dp add" id="dog-add"><span class="wav">${icon("plus")}</span><small>Aggiungi</small></button>`;
+  el.querySelectorAll("[data-dg]").forEach(b=>b.onclick=()=>{const id=b.dataset.dg;if(id===DOGS.cur)return;
+    DOGS.cur=id;if(!DOGS.walk.includes(id))DOGS.walk=[id];dogsSave();
+    try{localStorage.setItem("alldogs-dog",JSON.stringify(DOGS.list.find(x=>x.id===id)))}catch(e){}location.reload()});
+  $("dog-add").onclick=()=>{S.addDog=true;showDog();window.scrollTo(0,0)};
+}
+$("add-cancel").onclick=()=>{S.addDog=false;showDog()};
+$("dog-del").onclick=()=>{const nm=S.dog&&S.dog.name||"questo cane";if(DOGS.list.length<2||!confirm(`Tolgo ${nm} dall'app? Profilo, salute e lezioni di ${nm} saranno cancellati da questo telefono. Le passeggiate nel diario restano.`))return;
+  const id=DOGS.cur;DOGS.list=DOGS.list.filter(x=>x.id!==id);DOGS.walk=DOGS.walk.filter(x=>x!==id);DOGS.cur=DOGS.list[0].id;if(!DOGS.walk.length)DOGS.walk=[DOGS.cur];dogsSave();
+  if(id!=="d1")["alldogs-train","alldogs-goal","alldogs-salute","alldogs-photo"].forEach(k=>store.del(k+"-"+id));
+  try{localStorage.setItem("alldogs-dog",JSON.stringify(DOGS.list[0]))}catch(e){}toast(nm+" tolto dall'app");location.reload()};
 function showDog(){
   syncPhoto();
-  const first=!S.dog,d=dog();
+  const first=!S.dog||!!S.addDog,d=S.addDog?DEF_DOG:dog();renderPick();
+  $("onb-t").textContent=S.addDog?"Parlami del nuovo cane":"Parlami del tuo cane";$("add-cancel").hidden=!S.addDog;$("dog-del").hidden=first||DOGS.list.length<2;
+  $("dog-del").textContent=`Togli ${S.dog&&S.dog.name?S.dog.name:"questo cane"} dall'app`;
   $("onb").hidden=!first;$("dog-head").style.display=first?"none":"flex";$("settings").style.display=first?"none":"block";
   $("dog-hub").hidden=first;$("fold-dog").classList.toggle("onb",first);if(first)$("fold-dog").open=true;$("fold-dog-t").textContent=first?"":"I dati di "+(d.name||"del cane");
   $("dog-save").textContent=first?"Inizia":"Salva";
@@ -3879,6 +3951,7 @@ $("dog-save").onclick=()=>{
   d.patOther=d.pat.altro?$("pat-other").value.trim():"";
   d.health={};HF.forEach(([k,id])=>{const v=$(id).value.trim();if(v)d.health[k]=v});
   d.health.vax=[...$("vax").querySelectorAll(".vax")].map(r=>{const i=r.querySelectorAll("input");return {n:i[0].value.trim(),d:i[1].value}}).filter(v=>v.n||v.d);
+  if(S.addDog){DOGS.cur="d"+Date.now().toString(36);DOGS.walk=[DOGS.cur];dogsSave();store.set("alldogs-dog",d);toast("Nuovo cane aggiunto");location.hash="cane";location.reload();return}
   const first=!S.dog;S.dog=d;store.set("alldogs-dog",d);toast("Profilo salvato");S.chat=[];for(const c in MC)MC[c].msgs=[];
   if(first)location.hash="esplora";else showDog();
 };
