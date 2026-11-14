@@ -85,11 +85,11 @@ def fetch(only=None):
             q = f'[out:json][timeout:300];{REL}({B})->.r;.r out body;way(r.r)["dog"];out tags;'
             if not bi.curl_overpass(q, dst):
                 log("   saltato per ora")
-        dst = os.path.join(DOGS_RAW, f"a_{k}.json")
+        dst = os.path.join(DOGS_RAW, f"b_{k}.json")
         if not os.path.exists(dst):
             log(f"[{n + 1}/{len(order)}] aree protette {k}")
             q = (f'[out:json][timeout:300][maxsize:1800000000];(wr["boundary"~"^(national_park|protected_area)$"]({B});wr["leisure"="nature_reserve"]({B});'
-                 f'wr["leisure"="dog_park"]({B}););out tags geom;')
+                 f'wr["leisure"="dog_park"]({B}););out body geom;')  # body: servono i pezzi (members) delle relation
             if not bi.curl_overpass(q, dst):
                 log("   saltato per ora")
     log("Scaricamento finito")
@@ -174,8 +174,8 @@ class Area:
         self.dog = t.get("dog", "")
         self.kind = "dogpark" if t.get("leisure") == "dog_park" else "area"
         # le zone A / riserve integrali sono le più severe
-        pc = t.get("protect_class", "")
-        self.strict = pc in ("1", "1a", "1b") or "integrale" in self.name.lower()
+        # solo le riserve "integrali" vere: protect_class=1 su OpenStreetMap in Italia è usato anche per riserve dove si cammina col cane
+        self.strict = "integrale" in self.name.lower() or (t.get("access") == "no" and t.get("protect_class", "") in ("1", "1a"))
 
     def has(self, p):
         if not self.bb or not (self.bb[0] <= p[0] <= self.bb[2] and self.bb[1] <= p[1] <= self.bb[3]):
@@ -192,7 +192,7 @@ def areas_near(c):
         return _areas["v"]
     seen, out = set(), []
     for cc in near:
-        f = os.path.join(DOGS_RAW, f"a_{bi.key(cc)}.json")
+        f = os.path.join(DOGS_RAW, f"b_{bi.key(cc)}.json")
         if not os.path.exists(f):
             continue
         for el in json.load(open(f, encoding="utf-8")).get("elements", []):
@@ -257,14 +257,14 @@ def judge(t, c, wdog):
         elif a.dog == "yes":
             st, txt = "ok", f"{a.name}: cani ammessi (OpenStreetMap)."
         else:
-            st, txt = "lea", f"{a.name}: " + GENERIC_PARK if a.name else GENERIC_PARK
+            st, txt = "lea", (f"{a.name}: area protetta, tieni il cane al guinzaglio e resta sui sentieri. Guarda i cartelli all'ingresso." if a.name else GENERIC_PARK)
         if best is None or RANK[st] > RANK[best[0]]:
             best = (st, txt, a.name)
     v = (wdog or {}).get(str(t["id"]), [])
     if "no" in v:
         nb = sum(1 for x in v if x == "no")
         cand = ("no", "Secondo OpenStreetMap su questo sentiero i cani non sono ammessi" + (" in alcuni tratti." if nb < len(v) else "."), best[2] if best else "")
-        if best is None or RANK["no"] >= RANK[best[0]]:
+        if best is None or RANK["no"] > RANK[best[0]]:
             best = cand
     elif "leashed" in v and (best is None or RANK[best[0]] < RANK["lea"]):
         best = ("lea", "Cani ammessi al guinzaglio (cartelli segnati su OpenStreetMap).", best[2] if best else "")
@@ -287,6 +287,9 @@ def apply(only=None):
         fp = os.path.join(DATA, f)
         d = json.load(open(fp, encoding="utf-8"))
         wdog = way_dogs(c)
+        if wdog is None or not os.path.exists(os.path.join(DOGS_RAW, f"b_{k}.json")):
+            log(k, "senza dati scaricati: salto")
+            continue
         for t in d["trails"]:
             t["dg"] = judge(t, c, wdog)
             tot[t["dg"][0]] = tot.get(t["dg"][0], 0) + 1
