@@ -263,6 +263,11 @@ ol.stops li::before{content:counter(s);width:26px;height:26px;border-radius:50%;
 @keyframes fadein{from{opacity:0}to{opacity:1}}
 @media (prefers-reduced-motion:reduce){.screen.on{animation:none}.pill,.btn,.round{transition:none}}
 
+.chatcard{display:grid;grid-template-columns:84px minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;max-width:92%;text-align:left;padding:8px;cursor:pointer;align-self:flex-start}
+.chatcard img{width:84px;height:62px;border-radius:10px;object-fit:cover;background:var(--accent-soft)}
+.chatcard b{display:block;overflow-wrap:anywhere}
+.chatcard small{display:block;color:var(--muted);font-size:13px;margin-top:2px}
+
 /* in cammino */
 .mapclear{position:absolute;left:10px;top:10px;z-index:6;box-shadow:0 2px 10px rgba(0,0,0,.25)}
 .maphost.full .mapclear{top:calc(env(safe-area-inset-top,0px) + 12px)}
@@ -1546,7 +1551,7 @@ $("det-save").onclick=$("bar-save").onclick=()=>{if(cur&&cur.type==="trail"){tog
 
 // ================= Crea un giro =================
 const SURF_HARD=[1,3,4,5,14];
-const SUB={chat:"Scrivi all'assistente che giro vuoi fare: capisce la durata e cosa preferisci, poi l'app disegna l'anello.",auto:"Un tocco: uso la tua posizione, il profilo del cane e il meteo di adesso.",man:"Fai creare un anello all'app, oppure disegna tu il percorso mettendo i segnaposti sulla mappa."};
+const SUB={chat:"Chiedi all'assistente un consiglio tra i sentieri della mappa, oppure un giro nuovo su misura che parte dal segnaposto.",auto:"Un tocco: uso la tua posizione, il profilo del cane e il meteo di adesso.",man:"Fai creare un anello all'app, oppure disegna tu il percorso mettendo i segnaposti sulla mappa."};
 const drawing=()=>S.mode==="man"&&S.manKind==="draw"&&!S.gen;
 function setStart(p,fromDrag){S.start=p;store.set("alldogs-start",p);if(pinM&&!fromDrag)pinM.setLngLat(ll(p));if(M&&!fromDrag)M.easeTo({center:ll(p),zoom:Math.max(M.getZoom(),14)});
   loadWeather([p]).then(()=>{rules();autoWhy()}).catch(()=>{})}
@@ -1766,7 +1771,8 @@ const GEM_SCHEMA={type:"OBJECT",properties:{
   minutes:{type:"INTEGER",description:"Durata del giro in minuti"},
   prefer_green:{type:"BOOLEAN"},prefer_quiet:{type:"BOOLEAN"},avoid_steps:{type:"BOOLEAN"},
   stops:{type:"ARRAY",items:{type:"OBJECT",properties:{title:{type:"STRING"},text:{type:"STRING"}},required:["title","text"]}},
-  commands:{type:"ARRAY",items:{type:"OBJECT",properties:{command:{type:"STRING"},how:{type:"STRING"}},required:["command","how"]}}
+  commands:{type:"ARRAY",items:{type:"OBJECT",properties:{command:{type:"STRING"},how:{type:"STRING"}},required:["command","how"]}},
+  suggest:{type:"ARRAY",description:"Numeri (id) dei sentieri esistenti consigliati, presi solo dalla lista data, al massimo 3",items:{type:"INTEGER"}}
 },required:["reply","create"]};
 function sysPrompt(){
   const d=dog(),cap=capacity(d),n=nowWx(),w=dayWx(S.start,0),hr=new Date().getHours();
@@ -1785,7 +1791,13 @@ Regole:
 - Con create=true indica minutes, le preferenze, 3-5 tappe (title breve + text con cosa fare: pause, acqua, giochi di fiuto, ombra) e 3-5 comandi semplici adatti al cane e alla sua salute (command + how: come insegnarlo o usarlo, con premio).
 - Niente consigli medici o veterinari, niente farmaci né diagnosi. Se l'utente chiede cose di salute, rispondi che deve chiedere al veterinario.
 - Non garantire mai la sicurezza: è un consiglio prudente.
-- reply: massimo 3 frasi.`;
+- reply: massimo 3 frasi.
+SENTIERI GIÀ SULLA MAPPA vicino alla partenza, già giudicati dall'app per questo cane (id | nome | zona | lunghezza | salita | verdetto | impegno per il cane | particolarità | distanza dalla partenza):
+${S.cand&&S.cand.length?S.cand.map(c=>c.line).join("\n"):"nessuno caricato"}
+- Se l'utente chiede un consiglio su dove andare, un sentiero, un'escursione, un posto, oppure nomina un sentiero, scegli da questa lista da 1 a 3 sentieri adatti al cane e metti i loro id in suggest (create=false). In reply spiega in breve perché vanno bene per lui.
+- Preferisci quelli con verdetto "Fattibile". Se ne proponi uno "Con prudenza" dillo. Non proporre quelli "Sconsigliato": se l'utente ne chiede uno, spiega con gentilezza che per il suo cane è sconsigliato e proponi un'alternativa dalla lista.
+- Non inventare sentieri: solo quelli della lista, con il loro id esatto. Se nessuno è adatto, dillo e proponi di creare un giro nuovo.
+- Usa create=true solo quando l'utente vuole un giro nuovo che parte dal segnaposto (per esempio "un giro di mezz'ora qui vicino").`;
 }
 async function gemini(key){
   const contents=S.chat.filter(m=>!m.err&&!m.local).map(m=>({role:m.r==="u"?"user":"model",parts:[{text:m.raw||m.t}]}));
@@ -1810,12 +1822,37 @@ function showChat(){
   $("chat-key").innerHTML=key?"":`<div class="note" style="margin-top:14px"><b>Serve la chiave Gemini (gratuita).</b> Creala su <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> con il tuo account Google, poi incollala qui. Resta solo su questo telefono.
     <input class="field" id="gem-inline" placeholder="Chiave Gemini" autocomplete="off" autocapitalize="off" spellcheck="false" style="margin-top:10px"><button class="btn pri wide" id="gem-inline-save" style="margin-top:8px">Salva la chiave</button></div>`;
   if(!key)$("gem-inline-save").onclick=()=>{const v=$("gem-inline").value.trim();if(!v){toast("Incolla la chiave");return}store.set("alldogs-gemini",v);toast("Chiave salvata");showChat()};
-  if(!S.chat.length)S.chat.push({r:"a",t:`Ciao! Che giro vuoi fare oggi con ${dog().name||"il tuo cane"}? Dimmi quanto tempo hai e cosa preferite: ombra, prati, posti tranquilli…`,local:true});
+  if(!S.chat.length)S.chat.push({r:"a",t:`Ciao! Dove andiamo oggi con ${dog().name||"il tuo cane"}? Posso consigliarti un sentiero della mappa oppure creare un giro nuovo: dimmi quanto tempo hai e cosa preferite.`,local:true});
   renderChat();
 }
+// Sentieri candidati per l'assistente: quelli entro 35 km dalla partenza, più quelli il cui nome compare nella richiesta. Già giudicati per il cane.
+async function chatCandidates(text){
+  const p=S.start,d=dog();
+  try{await loadIndex();await Promise.all(viewCells([[p[0]-.4,p[1]-.5],[p[0]+.4,p[1]+.5]]).map(k=>loadCell(k).catch(()=>0)))}catch(e){}
+  const words=text.toLowerCase().split(/[^a-zàèéìòù]+/).filter(w=>w.length>=5&&!/^(sentiero|sentieri|percorso|percorsi|consigli|consigliami|vorrei|voglio|escursione|passeggiata|andare|fare|posso|quale|dove)$/.test(w));
+  const rows=[];
+  for(const tr of S.trails){
+    const dist=hav(tr.start,p),nm=tr.name.toLowerCase(),named=words.length&&words.some(w=>nm.includes(w));
+    if(dist>35000&&!named)continue;
+    rows.push({tr,dist,named,res:null});
+  }
+  try{await loadWeather([p])}catch(e){}
+  rows.forEach(r=>r.res=verdict(Object.assign(item(r.tr),{start:wx[wxKey(r.tr.start)]?r.tr.start:p}),d,0)); // meteo della partenza se manca quello del sentiero
+  rows.sort((a,b)=>(b.named-a.named)||((a.res.v<0?1:a.res.v)-(b.res.v<0?1:b.res.v))||(a.res.effort-b.res.effort)||(a.dist-b.dist));
+  // un po' di tutto: i nominati, i migliori, e qualcuno sconsigliato vicino (così l'assistente sa dirlo)
+  const pick=rows.filter(r=>r.named).slice(0,8).concat(rows.filter(r=>!r.named&&r.res.v<=1).slice(0,26),rows.filter(r=>!r.named&&r.res.v===2).sort((a,b)=>a.dist-b.dist).slice(0,6));
+  S.cand=pick.map(r=>{const f=FT[r.tr.id],e=elev[r.tr.id];
+    return {id:r.tr.id,line:`${r.tr.id} | ${r.tr.name} | ${r.tr.zone||"-"} | ${km(r.tr.len)} km | ${e?e.up:"?"} m | ${r.res.v<0?"da valutare":VLABEL[r.res.v]} | ${EFFORT[r.res.effort].toLowerCase()} | ${f&&f.f.length?f.f.map(k=>FEATL[k]).join(", "):"-"} | ${km(r.dist)} km`}});
+}
+function chatTrailCard(id){
+  const tr=TR.get(id);if(!tr)return "";
+  const res=verdict(Object.assign(item(tr),{start:wx[wxKey(tr.start)]?tr.start:S.start}),dog(),0),e=elev[tr.id];
+  return `<button type="button" class="box chatcard" data-tr="${id}"><img alt="" loading="lazy" src="${staticImg(tr.path,200,150)}" onerror="this.remove()"><span><b>${esc(tr.name)}</b><small>${res.v<0?"":`<i class="dot b${res.v}"></i>${VLABEL[res.v]} · `}${km(tr.len)} km${e?" · ↑ "+e.up+" m":""} · ${fmtH(res.hours)}${tr.zone?" · "+esc(tr.zone):""}</small></span><i>›</i></button>`;
+}
 function renderChat(){
-  $("msgs").innerHTML=S.chat.map(m=>`<div class="msg ${m.r}${m.err?" err":""}">${esc(m.t)}</div>`).join("")+(S.busy?`<div class="msg a wait">Sto pensando…</div>`:"");
-  const sug=["Mezz'ora tranquilla nel verde","Un'ora, ma fa caldo","Giro breve con giochi di fiuto"];
+  $("msgs").innerHTML=S.chat.map(m=>`<div class="msg ${m.r}${m.err?" err":""}">${esc(m.t)}</div>`+(m.sug&&m.sug.length?m.sug.map(chatTrailCard).join(""):"")).join("")+(S.busy?`<div class="msg a wait">Sto pensando…</div>`:"");
+  $("msgs").querySelectorAll("[data-tr]").forEach(b=>b.onclick=()=>{rememberCell(TR.get(+b.dataset.tr));location.hash="s-"+b.dataset.tr});
+  const sug=["Consigliami un sentiero qui vicino","Mezz'ora tranquilla nel verde","Giro breve con giochi di fiuto"];
   $("sugg").innerHTML=S.chat.length<=1?sug.map(s=>`<button class="pill" type="button">${s}</button>`).join(""):"";
   $("sugg").querySelectorAll("button").forEach(b=>b.onclick=()=>chatSend(b.textContent));
 }
@@ -1823,11 +1860,12 @@ async function chatSend(text){
   text=text.trim();if(!text||S.busy)return;
   const key=store.get("alldogs-gemini");if(!key){showChat();toast("Prima incolla la chiave Gemini");return}
   S.chat.push({r:"u",t:text});S.busy=true;renderChat();$("chat-in").value="";
-  try{await loadWeather([S.start])}catch(e){}
+  try{await chatCandidates(text)}catch(e){console.warn(e);S.cand=[]}
   try{
     const o=await gemini(key);S.busy=false;
-    S.chat.push({r:"a",t:o.reply||"…",raw:JSON.stringify(o)});renderChat();
-    if(o.create){
+    const ok=new Set((S.cand||[]).map(c=>c.id)),sug=[...new Set((o.suggest||[]).map(Number))].filter(id=>ok.has(id)&&TR.has(id)).slice(0,3); // solo sentieri veri della lista
+    S.chat.push({r:"a",t:o.reply||"…",raw:JSON.stringify(o),sug});renderChat();
+    if(o.create&&!sug.length){
       const mins=Math.max(10,Math.min(180,+o.minutes||40));
       generate({mins,prefs:{green:!!o.prefer_green,quiet:!!o.prefer_quiet,avoidSteps:!!o.avoid_steps||capacity(dog()).agil==="bassa"},aiStops:o.stops,aiCmds:(o.commands||[]).slice(0,6),source:"chat"});
     }
