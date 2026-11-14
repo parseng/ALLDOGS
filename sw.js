@@ -2,7 +2,7 @@
 // - L'app (pagina, script, icone, libreria della mappa, caratteri) resta salvata nel telefono.
 // - I file dei sentieri già aperti restano disponibili offline.
 // - Le mappe dei sentieri scaricati (cache "ad-off-...") vengono servite dal telefono.
-const V = "alldogs-v4";
+const V = "alldogs-v5";
 const SHELL = "ad-shell-" + V, DATA = "ad-data", RUN = "ad-run";
 const CORE = ["./", "index.html", "lezioni-anim.js", "manifest.json", "icon-192.png", "icon-512.png",
   "https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/3.9.4/mapbox-gl.min.js",

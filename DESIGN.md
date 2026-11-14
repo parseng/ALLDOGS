@@ -27,10 +27,10 @@ Regole:
 
 ## Caratteri
 
-- **Titoli e numeri importanti**: Barlow Semi Condensed (600, 700, 800). Stretto e deciso come i cartelli dei sentieri.
-- **Testo**: Source Sans 3 (400, 600, 700). Molto leggibile anche al sole.
+- **Titoli e numeri importanti**: Newsreader (500, 600, 700), con le grazie, elegante come una rivista.
+- **Testo**: Albert Sans (400-700), pulito e moderno.
 - Niente etichette TUTTE MAIUSCOLE. Niente una parola sola colorata dentro un titolo.
-- Grandezze: titolo pagina 31 px, sezione 22 px, scheda 19-20 px, testo 17 px, piccolo 13-14 px. Non inventarne altre.
+- Grandezze: titolo pagina 32 px, sezione 23 px, scheda 20 px, testo 17 px, scritte piccole 14-15 px (mai sotto 13 px). Non inventarne altre.
 
 ## L'elemento firma: il cartello segnavia
 
