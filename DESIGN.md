@@ -53,8 +53,8 @@ Sulle schede dei sentieri la durata calcolata per il cane sta in un cartellino a
 - **In cammino, la mappa**: schermata sempre scura (token del tema scuro), mappa a tutto schermo da navigazione notturna con i palazzi in 3D, inclinata e che gira con la direzione di marcia; freccia blu per la posizione; in alto la prossima svolta e i messaggi in riquadri galleggianti; a sinistra la bussola (tocco: nord in alto o mappa che gira), a destra mappe e centra.
 - **In cammino**: in basso solo tempo e km, grandi (numeri fino a 56 px, gli unici oltre le grandezze sopra). Toccandoli si apre il resto: sei numeri (tempo, distanza, mancano, andatura, velocità, passi del cane), meteo, grafico del dislivello con il punto dove siete, SOS e i pulsanti Pausa e Chiudi attività.
 - **Tendine dal basso**: si alzano e si abbassano trascinandole o toccando la lineetta in alto; le finestre lunghe scorrono e hanno sempre la X in alto a destra. Le impostazioni si aprono con i tre puntini.
-- **Ricerca**: i risultati stanno uno sotto l'altro (prima i sentieri di tutta Italia, poi i luoghi), non in una fila che scorre di lato.
-- **Niente cose nascoste in file che scorrono di lato**: i filtri vanno a capo, le sezioni di una pagina sono bottoni affiancati (come Allenati e Attività), non menu a tendina.
+- **Ricerca**: toccando la barra si apre una pagina a tutto schermo: scorciatoie per il cane, Posizione attuale, Crea un giro, Ricerche recenti. Scrivendo: schede Tutto, Sentieri, Luoghi e risultati uno sotto l'altro (sentieri di tutta Italia da data/names.json; luoghi senza negozi e ristoranti).
+- **Filtri**: una fila compatta sotto la ricerca; il primo bottone "Filtri" (con il numero dei filtri attivi) apre tutti i filtri in una finestra, così niente resta nascosto. Le sezioni di una pagina sono bottoni affiancati (come Allenati e Attività), non menu a tendina.
 - **Meteo**: riquadro con icona, gradi percepiti, giudizio per il cane e la striscia delle ore buone (verde, ocra, rosso); i dettagli si aprono toccandolo.
 
 ## Testi
