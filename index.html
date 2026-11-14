@@ -119,10 +119,13 @@ body > #mapwrap{display:none}
 .peek .sub{color:var(--muted);font-size:15px}
 .mk-stop{width:24px;height:24px;border-radius:50%;background:#fff;color:#131a2a;border:2px solid #1d4f3c;font:700 13.5px/20px var(--body);text-align:center}
 .mk-me{width:16px;height:16px;border-radius:50%;background:#2f7bff;border:3px solid #fff;box-shadow:0 0 0 6px rgba(47,123,255,.25)}
-.mk-me svg{display:none}
-.mk-me.arrow{width:46px;height:46px;border:0;background:rgba(47,123,255,.28);box-shadow:0 0 0 10px rgba(47,123,255,.14)}
-.mk-me.arrow svg{display:block;width:100%;height:100%}
-.mk-me.arrow path{fill:#2f7bff;stroke:#fff;stroke-width:3;stroke-linejoin:round}
+/* la mia posizione: il musetto di un cane, con una punta che indica la direzione di marcia */
+.mk-me{position:relative;width:44px;height:44px;border:0;background:none;box-shadow:none;border-radius:0}
+.mk-me .face{position:absolute;inset:0;border-radius:50%;background:var(--dog) center/cover;color:#fff;border:3px solid #fff;box-shadow:0 0 0 7px rgba(217,83,26,.25),0 3px 10px rgba(0,0,0,.35);display:grid;place-items:center}
+.mk-me .face svg{width:28px;height:28px}
+.mk-me .hd{display:none;position:absolute;inset:-14px;pointer-events:none}
+.mk-me .hd::before{content:"";position:absolute;left:50%;top:0;margin-left:-9px;border:9px solid transparent;border-top:0;border-bottom:13px solid var(--dog);filter:drop-shadow(0 0 1.5px #fff)}
+.mk-me.dir .hd{display:block}
 .mk-pin{width:28px;height:28px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#d9531a;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4);cursor:grab}
 
 /* schede sentiero grandi */
@@ -1599,7 +1602,7 @@ function initMap(){
   });
   ["mousedown","touchstart","wheel"].forEach(ev=>M.on(ev,()=>{if(fly&&fly.playing&&fly.started){fly.playing=false;paintFly()}}));
   M.on("dragstart",()=>{if(scene.mode==="nav")navFollow=false});
-  M.on("rotate",()=>{if(scene.mode==="nav")navCompass()});
+  M.on("rotate",()=>{if(scene.mode==="nav"){navCompass();meDir()}});
 }
 // Scala dei km in basso: barra lunga al massimo 170 pixel, con valori tondi (1, 2, 5, 10…)
 let ksRaf=0;
@@ -1872,8 +1875,6 @@ function applyScene(){
     setData("sel",fc([lineF(o.ways)]));
     setData("water",fc((o.water||[]).map(p=>({type:"Feature",properties:{},geometry:{type:"Point",coordinates:ll(p)}}))));
     setData("track",fc(nav.track.length>1?[lineF([nav.track])]:[]));
-    const el=document.createElement("div");el.className="mk-stop";el.style.borderColor="#1f8a4c";el.textContent="▶";
-    stopMarkers.push(new mapboxgl.Marker({element:el}).setLngLat(ll(o.path[0])).addTo(M));
     (o.stops||[]).forEach((s,i)=>{if(!i)return;const e2=document.createElement("div");e2.className="mk-stop";e2.textContent=i+1;stopMarkers.push(new mapboxgl.Marker({element:e2}).setLngLat(ll(s.p)).addTo(M))});
     if(fitPending){fitPending=false;if(nav.pos){navFollow=true;navCam(0)}else fitTo(boundsOf(o.ways),{top:120,left:40,right:70,bottom:$("nav-bot").offsetHeight+30})}
   }
@@ -1989,20 +1990,23 @@ function syncClear(){$("m-clear").hidden=!((scene.mode==="explore"&&S.peek)||(sc
 $("m-clear").onclick=()=>{if(scene.mode==="explore"){hidePeek();if(M)M.easeTo({zoom:Math.max(8.8,M.getZoom()-1.6)})}else if(scene.mode==="crea")clearGen()};
 function setScene(s,fit){scene=s;if(fit)fitPending=true;applyScene()}
 function setFull(on){
-  if(!curHost)return;if(!on)end3d();curHost.classList.toggle("full",on);syncFullBtn();setInteractive(on||interactive);$("layers").hidden=true;
+  if(!curHost||(on&&(curHost.id==="hostNav"||curHost.id==="hostFollow")))return;if(!on)end3d();curHost.classList.toggle("full",on);syncFullBtn();setInteractive(on||interactive);$("layers").hidden=true;
   requestAnimationFrame(()=>{if(!M)return;M.resize();if(scene.mode==="trail"){const tsh=curHost.id==="hostTrail"&&on?(tsSize(),$("tsheet").offsetHeight):0;fitTo(boundsOf(scene.ways),on?{top:80,left:40,right:70,bottom:tsh+40}:undefined)}else if(scene.mode==="crea"&&S.gen){fitTo(boundsOf([S.gen[S.genIdx].path]))}});
 }
 function syncFullBtn(){const on=curHost&&curHost.classList.contains("full");$("m-full").innerHTML=icon(on?"shrink":"expand");$("m-full").setAttribute("aria-label",on?"Riduci la mappa":"Mappa a tutto schermo")}
 $("m-full").onclick=()=>setFull(!(curHost&&curHost.classList.contains("full")));
 // il menu apre la mappa a tutto schermo, così sopra le schede si vede il risultato
-$("m-layers").onclick=()=>{const op=$("layers").hidden;if(op&&curHost&&!curHost.classList.contains("full"))setFull(true);$("layers").hidden=!op;syncLayersMenu()};
+$("m-layers").onclick=()=>{const op=$("layers").hidden;if(op&&curHost&&!curHost.classList.contains("full")&&curHost.id!=="hostNav"&&curHost.id!=="hostFollow")setFull(true);$("layers").hidden=!op;syncLayersMenu()};
 // le schede restano aperte: si vede subito il cambio sulla mappa qui sopra
 document.querySelectorAll("#layers [data-st]").forEach(b=>b.onclick=()=>{if(M)setStyleKind(b.dataset.st)});
 $("layers-x").onclick=()=>$("layers").hidden=true;
 $("layers").onclick=e=>{if(e.target===$("layers"))$("layers").hidden=true};
 function getPos(){return new Promise((res,rej)=>{if(!navigator.geolocation)return rej(new Error("no geo"));navigator.geolocation.getCurrentPosition(p=>res([p.coords.latitude,p.coords.longitude]),rej,{enableHighAccuracy:true,timeout:12000,maximumAge:60000})})}
-function showMe(p){if(!M)return;if(!meM){const el=document.createElement("div");el.className="mk-me";el.innerHTML='<svg viewBox="0 0 40 40"><path d="M20 7 31 30 20 25 9 30Z"/></svg>';meM=new mapboxgl.Marker({element:el,rotationAlignment:"map",pitchAlignment:"map"})}
-  const ar=scene.mode==="nav"&&nav&&nav.hd!=null;meM.getElement().classList.toggle("arrow",ar);meM.setRotation(ar?nav.hd:0);meM.setLngLat(ll(p)).addTo(M)}
+function showMe(p){if(!M)return;
+  if(!meM){const el=document.createElement("div");el.className="mk-me";el.innerHTML=`<i class="hd"></i><span class="face"><svg><use href="#i-dogface"/></svg></span>`;meM=new mapboxgl.Marker({element:el})}
+  meM.setLngLat(ll(p)).addTo(M);meDir()}
+// la punta intorno al cane indica la direzione di marcia (tenendo conto di come è girata la mappa)
+function meDir(){if(!meM||!M)return;const el=meM.getElement(),on=scene.mode==="nav"&&nav&&nav.hd!=null;el.classList.toggle("dir",on);if(on)el.querySelector(".hd").style.transform=`rotate(${nav.hd-M.getBearing()}deg)`}
 $("m-loc").onclick=async()=>{
   if(scene.mode==="nav"&&nav){navFollow=true;if(nav.pos)navCam(500);else toast("Cerco il segnale GPS…");return}
   try{const p=await getPos();showMe(p);if(scene.mode==="crea")setStart(p);else M.flyTo({center:ll(p),zoom:Math.max(M.getZoom(),13)})}catch(e){toast("Non riesco a leggere la posizione")}};
