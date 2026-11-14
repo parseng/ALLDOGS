@@ -2260,7 +2260,7 @@ function renderList(){paintFAll();fitLabels();setTimeout(sizeSels,0);
   const af=activeFilters();
   $("reset").hidden=!af;
   // Consigliati
-  const fam=af||S.far?[]:famousMatch();
+  const fam=af||S.far?[]:famousMatch().filter(m=>!(m.tr&&m.tr.dg&&m.tr.dg[0]==="no")); // niente consigliati dove i cani sono vietati
   $("reco-box").hidden=!fam.length;
   if(fam.length){const d=dog();$("reco").innerHTML=fam.map(m=>m.tr?cardHTML(m.tr,verdict(item(m.tr),d,S.day),m.f.n):placeCard(m.f,m.i)).join("");bindCards($("reco"))}
   renderParks();
@@ -4270,7 +4270,7 @@ function goPlace(c,z,bb){
 // Ricerca a tutto schermo: i sentieri di tutta Italia (elenco leggero data/names.json, caricato alla prima ricerca) e i luoghi
 let NAMES=null,namesP=null,geoPlaces=[],sTab="all";
 const norm=t=>(t||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g," ").trim();
-function loadNames(){if(NAMES)return Promise.resolve(NAMES);if(!namesP)namesP=getJSON("data/names.json?v="+(IDX?IDX.t:0)).then(d=>NAMES=d.r.map(r=>({id:r[0],name:r[1],ref:r[2],zone:r[3],cell:r[4],p:[r[5],r[6]],len:r[7],n:norm(r[1]),k:norm(r[1]+" "+r[2]+" "+r[3])}))).catch(e=>{namesP=null;throw e});return namesP}
+function loadNames(){if(NAMES)return Promise.resolve(NAMES);if(!namesP)namesP=getJSON("data/names.json?v="+(IDX?IDX.t:0)).then(d=>NAMES=d.r.map(r=>({id:r[0],name:r[1],ref:r[2],zone:r[3],cell:r[4],p:[r[5],r[6]],len:r[7],tot:r[8]||r[7],dg:r[9]||"",n:norm(r[1]),k:norm(r[1]+" "+r[2]+" "+r[3])}))).catch(e=>{namesP=null;throw e});return namesP}
 function trailHits(q,max){
   const nq=norm(q),w=nq.split(" ").filter(Boolean),c=S.view.c,out=[];if(!w.length||!NAMES)return out;
   const wb=w.map(x=>" "+x);for(const r of NAMES){const k=" "+r.k;if(!wb.every(x=>k.includes(x)))continue;const sc=(r.n.startsWith(nq)?0:r.n.includes(nq)?1:2);out.push({r,sc,d:hav(c,r.p)})}
@@ -4287,7 +4287,7 @@ function closeSearch(){$("srch").hidden=true;document.body.classList.remove("nos
 function quickFilter(fn){closeSearch();["f-dog","f-fit","f-eff","f-len","f-up","f-dif","f-zone"].forEach(id=>$(id).value="all");fn();S.limit=20;renderList();setTimeout(()=>document.querySelector(".frow").scrollIntoView({behavior:"smooth",block:"start"}),100)}
 function trailSub(r){const tr=TR.get(r.id);let v="";
   if(tr){const res=verdict(item(tr),dog(),S.day);if(res.v>=0)v=`<span class="vl c${res.v}"><i class="dot b${res.v}"></i>${VLABEL[res.v]} per ${dn()}</span> · `+fmtH(res.hours)+" · "}
-  const d=hav(S.view.c,r.p);return [r.zone?esc(r.zone):"",v+km(r.len)+" km",d<100e3?Math.round(d/1000)+" km da qui":""].filter(Boolean).join(" · ")}
+  const d=hav(S.view.c,r.p);return [r.zone?esc(r.zone):"",(r.dg==="no"?`<span class="c2"><b>Cani vietati</b></span> · `:"")+v+km(r.tot||r.len)+" km"+(r.tot&&r.tot!==r.len?" a/r":""),d<100e3?Math.round(d/1000)+" km da qui":""].filter(Boolean).join(" · ")}
 function paintSearch(){
   const q=$("sq").value.trim(),B=$("srch-body");$("sq-x").hidden=!q;
   if(q.length<2){
@@ -4323,7 +4323,7 @@ function paintSearch(){
   B.innerHTML=h;
   B.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{sTab=b.dataset.tab;paintSearch()});
   B.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{const r=NAMES.find(x=>x.id===+b.dataset.t);if(!r)return;cellOf[r.id]=r.cell;store.set("alldogs-cellof",cellOf);
-    addRecent({k:"t",id:r.id,cell:r.cell,name:r.name||"Sentiero "+r.ref,sub:[r.zone,km(r.len)+" km"].filter(Boolean).join(" · ")});closeSearch();lastList=window.scrollY;location.hash="s-"+r.id});
+    addRecent({k:"t",id:r.id,cell:r.cell,name:r.name||"Sentiero "+r.ref,sub:[r.zone,km(r.tot||r.len)+" km"].filter(Boolean).join(" · ")});closeSearch();lastList=window.scrollY;location.hash="s-"+r.id});
   B.querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>{const x=geoPlaces[+b.dataset.i],c=[x.center[1],x.center[0]],z=x.place_type&&x.place_type[0]==="region"?8.8:12,bb=x.place_type&&x.place_type[0]!=="poi"?x.bbox:null;
     addRecent({k:"p",name:x.text||x.place_name,sub:x.place_name.replace(/, Italia$/,""),c,z,bb});closeSearch();goPlace(c,z,bb)});
 }
