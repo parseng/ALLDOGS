@@ -332,7 +332,20 @@ button.tag{font:inherit;font-size:14px;color:var(--ink);cursor:pointer}
 .opt small{display:block;color:var(--muted);font-size:13px;font-weight:400}
 .opt b{font-weight:700}
 .opt input{width:26px;height:26px}
-.nav-turn{margin-top:6px;font:800 19px/1.2 var(--display)}
+.nav-turn{display:flex;align-items:center;gap:12px;width:100%;margin-top:8px;padding:10px 12px;border:0;border-radius:14px;background:#14181f;color:#fff;text-align:left;cursor:pointer;font:inherit}
+.nav-turn[hidden]{display:none}
+.nav-turn .ti{flex:none;width:40px;height:40px}
+.nav-turn b{display:block;font:800 22px/1.1 var(--display)}
+.nav-turn span{display:block;font-size:15px;line-height:1.25;opacity:.9}
+.nav-turn .tl{margin-left:auto;flex:none;width:22px;height:22px;opacity:.7}
+.steps{list-style:none;margin:6px 0 0;padding:0;border-radius:14px;overflow:hidden;background:#14181f;color:#fff}
+.steps li{display:flex;align-items:center;gap:12px;padding:11px 12px;border-bottom:1px solid rgba(255,255,255,.08)}
+.steps li.past{opacity:.4}
+.steps li.next{background:rgba(255,255,255,.1)}
+.steps .ti{flex:none;width:30px;height:30px}
+.steps b{display:block;font:700 16px/1.15 var(--display)}
+.steps span{display:block;font-size:14px;opacity:.85}
+.offbar{height:8px;border-radius:5px;background:var(--line);overflow:hidden;margin-top:8px}.offbar i{display:block;height:100%;width:0;background:#2456f5;transition:width .3s}
 #s-segui.on{position:fixed;inset:0;z-index:940;display:flex;flex-direction:column;padding:0;max-width:none;background:var(--bg)}
 #hostFollow{flex:1;min-height:0;border-radius:0;border:0}
 #hostFollow #m-full{display:none}
@@ -506,6 +519,8 @@ h2 .dot{width:12px;height:12px;margin-right:8px}
     <symbol id="i-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".8" fill="currentColor"/></symbol>
     <symbol id="i-cap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 9 12 4.5 21.5 9 12 13.5 2.5 9Z"/><path d="M6.5 11v4.5c1.5 1.6 3.4 2.4 5.5 2.4s4-.8 5.5-2.4V11M21.5 9v5"/></symbol>
     <symbol id="i-drop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11Z"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></symbol>
     <symbol id="i-bag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 8a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8Z"/><path d="M9 5V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1M9 13h6v3H9z"/></symbol>
     <symbol id="i-aid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="3"/><path d="M9 6V4h6v2M12 10v6M9 13h6"/></symbol>
     <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2V5Z"/><path d="M4 20a2 2 0 0 0 2 1h13v-3M8 7h7"/></symbol>
@@ -619,6 +634,7 @@ h2 .dot{width:12px;height:12px;margin-right:8px}
 <!-- SALVATI -->
 <section class="screen" id="s-salvati">
   <div class="hd"><button class="round mbtn" data-menu aria-label="Apri il menu"><svg><use href="#i-menu"/></svg></button><h1>Salvati</h1></div>
+  <div class="block" id="off-block" hidden><h2>Scaricati per l'uso senza internet</h2><p class="small muted" style="margin:-4px 0 10px" id="off-sum"></p><div id="saved-off"></div></div>
   <div class="block"><h2>I miei giri</h2><div id="saved-routes"></div></div>
   <div class="block"><h2>Sentieri</h2><div id="saved-trails"></div></div>
 </section>
@@ -676,7 +692,7 @@ h2 .dot{width:12px;height:12px;margin-right:8px}
 
 <!-- IN CAMMINO -->
 <section class="screen" id="s-vai">
-  <div class="nav-top"><p class="small muted" id="nav-kicker"></p><h3 id="nav-title"></h3><p class="nav-turn" id="nav-turn" hidden></p><p class="nav-msg" id="nav-msg"></p></div>
+  <div class="nav-top"><p class="small muted" id="nav-kicker"></p><h3 id="nav-title"></h3><button class="nav-turn" id="nav-turn" hidden></button><p class="nav-msg" id="nav-msg"></p></div>
   <div class="maphost" id="hostNav"></div>
   <div class="nav-bot">
     <div class="stats"><div><b id="nav-time">0:00</b><span>Tempo</span></div><div><b id="nav-done">0,0 km</b><span>Fatti</span></div><div><b id="nav-left">…</b><span>Mancano</span></div><div><b id="nav-steps">0</b><span id="nav-steps-l">Passi del cane</span></div></div>
@@ -1197,7 +1213,7 @@ function svgThumb(path){
 }
 
 // ================= Mappa unica Mapbox =================
-let M=null,styleOK=false,mapStyle=(k=>STYLES[k]?k:"map")(store.get("alldogs-mapstyle")),map3d=!!store.get("alldogs-map3d"),curHost=null,interactive=true;
+let M=null,styleOK=false,mapStyle=(k=>STYLES[k]?k:"map")(store.get("alldogs-mapstyle")),map3d=!!store.get("alldogs-map3d"),curHost=null,interactive=true,styleNow=null;
 let hillOn=!!store.get("alldogs-hill"),rainPath=null,surfOn=!!store.get("alldogs-surf"),prev3d=false,spin=null;
 let scene={mode:"explore"},stopMarkers=[],pinM=null,meM=null,fitPending=false;
 const HANDLERS=["dragPan","scrollZoom","boxZoom","dragRotate","keyboard","doubleClickZoom","touchZoomRotate","touchPitch"];
@@ -1211,12 +1227,22 @@ function mountMap(host,inter){
   if(!mapOK()){$("map").innerHTML=`<div class="mapnote">La mappa non si carica. Controlla la connessione e ricarica la pagina.</div>`;return}
   if(!M)initMap();
   setInteractive(inter||host.classList.contains("full"));
+  syncStyle();
   requestAnimationFrame(()=>{M.resize();applyScene()});
 }
+// Senza internet (o mentre segui un sentiero scaricato) uso la mappa topografica: è quella salvata nel telefono
+function wantStyle(){
+  if(!navigator.onLine)return "topo";
+  if(nav&&curHost&&curHost.id==="hostNav"&&OFF[offKeyOf(nav.o)])return "topo";
+  return mapStyle;
+}
+function syncStyle(){const k=wantStyle();if(!M||k===styleNow)return;styleNow=k;styleOK=false;M.setStyle(STYLES[k],{diff:false})}
+window.addEventListener("offline",()=>{syncStyle();toast("Sei senza internet: funzionano i sentieri già aperti e quelli scaricati")});
+window.addEventListener("online",()=>{syncStyle();bootData()});
 function initMap(){
   mapboxgl.accessToken=MAPBOX_TOKEN;
   try{
-    M=new mapboxgl.Map({container:"map",style:STYLES[mapStyle],center:ll(S.view.c),zoom:S.view.z,attributionControl:false,pitchWithRotate:true});
+    styleNow=wantStyle();M=new mapboxgl.Map({container:"map",style:STYLES[styleNow],center:ll(S.view.c),zoom:S.view.z,attributionControl:false,pitchWithRotate:true});
   }catch(e){$("map").innerHTML=`<div class="mapnote">Questo telefono non riesce a mostrare la mappa (serve WebGL).</div>`;M=null;return}
   M.addControl(new mapboxgl.AttributionControl({compact:true,customAttribution:"Sentieri © OpenStreetMap contributors"}),"bottom-left");
   M.on("style.load",()=>{styleOK=true;addLayers();if(map3d)terrain(true);applyScene()});
@@ -1258,16 +1284,16 @@ function fixSatellite(){
 }
 // Mappa più dettagliata: sentieri e gradini più evidenti e visibili prima, curve di livello più marcate, più nomi di luoghi
 function detailMap(){
-  if(mapStyle!=="map"&&mapStyle!=="str")return;
+  if(styleNow!=="map"&&styleNow!=="str")return;
   const tryIt=fn=>{try{fn()}catch(e){}},W=["interpolate",["exponential",1.5],["zoom"],12,1.3,15,2.6,18,6];
-  ["road-path","road-path-trail","bridge-path","bridge-path-trail","tunnel-path","tunnel-path-trail"].forEach(id=>tryIt(()=>{if(!M.getLayer(id))return;M.setPaintProperty(id,"line-width",W);if(mapStyle==="map")M.setPaintProperty(id,"line-color","#7a4a22");M.setLayerZoomRange(id,12,24)}));
+  ["road-path","road-path-trail","bridge-path","bridge-path-trail","tunnel-path","tunnel-path-trail"].forEach(id=>tryIt(()=>{if(!M.getLayer(id))return;M.setPaintProperty(id,"line-width",W);if(styleNow==="map")M.setPaintProperty(id,"line-color","#7a4a22");M.setLayerZoomRange(id,12,24)}));
   ["road-steps","bridge-steps","tunnel-steps"].forEach(id=>tryIt(()=>{if(!M.getLayer(id))return;M.setPaintProperty(id,"line-width",["interpolate",["exponential",1.5],["zoom"],13,2,16,5,18,9]);M.setLayerZoomRange(id,13,24)}));
   tryIt(()=>M.getLayer("contour-line")&&M.setPaintProperty("contour-line","line-opacity",["interpolate",["linear"],["zoom"],11,.3,13,.55,16,.75]));
   tryIt(()=>M.getLayer("poi-label")&&M.setFilter("poi-label",["<=",["get","filterrank"],["step",["zoom"],2,12,3,14,4,16,5]]));
   tryIt(()=>M.getLayer("path-pedestrian-label")&&M.setLayerZoomRange("path-pedestrian-label",13,24));
 }
 function addLayers(){
-  if(mapStyle==="sat")try{fixSatellite()}catch(e){console.warn(e)}
+  if(styleNow==="sat")try{fixSatellite()}catch(e){console.warn(e)}
   detailMap();
   const empty={type:"FeatureCollection",features:[]};
   ["trails","sel","selpath","water","startpt","track","cells","poi"].forEach(s=>{if(!M.getSource(s))M.addSource(s,{type:"geojson",data:empty})});
@@ -1433,7 +1459,7 @@ function setStyleKind(k){
   else if(k.startsWith("poi-")){const t=k.slice(4);poiK[t]=!poiK[t];store.set("alldogs-poik",poiK);poiData();if(t==="v")vxView();if(t==="w"){wtData();wtView()}
     toast((poiK[t]?"":"Nascosti: ")+({a:"Aree cani",v:"Veterinari",s:"Spiagge per cani",g:"Ville comunali e parchi",w:"Fontanelle e punti acqua"})[t]+(poiK[t]?(t==="g"||t==="w"?": avvicinati alla mappa per vederle":" sulla mappa"):""))}
   else if(k==="legend"){$("layers").hidden=true;showLegend()}
-  else if(k!==mapStyle&&STYLES[k]){mapStyle=k;store.set("alldogs-mapstyle",k);styleOK=false;M.setStyle(STYLES[k],{diff:false})}
+  else if(k!==mapStyle&&STYLES[k]){mapStyle=k;store.set("alldogs-mapstyle",k);syncStyle();if(styleNow!==k)toast(navigator.onLine?"Durante la navigazione di un sentiero scaricato uso la mappa topografica salvata":"Senza internet uso la mappa topografica dei sentieri scaricati")}
   syncLayersMenu();
 }
 function syncLayersMenu(){document.querySelectorAll("#layers [data-st]").forEach(b=>b.setAttribute("aria-pressed",({"3d":map3d,hill:hillOn,trails:trailsOn,"poi-a":poiK.a,"poi-v":poiK.v,"poi-s":poiK.s,"poi-g":poiK.g,"poi-w":poiK.w,legend:false})[b.dataset.st]??(OVNAME[b.dataset.st]?wxOv===b.dataset.st:b.dataset.st===mapStyle)))}
@@ -1972,7 +1998,7 @@ async function showTrail(id){
     const shade=!f?"…":f.wood>=.6?"Tanta (bosco)":f.wood>=.3?"In parte":"Poca";
     const sh=surfShare(tr),dom=sh&&SFK.slice().sort((a,b)=>sh[b]-sh[a])[0];
     $("det").innerHTML=detailHTML({title:tr.name,ft:f,prof:elev[id]&&elev[id].p,
-      tools:`<div class="row" style="margin-top:14px;flex-wrap:wrap"><button class="btn sm" data-3d>${icon("layers")}Anteprima 3D</button>${sh?`<button class="btn sm" data-surf>${icon("surf")}Colora il fondo</button>`:""}<button class="btn sm" data-edit>${icon("edit")}Modifica percorso</button><button class="btn sm" data-pack>${icon("bag")}Zaino pronto</button></div>`,sub:[tr.type==="walk"?"Giro in città ad anello":"",esc(tr.zone),tr.ref?"sentiero n. "+esc(tr.ref):"",tr.cai?"CAI":"",tr.scale?"difficoltà "+tr.scale:""].filter(Boolean).join(" · "),it:item(tr),
+      tools:`<div class="row" style="margin-top:14px;flex-wrap:wrap"><button class="btn sm" data-3d>${icon("layers")}Anteprima 3D</button>${sh?`<button class="btn sm" data-surf>${icon("surf")}Colora il fondo</button>`:""}<button class="btn sm" data-edit>${icon("edit")}Modifica percorso</button><button class="btn sm" data-pack>${icon("bag")}Zaino pronto</button><button class="btn sm" data-steps>${icon("list")}Indicazioni passo-passo</button>${offButton(navObjTrail(tr))}</div>`,sub:[tr.type==="walk"?"Giro in città ad anello":"",esc(tr.zone),tr.ref?"sentiero n. "+esc(tr.ref):"",tr.cai?"CAI":"",tr.scale?"difficoltà "+tr.scale:""].filter(Boolean).join(" · "),it:item(tr),
       sections:`${(hz=>hz.length?`<div class="block"><h2>Attenzione in questo periodo</h2><div class="tags">${hz.map(h=>`<span class="tag">${h.t}</span>`).join("")}</div><button class="btn sm" data-haz style="margin-top:10px">Leggi i consigli</button></div>`:"")(trailHaz(tr))}${sh?`<div class="block"><h2>Fondo del percorso</h2>${surfBlock(sh,dog())}</div>`:""}<div class="block"><h2>Particolarità</h2>${tags}<p class="small muted" style="margin-top:8px">Ricavate in automatico da OpenStreetMap: elementi segnati vicino al tracciato.</p></div>
       <div class="block"><h2>Scheda per il cane</h2><div class="tiles"><div class="tile"><span>Acqua lungo il percorso</span><b>${water}</b></div><div class="tile"><span>Ombra (stima)</span><b>${shade}</b></div><div class="tile"><span>Fondo prevalente</span><b>${sh?SFL[dom]:"Da verificare"}</b></div>${tr.type==="walk"?`<div class="tile"><span>Nel verde</span><b>${Math.round((tr.green||0)*100)}% del giro</b></div>`:`<div class="tile"><span>Punti critici</span><b>Da verificare</b></div>`}</div>
       <p class="small muted" style="margin-top:8px">${f&&f.w.length?"Le fontanelle sono i punti blu sulla mappa. ":""}Acqua e ombra sono stime dai dati di OpenStreetMap: verificale sul posto. Il sentiero non è ancora stato provato con un cane.</p></div>${trailRules(tr)}`})+
@@ -1980,6 +2006,8 @@ async function showTrail(id){
     bindReview(tr.id);
     bindDays($("det"),paint);syncSave();bindTools($("det"));
     $("det").querySelectorAll("[data-haz]").forEach(b=>b.onclick=()=>hazSheet(trailHaz(tr)));
+    $("det").querySelectorAll("[data-steps]").forEach(b=>b.onclick=()=>stepsPreview(tr));
+    bindOff($("det"),()=>navObjTrail(tr));
     $("det").querySelectorAll("[data-pack]").forEach(b=>b.onclick=()=>{const f2=FT[id]||{f:[],w:[]},e2=elev[id];packSheet({km:tr.len/1000,p:tr.start,day:S.day,title:tr.name,water:(f2.w||[]).length,mount:!!((e2&&(e2.up>=300||e2.max>=900))||f2.f.includes("vette")),beach:f2.f.includes("spiaggia"),lake:f2.f.includes("laghi")||f2.f.includes("fiumi")})});
   };
   paint();
@@ -1991,8 +2019,7 @@ function syncSave(){
   $("det-save").classList.toggle("saved",on);$("bar-save").querySelector("span").textContent=on?"Salvato":"Salva";
 }
 $("det-back").onclick=()=>{if($("hostTrail").classList.contains("full"))setFull(false);else if(history.length>1)history.back();else location.hash="esplora"};
-$("bar-start").onclick=()=>{if(!cur||cur.type!=="trail")return;const tr=cur.tr,ft=FT[tr.id],e=elev[tr.id];
-  startNav({name:tr.name,kind:"trail",id:tr.id,ways:tr.ways,path:tr.path,len:tr.len,up:e?e.up:0,stops:[],water:ft?ft.w:[],scale:tr.scale,loop:tr.loop,dogs:tr.dogs})};
+$("bar-start").onclick=()=>{if(!cur||cur.type!=="trail")return;startNav(navObjTrail(cur.tr))};
 $("det-save").onclick=$("bar-save").onclick=()=>{if(cur&&cur.type==="trail"){toggleSave(cur.tr.id);syncSave()}};
 
 // ================= Crea un giro =================
@@ -2139,7 +2166,7 @@ function parseRoute(f){
   let hard=0,unknown=0,tot=0;((ex.surface||{}).summary||[]).forEach(s=>{tot+=s.amount;if(SURF_HARD.includes(s.value))hard+=s.amount;else if(s.value===0)unknown+=s.amount});
   let green=null;const gs=(ex.green||{}).summary||[];if(gs.length)green=gs.reduce((a,s)=>a+s.value*s.amount,0)/100;
   // indicazioni passo-passo (in italiano): a quanti metri dalla partenza e cosa fare
-  const turns=[];let off=0;(pr.segments||[]).forEach(sg=>(sg.steps||[]).forEach(st=>{if(st.type!==11&&st.type!==10&&st.instruction)turns.push({km:Math.round(off),text:st.instruction});off+=st.distance||0}));
+  const turns=[];let off=0;(pr.segments||[]).forEach(sg=>(sg.steps||[]).forEach(st=>{if(st.type!==11&&st.type!==10&&st.instruction)turns.push({km:Math.round(off),text:st.instruction,ty:st.type});off+=st.distance||0}));
   return {turns,path:c,len:Math.round(pr.summary.distance),up:upCalc??Math.round(pr.ascent||0),hard:tot?hard/tot:null,soft:tot?(tot-hard-unknown)/tot:null,green,segs,prof};
 }
 function stopsFor(r,d,ai){
@@ -2326,7 +2353,7 @@ $("chat-form").onsubmit=e=>{e.preventDefault();chatSend($("chat-in").value)};
 
 // ================= Salvati =================
 function showSaved(){
-  const d=dog();
+  const d=dog();offList();
   $("saved-routes").innerHTML=S.routes.length?S.routes.map((r,i)=>`<article class="tcard" data-r="${i}"><div class="img">${svgThumb(r.path)}<img loading="lazy" alt="" src="${staticImg(r.path)}" onerror="this.remove()"><button class="round" data-del="${i}" aria-label="Elimina">✕</button></div><h3>${esc(r.name)}</h3><p class="sub">${new Date(r.t).toLocaleDateString("it-IT",{day:"numeric",month:"long"})}${r.source==="chat"?" · creato con l'AI":""}</p><p class="meta">${km(r.len)} km · ↑ ${r.up} m</p></article>`).join(""):`<p class="muted">Ancora nessun giro. Creane uno con il pulsante <b>+</b> qui sotto.</p>`;
   $("saved-routes").querySelectorAll(".tcard").forEach(c=>c.onclick=ev=>{const del=ev.target.closest("[data-del]");
     if(del){ev.stopPropagation();S.routes.splice(+del.dataset.del,1);store.set("alldogs-routes",S.routes);showSaved();toast("Giro eliminato");return}
@@ -3130,6 +3157,109 @@ function trailRules(tr){const f=FT[tr.id]||{f:[]},e=elev[tr.id],L=[];
 // ================= In cammino (Avvia percorso) =================
 // Mappa dal vivo con posizione GPS, tempo, strada fatta e mancante, passi stimati, meteo e avvisi per il cane.
 // Alla fine "Chiudi attività" salva la passeggiata in Attività. Lo stato viene salvato ogni 15 secondi: se il telefono ricarica la pagina, si riprende.
+// ================= Sentieri scaricati: si usano anche senza internet =================
+// Salvo nel telefono: i dati del sentiero e i tasselli della mappa topografica (OpenTopoMap) intorno al tracciato.
+// Ogni sentiero scaricato ha il suo spazio ("ad-off-..."), così si può cancellare da solo. Il lavoratore di sfondo (sw.js) li usa quando manca la rete.
+const OFF_KEY="alldogs-offline";
+let OFF=store.get(OFF_KEY)||{};
+const offKeyOf=o=>!o?null:o.kind==="giro"?(o.saved?"g"+o.saved:null):o.id!=null?"t"+o.id:null;
+const offCan=()=>"caches" in window&&"serviceWorker" in navigator&&location.protocol!=="file:";
+const offBusy={};
+function tileXY(p,z){const n=2**z,la=p[0]*Math.PI/180;return [Math.floor((p[1]+180)/360*n),Math.floor((1-Math.log(Math.tan(la)+1/Math.cos(la))/Math.PI)/2*n)]}
+// tasselli da scaricare: tutta la zona a zoom bassi, una striscia lungo il tracciato a zoom alti
+function offTiles(path){
+  const P=dense(path,50),set=new Set();
+  let la0=90,lo0=180,la1=-90,lo1=-180;for(const p of P){if(p[0]<la0)la0=p[0];if(p[0]>la1)la1=p[0];if(p[1]<lo0)lo0=p[1];if(p[1]>lo1)lo1=p[1]}
+  for(let z=10;z<=14;z++){const a=tileXY([la1,lo0],z),b=tileXY([la0,lo1],z);for(let x=a[0]-1;x<=b[0]+1;x++)for(let y=a[1]-1;y<=b[1]+1;y++)set.add(z+"/"+x+"/"+y)}
+  const strip=(S,z,r)=>{for(const p of P){const[x,y]=tileXY(p,z);for(let i=-r;i<=r;i++)for(let j=-r;j<=r;j++)S.add(z+"/"+(x+i)+"/"+(y+j))}};
+  strip(set,15,2);strip(set,16,1);
+  const all=new Set(set);strip(all,17,1);
+  return all.size<=2600?[...all]:[...set]; // sentieri lunghissimi: senza il dettaglio massimo
+}
+const TOPO_KEY=t=>`https://tile.opentopomap.org/${t}.png`;
+const GLYPHS=["DIN Pro Bold,Arial Unicode MS Bold","DIN Pro Medium,Arial Unicode MS Regular"];
+async function offDownload(o,onp){
+  const key=offKeyOf(o);if(!key||offBusy[key])return;
+  if(!offCan()){toast("Questo browser non permette di salvare le mappe. Apri AllDogs da Safari o Chrome.");return}
+  if(!navigator.onLine){toast("Per scaricare serve internet: fallo prima di partire");return}
+  offBusy[key]=1;
+  try{
+    try{if(navigator.storage&&navigator.storage.persist)await navigator.storage.persist()}catch(e){}
+    const c=await caches.open("ad-off-"+key);let bytes=0,fail=0,done=0;
+    // 1) dati del sentiero (il file del riquadro, con quote e particolarità) e l'indice
+    if(o.kind==="trail"){const cell=cellOf[o.id]||(TR.get(o.id)||{}).cell;
+      for(const f of ["data/index.json",cell?`data/c/${cell}.json`:null].filter(Boolean)){
+        const u=new URL(f,location.href).href,r=await fetch(u+"?v="+(IDX?IDX.t:Date.now()),{cache:"no-cache"});
+        if(!r.ok)throw new Error("dati "+r.status);const b=await r.blob();bytes+=b.size;await c.put(u,new Response(b,{headers:{"Content-Type":"application/json"}}))}}
+    // 2) caratteri delle scritte sulla mappa
+    for(const f of GLYPHS)for(const rg of ["0-255","256-511"]){
+      try{const u=`https://api.mapbox.com/fonts/v1/mapbox/${f.replace(/ /g,"%20")}/${rg}.pbf`,r=await fetch(u+"?access_token="+MAPBOX_TOKEN);if(r.ok){const b=await r.blob();bytes+=b.size;await c.put(u,new Response(b))}}catch(e){}}
+    // 3) mappa topografica: 6 tasselli alla volta
+    const T=offTiles(o.path),Q=T.slice();
+    const one=async t=>{const k=TOPO_KEY(t);if(await c.match(k)){done++;return}
+      const[z,x,y]=t.split("/").map(Number);
+      for(let tryN=0;tryN<2;tryN++){try{const r=await fetch(`https://${"abc"[(x+y)%3]}.tile.opentopomap.org/${t}.png`,{mode:"cors"});
+        if(r.ok){const b=await r.blob();bytes+=b.size;await c.put(k,new Response(b,{headers:{"Content-Type":"image/png"}}));done++;return}
+        if(r.status===404){done++;return}}catch(e){}
+        await new Promise(r=>setTimeout(r,800))}
+      fail++;done++};
+    const worker=async()=>{while(Q.length){await one(Q.shift());onp&&onp(done/T.length)}};
+    await Promise.all([1,2,3,4,5,6].map(worker));
+    if(fail>T.length*.25){toast("Connessione debole: una parte della mappa non è arrivata. Riprova con un segnale migliore.");return}
+    const no=Object.assign({},o);delete no.ways;
+    if(o.kind==="trail")no.ways=o.ways;
+    OFF[key]={t:Date.now(),name:o.name,len:o.len,kind:o.kind,id:o.id||null,cell:o.kind==="trail"?(cellOf[o.id]||null):null,tiles:T.length-fail,mb:Math.round(bytes/1048576*10)/10,o:no};
+    store.set(OFF_KEY,OFF);
+    toast(`Scaricato: ${o.name}. Lo trovi anche in Salvati e funziona senza internet`);
+  }catch(e){console.warn(e);toast("Download non riuscito: controlla la connessione e riprova")}
+  finally{delete offBusy[key]}
+}
+async function offDelete(key){
+  try{await caches.delete("ad-off-"+key)}catch(e){}
+  delete OFF[key];store.set(OFF_KEY,OFF);
+}
+// oggetto per la navigazione a partire da un sentiero
+function navObjTrail(tr){const ft=FT[tr.id],e=elev[tr.id];return {name:tr.name,kind:"trail",id:tr.id,ways:tr.ways,path:tr.path,len:tr.len,up:e?e.up:0,stops:[],water:ft?ft.w:[],scale:tr.scale,loop:tr.loop,dogs:tr.dogs}}
+// pulsante "Scarica" nella scheda del sentiero
+function offButton(o){
+  const key=offKeyOf(o),has=!!OFF[key];
+  return `<button class="btn sm" data-off="${key}">${icon("down")}${offBusy[key]?"Scarico…":has?"Scaricato ✓":"Scarica per usarlo offline"}</button>`;
+}
+function bindOff(box,getO){
+  box.querySelectorAll("[data-off]").forEach(b=>b.onclick=async()=>{
+    const o=getO(),key=offKeyOf(o);if(!o||offBusy[key])return;
+    if(OFF[key]){offSheet(key);return}
+    const n=offTiles(o.path).length;
+    openSheet(`<h2>Scarica per usarlo senza internet</h2><p>Salvo nel telefono il percorso e la mappa topografica della zona (circa ${Math.max(1,Math.round(n*32/1024))} MB). Così in montagna, anche senza campo, vedi la mappa, la tua posizione e le indicazioni passo-passo.</p>
+      <p class="small muted" style="margin-top:8px">Meglio farlo con il Wi-Fi. Il GPS funziona anche senza internet; il meteo invece si aggiorna solo con la rete.</p>
+      <div class="offbar" id="off-bar" hidden><i></i></div><p class="small" id="off-pc" style="margin-top:6px"></p>
+      <button class="btn pri wide" id="off-go" style="margin-top:14px">${icon("down")}Scarica adesso</button>`);
+    $("off-go").onclick=async()=>{
+      $("off-go").disabled=true;$("off-go").textContent="Scarico…";$("off-bar").hidden=false;b.innerHTML=icon("down")+"Scarico…";
+      await offDownload(o,f=>{const i=$("off-bar")&&$("off-bar").firstChild;if(i)i.style.width=Math.round(f*100)+"%";if($("off-pc"))$("off-pc").textContent=`Mappa: ${Math.round(f*100)}%`});
+      if(OFF[key]){$("sheet").hidden=true}else if($("off-go")){$("off-go").disabled=false;$("off-go").textContent="Riprova"}
+      b.innerHTML=icon("down")+(OFF[key]?"Scaricato ✓":"Scarica per usarlo offline");
+      if(location.hash==="#salvati")showSaved();
+    };
+  });
+}
+function offSheet(key){
+  const x=OFF[key];if(!x)return;
+  openSheet(`<h2>${esc(x.name)}</h2><p>Scaricato il ${new Date(x.t).toLocaleDateString("it-IT",{day:"numeric",month:"long"})}: percorso e mappa topografica (${x.mb} MB). Funziona anche senza internet.</p>
+    <div class="stack" style="margin-top:14px"><button class="btn pri wide" id="off-nav">${icon("nav")}Inizia la passeggiata</button>${x.kind==="trail"?`<button class="btn wide" id="off-open">Apri la scheda del sentiero</button>`:""}<button class="btn wide" id="off-upd">${icon("down")}Aggiorna la mappa</button><button class="btn wide" id="off-del">Elimina dal telefono</button></div>`);
+  $("off-nav").onclick=()=>{$("sheet").hidden=true;startNav(x.o)};
+  if($("off-open"))$("off-open").onclick=()=>{$("sheet").hidden=true;if(x.cell){cellOf[x.id]=x.cell;store.set("alldogs-cellof",cellOf)}location.hash="s-"+x.id};
+  $("off-upd").onclick=async()=>{$("off-upd").disabled=true;$("off-upd").textContent="Aggiorno…";await caches.delete("ad-off-"+key).catch(()=>0);await offDownload(x.o,f=>{if($("off-upd"))$("off-upd").textContent=`Aggiorno… ${Math.round(f*100)}%`});$("sheet").hidden=true;if(location.hash==="#salvati")showSaved()};
+  $("off-del").onclick=async()=>{if(!confirm("Elimino dal telefono il percorso e la mappa scaricati? Il sentiero resta tra i salvati, se c'era."))return;await offDelete(key);$("sheet").hidden=true;toast("Eliminato dal telefono");if(location.hash==="#salvati")showSaved();if(cur&&cur.type==="trail"&&offKeyOf(cur.tr)===key&&location.hash==="#s-"+cur.tr.id)showTrail(cur.tr.id)};
+}
+function offList(){
+  const ks=Object.keys(OFF).sort((a,b)=>OFF[b].t-OFF[a].t);
+  $("off-block").hidden=!ks.length;if(!ks.length)return;
+  const mb=ks.reduce((a,k)=>a+(OFF[k].mb||0),0);
+  $("off-sum").textContent=`${ks.length===1?"1 percorso":ks.length+" percorsi"} · ${Math.round(mb*10)/10} MB nel telefono. Tocca per iniziare o eliminare.`;
+  $("saved-off").innerHTML=ks.map(k=>{const x=OFF[k];return `<article class="tcard" data-offk="${k}"><div class="img">${svgThumb(x.o.path)}</div><h3>${esc(x.name)}</h3><p class="sub">${icon("down",14)} Funziona senza internet · ${x.mb} MB</p><p class="meta">${km(x.len)} km${x.o.up?" · ↑ "+x.o.up+" m":""}</p></article>`}).join("");
+  $("saved-off").querySelectorAll("[data-offk]").forEach(c=>c.onclick=()=>offSheet(c.dataset.offk));
+}
 const NAV_KEY="alldogs-nav";
 let nav=null,navWatch=null,navTick=null,wake=null,navFollow=true,navSaveT=0;
 const r5=p=>[+p[0].toFixed(5),+p[1].toFixed(5)];
@@ -3137,19 +3267,85 @@ const fmtM=m=>m>=1000?km(m)+" km":Math.max(10,Math.round(m/10)*10)+" m";
 function clock(ms){const t=Math.floor(ms/1000),h=Math.floor(t/3600),m=Math.floor(t%3600/60),ss=String(t%60).padStart(2,"0");return h?`${h}:${String(m).padStart(2,"0")}:${ss}`:`${m}:${ss}`}
 function dense(path,step){const o=[path[0]];for(let i=1;i<path.length;i++){const a=path[i-1],b=path[i],d=hav(a,b),n=Math.floor(d/step);for(let j=1;j<=n;j++){const f=j*step/d;if(f<1)o.push([a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f])}o.push(b)}return o}
 function navPrep(){const P=dense(nav.o.path,20),C=[0];for(let i=1;i<P.length;i++)C.push(C[i-1]+hav(P[i-1],P[i]));nav.P=P;nav.C=C;nav.total=C[C.length-1];
-  nav.turns=nav.o.turns&&nav.o.turns.length?nav.o.turns:geoTurns(P,C);nav.said={}}
+  nav.turns=nav.o.turns&&nav.o.turns.length?nav.o.turns:geoTurns(P,C,nav.o.id);nav.said={}}
 // Impostazioni di navigazione (restano salvate)
 const NS=Object.assign({turns:true,voice:false,autopause:false,wake:true},store.get("alldogs-navset")||{});
 function say(t){if(!NS.voice||!window.speechSynthesis)return;try{const u=new SpeechSynthesisUtterance(String(t).replace(/<[^>]+>/g,""));u.lang="it-IT";speechSynthesis.speak(u)}catch(e){}}
 // avviso in primo piano: scritta colorata in alto, vibrazione e (se attiva) voce
 function alertNav(text,cls,ms){if(!nav)return;nav.tip={t:text,cls:cls||"c1",until:Date.now()+(ms||60e3)};try{navigator.vibrate&&navigator.vibrate([250,120,250])}catch(e){}say(text);paintNav()}
 // Per i sentieri (che non hanno indicazioni stradali) ricavo le curve dalla forma del tracciato
-function geoTurns(P,C){
+function geoTurns(P,C,selfId){
   const out=[],k=2;
   for(let i=k;i<P.length-k;i++){const d=((bearing(P[i],P[i+k])-bearing(P[i-k],P[i])+540)%360)-180;
-    if(Math.abs(d)<50)continue;const l=out[out.length-1];
+    if(Math.abs(d)<45)continue;const l=out[out.length-1];
     if(l&&C[i]-l.km<70){if(Math.abs(d)>Math.abs(l.a)){l.km=C[i];l.a=d}}else out.push({km:C[i],a:d})}
-  return out.map(t=>({km:t.km,text:(Math.abs(t.a)>=140?"il percorso torna indietro":Math.abs(t.a)>=95?"curva stretta":"il percorso piega")+(t.a>0?" a destra":" a sinistra")}));
+  // bivi: dove il percorso incontra un altro sentiero conosciuto (dai sentieri della zona già caricati)
+  let J=[];try{J=junctions(P,C,selfId)}catch(e){console.warn(e)}
+  for(const j of J){const t=out.find(x=>Math.abs(x.km-j.km)<=40);if(t){t.j=j.ref||1}else out.push({km:j.km,a:0,j:j.ref||1})}
+  out.sort((a,b)=>a.km-b.km);
+  return out.map(t=>{const A=Math.abs(t.a),lr=t.a>0?"a destra":"a sinistra",ref=typeof t.j==="string"?` (incroci il sentiero ${t.j})`:"";
+    const txt=A>=140?"Torna indietro "+lr:A>=95?"Svolta stretta "+lr:A>=65?"Gira "+lr:A>=45?"Tieni la "+(t.a>0?"destra":"sinistra"):"Prosegui dritto";
+    return {km:t.km,a:Math.round(t.a),text:(t.j?"Al bivio, "+txt.charAt(0).toLowerCase()+txt.slice(1):txt)+ref}});
+}
+// incroci con gli altri sentieri: guardo dove il percorso entra o esce dalla vicinanza (12 m) di un altro tracciato
+function junctions(P,C,selfId){
+  const G=new Map(),cs=0.0003,key=(a,b)=>a+"_"+b;
+  let la0=90,lo0=180,la1=-90,lo1=-180;for(const p of P){if(p[0]<la0)la0=p[0];if(p[0]>la1)la1=p[0];if(p[1]<lo0)lo0=p[1];if(p[1]>lo1)lo1=p[1]}
+  la0-=.003;lo0-=.003;la1+=.003;lo1+=.003;
+  let n=0;
+  for(const t of TR.values()){if(t.id===selfId||!t.ways||n>200000)continue;
+    const st=t.start;if(st&&hav(st,P[0])>60000)continue;
+    for(const w of t.ways)for(const q of dense(w,10)){if(q[0]<la0||q[0]>la1||q[1]<lo0||q[1]>lo1)continue;
+      const k=key(Math.floor(q[0]/cs),Math.floor(q[1]/cs));let a=G.get(k);if(!a)G.set(k,a=[]);a.push([q,t.ref?String(t.ref):""]);n++}}
+  if(!G.size)return [];
+  const near=p=>{const a=Math.floor(p[0]/cs),b=Math.floor(p[1]/cs);for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){const L=G.get(key(a+i,b+j));if(L)for(const[q,r]of L)if(hav(p,q)<=12)return r||true}return false};
+  const out=[];let prev=false;
+  for(let i=0;i<P.length;i++){const v=near(P[i]);
+    if(!!v!==!!prev&&C[i]>30&&C[i]<C[C.length-1]-30){const l=out[out.length-1],r=(typeof v==="string"&&v)||(typeof prev==="string"&&prev)||null;if(!l||C[i]-l.km>60)out.push({km:C[i],ref:r})}
+    prev=v}
+  return out;
+}
+// freccia della svolta: angolo (0 = dritto, + destra, - sinistra) dai dati che ho
+function turnAngle(t){
+  if(t.end)return "end";if(t.stop)return "stop";
+  if(t.ty!=null)return ({0:-90,1:90,2:-140,3:140,4:-45,5:45,6:0,7:"rb",8:"rb",9:180,12:-30,13:30})[t.ty]??0;
+  if(t.a!=null)return Math.abs(t.a)<45?0:t.a;
+  const x=String(t.text||"").toLowerCase(),r=/destra/.test(x)?1:/sinistra/.test(x)?-1:0;
+  if(/rotonda/.test(x))return "rb";if(/indietro|inversione/.test(x))return 180*(r||1);
+  if(!r)return 0;if(/leggermente|tieni|mantieni/.test(x))return 40*r;if(/bruscamente|stretta|netta/.test(x))return 140*r;return 90*r;
+}
+function turnIco(t,cls){
+  const a=turnAngle(t),sv=b=>`<svg class="${cls||"ti"}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${b}</svg>`;
+  if(a==="end")return sv('<path d="M6 21V4M6 4h11l-2 4 2 4H6"/>');
+  if(a==="stop")return sv('<circle cx="12" cy="10" r="3"/><path d="M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11Z"/>');
+  if(a==="rb")return sv('<circle cx="12" cy="9" r="4"/><path d="M12 22v-9M16 9h4M17.5 6.5 20 9l-2.5 2.5"/>');
+  if(Math.abs(a)>=140){const m=a<0?' transform="matrix(-1 0 0 1 24 0)"':"";return sv(`<g${m}><path d="M8 21V10a4 4 0 0 1 8 0v8"/><path d="M12.5 14.5 16 18l3.5-3.5"/></g>`)}
+  // stelo dal basso fino al centro, poi un tratto nella direzione della svolta con la punta
+  const r=a*Math.PI/180,cx=12,cy=12,ex=cx+8*Math.sin(r),ey=cy-8*Math.cos(r),dir=Math.atan2(ey-cy,ex-cx),h=4.5;
+  const pt=s=>(ex-h*Math.cos(dir+s)).toFixed(1)+" "+(ey-h*Math.sin(dir+s)).toFixed(1),E=ex.toFixed(1)+" "+ey.toFixed(1);
+  return sv(`<path d="M12 22v-10L${E}"/><path d="M${pt(.6)}L${E}L${pt(-.6)}"/>`);
+}
+// elenco completo delle indicazioni: svolte, tappe e arrivo (prog = metri già fatti, null = anteprima)
+function stepList(turns,stops,total,prog,loop){
+  const L=turns.map(t=>Object.assign({},t)).concat((stops||[]).slice(1).map((x,i)=>({km:x.km,stop:1,text:`Tappa ${i+2}: ${x.t}`})));
+  L.push({km:total,end:1,text:loop?"Arrivo: sei tornato alla partenza":"Arrivo: fine del percorso"});
+  L.sort((a,b)=>a.km-b.km);
+  const nx=prog!=null?L.findIndex(t=>t.km>prog+5):-1;
+  return `<ul class="steps">${L.map((t,i)=>{const past=prog!=null&&i<nx,dd=prog!=null?t.km-prog:t.km;
+    const head=past?"Fatto":prog!=null?(i===nx&&dd<=30?"Adesso":"Tra "+fmtM(dd)):(t.km<1000?"Dopo "+Math.round(t.km/10)*10+" m":"Al km "+km(t.km));
+    return `<li class="${past?"past":i===nx?"next":""}">${turnIco(t)}<div><b>${head}</b><span>${esc(t.text)}</span></div></li>`}).join("")}</ul>`;
+}
+function stepsSheet(){
+  if(!nav)return;
+  $("nav-sheet-box").innerHTML=`<h2>Indicazioni passo-passo</h2><p class="small muted" style="margin:2px 0 8px">${nav.o.turns&&nav.o.turns.length?"Indicazioni ricavate dal calcolo del percorso sulle strade.":"Ricavate dalla forma del tracciato e dagli incroci con gli altri sentieri della zona: segui sempre anche i segnavia."}</p>${stepList(nav.turns,nav.o.stops,nav.total,nav.prog,nav.o.loop)}<button class="btn wide" id="ns-x" style="margin-top:14px">Chiudi</button>`;
+  $("nav-sheet").hidden=false;$("ns-x").onclick=()=>$("nav-sheet").hidden=true;
+  const nx=$("nav-sheet-box").querySelector("li.next");if(nx)nx.scrollIntoView({block:"center"});
+}
+$("nav-turn").onclick=stepsSheet;
+// anteprima delle indicazioni dalla scheda del sentiero
+function stepsPreview(tr){
+  const P=dense(tr.path,20),C=[0];for(let i=1;i<P.length;i++)C.push(C[i-1]+hav(P[i-1],P[i]));
+  openSheet(`<h2>Indicazioni passo-passo</h2><p class="small muted" style="margin:2px 0 8px">Le stesse che ti darò mentre cammini. Sono ricavate dalla forma del tracciato e dagli incroci con gli altri sentieri: segui sempre anche i segnavia.</p>${stepList(geoTurns(P,C,tr.id),[],C[C.length-1],null,tr.loop)}`);
 }
 function navSettings(){
   const row=(k,t,sub)=>`<label class="opt"><span><b>${t}</b><small>${sub}</small></span><input type="checkbox" data-ns="${k}" ${NS[k]?"checked":""}></label>`;
@@ -3253,7 +3449,8 @@ function navAlerts(p){
   else{if(nav.wasOff&&nav.off<=30){nav.wasOff=false;nav.offT=0;alertNav("Bene, siete di nuovo sul percorso.","c0",8e3)}nav.offN=0}
   if(nav.off>50||nav.paused)return;
   if(NS.turns){const i=nav.turns.findIndex(t=>t.km>nav.prog+5);
-    if(i>=0){const dd=nav.turns[i].km-nav.prog;if(dd<=70&&!nav.said["t"+i]){nav.said["t"+i]=1;say(`Tra ${Math.max(10,Math.round(dd/10)*10)} metri: ${nav.turns[i].text}`)}}}
+    if(i>=0){const dd=nav.turns[i].km-nav.prog;if(dd<=70&&dd>25&&!nav.said["t"+i]){nav.said["t"+i]=1;say(`Tra ${Math.max(10,Math.round(dd/10)*10)} metri: ${nav.turns[i].text}`)}
+      else if(dd<=25&&!nav.said["n"+i]){nav.said["n"+i]=nav.said["t"+i]=1;say(nav.turns[i].text);try{navigator.vibrate&&navigator.vibrate(200)}catch(e){}}}}
   const si=(o.stops||[]).findIndex(x=>Math.abs(x.km-nav.prog)<=40);
   if(si>0&&!nav.said["s"+si]){nav.said["s"+si]=1;say(`Tappa ${si+1}: ${o.stops[si].t}. ${o.stops[si].d}`)}
 }
@@ -3305,8 +3502,10 @@ function paintNav(){
   }
   // prossima svolta (indicazioni passo-passo)
   let turn="";
-  if(NS.turns&&nav.pos&&!arrived&&!(nav.off>50)){const t=nav.turns.find(x=>x.km>nav.prog+5);if(t){const dd=t.km-nav.prog;turn=dd<=30?`Adesso: ${esc(t.text)}`:dd<=600?`Tra ${fmtM(dd)}: ${esc(t.text)}`:""}}
-  $("nav-turn").hidden=!turn;$("nav-turn").textContent=turn.replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&lt;/g,"<").replace(/&gt;/g,">");
+  if(NS.turns&&!arrived&&!(nav.off>50&&nav.pos)){
+    const t=nav.turns.find(x=>x.km>nav.prog+5)||{km:nav.total,end:1,text:o.loop?"Arrivo: di nuovo alla partenza":"Arrivo: fine del percorso"},dd=t.km-nav.prog;
+    turn=`${turnIco(t)}<div><b>${nav.pos&&dd<=30?"Adesso":fmtM(dd)}</b><span>${esc(t.text)}</span></div><svg class="tl"><use href="#i-list"/></svg>`;}
+  const tb=$("nav-turn");tb.hidden=!turn;if(turn&&tb.dataset.h!==turn){tb.dataset.h=turn;tb.innerHTML=turn}
   $("nav-share").classList.toggle("on",!!nav.share);
   const m=$("nav-msg");if(m.dataset.h!==msg){m.dataset.h=msg;m.innerHTML=msg}m.className="nav-msg "+cls;
   $("nav-pause").textContent=nav.paused?"Riprendi":"Pausa";
@@ -3519,9 +3718,14 @@ async function boot(){
   if(S.dog&&store.get(NAV_KEY)&&restoreNav()&&location.hash!=="#vai")location.hash="vai"; // c'era una passeggiata in corso
   ["alldogs-trails-v3","alldogs-feat-v1","alldogs-elev-v1","alldogs-wx-v1"].forEach(k=>store.del(k)); // vecchie copie non più usate
   route();
+  if("serviceWorker" in navigator&&location.protocol!=="file:")navigator.serviceWorker.register("sw.js").catch(e=>console.warn("offline:",e));
+  await bootData();
+}
+async function bootData(){
+  if(S.ready||bootData.busy)return;bootData.busy=true;
   try{$("status").textContent="Carico i sentieri…";await loadIndex()}
-  catch(e){$("list").innerHTML=`<div class="err">Non riesco a caricare i sentieri. Controlla la connessione e ricarica la pagina.</div>`;$("status").textContent="";return}
-  S.ready=true;S.featReady=true;$("status").textContent="";
+  catch(e){bootData.busy=false;$("list").innerHTML=`<div class="err">${navigator.onLine?"Non riesco a caricare i sentieri. Controlla la connessione e ricarica la pagina.":"Sei senza internet. Puoi usare i sentieri che hai scaricato: li trovi in <a href=\"#salvati\">Salvati</a>."}</div>`;$("status").textContent="";return}
+  bootData.busy=false;S.ready=true;S.featReady=true;$("status").textContent="";
   await refreshView();
   if(location.hash==="#salvati")showSaved();
 }
