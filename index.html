@@ -816,6 +816,37 @@ body{font-size:17px;line-height:1.5}
 .phstrip figcaption a{color:inherit}
 .srow .si.ph{padding:0;overflow:hidden;background:var(--accent-soft)}
 .srow .si.ph img{width:100%;height:100%;object-fit:cover;display:block}
+/* ===== Primo avvio a domande (una per schermata) ===== */
+#wiz{position:fixed;inset:0;z-index:60;background:var(--bg);display:flex;flex-direction:column;overflow:hidden}
+#wiz[hidden]{display:none}
+#wiz .wz-top{display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top) + 10px) 16px 8px}
+#wiz .wz-top .prog{flex:1;margin:0;height:6px}
+#wiz .wz-top .prog i{background:var(--accent);transition:width .25s ease}
+#wiz .wz-skip{background:none;border:0;color:var(--muted);font:inherit;font-size:15px;font-weight:600;padding:8px 4px;min-width:44px}
+#wiz .wz-body{flex:1;overflow-y:auto;padding:14px 20px 20px;max-width:560px;width:100%;margin:0 auto}
+#wiz h1{font-size:32px;line-height:1.15}
+#wiz .wz-sub{color:var(--muted);margin-top:8px}
+#wiz .wz-bot{padding:12px 20px calc(env(safe-area-inset-bottom) + 14px);max-width:560px;width:100%;margin:0 auto}
+#wiz .field{font-size:20px;margin-top:20px}
+#wiz .wz-opts{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+#wiz .wz-opts .pill{font-size:16px;padding:10px 15px}
+#wiz .wz-card{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:16px;padding:14px 16px;margin-top:10px;font:inherit;color:var(--ink)}
+#wiz .wz-card b{font-size:18px;display:block}
+#wiz .wz-card small{color:var(--muted);font-size:15px;display:block;margin-top:3px}
+#wiz .wz-card[aria-pressed=true]{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent)}
+#wiz .wz-list{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+#wiz .wz-list button{text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:11px 14px;font:inherit;font-size:17px;color:var(--ink)}
+#wiz .wz-list button[aria-pressed=true]{border-color:var(--accent);background:var(--accent-soft)}
+#wiz .wz-ph{width:132px;height:132px;border-radius:50%;margin:22px auto 6px;background:var(--surface) center/cover no-repeat;border:1px solid var(--line);display:grid;place-items:center;color:var(--dog);font-family:Newsreader,serif;font-size:56px;font-weight:600}
+#wiz .wz-grid{display:grid;grid-template-columns:auto repeat(4,1fr);gap:6px;margin-top:16px;align-items:center}
+#wiz .wz-grid span{font-size:14px;color:var(--muted);text-align:center}
+#wiz .wz-grid span.rl{text-align:left;color:var(--ink);font-weight:600;font-size:15px;padding-right:4px}
+#wiz .wz-grid button{border:1px solid var(--line);background:var(--surface);border-radius:12px;min-height:46px;font:inherit;font-size:14px;color:var(--muted)}
+#wiz .wz-grid button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+#wiz .wz-seg{display:flex;gap:8px;margin-top:16px}
+#wiz .wz-tip{border:1px solid var(--line);background:var(--surface);border-radius:16px;padding:16px;margin-top:18px}
+#wiz .wz-tip p+p{margin-top:8px}
+#wiz .wz-name{color:var(--dog)}
 </style>
 </head>
 <body>
@@ -1085,6 +1116,7 @@ body{font-size:17px;line-height:1.5}
     <a class="hrow" href="#salute"><span class="hi"><svg><use href="#i-pulse"/></svg></span><span class="ht"><b>Salute e peso</b><small>Prova delle costole, movimento giusto, promemoria</small></span><i>›</i></a>
     <p class="hgrp">Prima di uscire</p>
     <a class="hrow" href="#zaino"><span class="hi"><svg><use href="#i-bag"/></svg></span><span class="ht"><b>Zaino pronto</b><small>Cosa portare, con il meteo di oggi</small></span><i>›</i></a>
+    <button class="hrow" id="wz-redo" type="button"><span class="hi"><svg><use href="#i-book"/></svg></span><span class="ht"><b>Rifai le domande iniziali</b><small>Abitudini, orari liberi e obiettivo</small></span><i>›</i></button>
     <a class="hrow" href="#regole"><span class="hi"><svg><use href="#i-book"/></svg></span><span class="ht"><b>Regole del posto</b><small>Guinzaglio, spiagge, parchi, pascoli</small></span><i>›</i></a>
   </nav>
   <details class="fold" id="fold-dog"><summary><span><b id="fold-dog-t">I suoi dati</b><small>Età, peso, allenamento, salute e libretto</small></span><i>›</i></summary><div class="foldb">
@@ -1147,6 +1179,9 @@ body{font-size:17px;line-height:1.5}
   <div class="nav-bot"><p class="small muted" id="fol-info"></p><div class="row" style="margin-top:8px"><a class="btn" id="fol-go" target="_blank" rel="noopener" hidden>Portami da loro</a><a class="btn pri" href="#esplora">Apri AllDogs</a></div></div>
 </section>
 
+<!-- PRIMO AVVIO: domande una per schermata -->
+<section id="wiz" hidden aria-labelledby="wz-t"><div class="wz-top"><button class="round" id="wz-back" type="button" aria-label="Indietro"><svg><use href="#i-back"/></svg></button><div class="prog" role="progressbar" aria-label="Avanzamento" aria-valuemin="0" aria-valuemax="100"><i id="wz-bar"></i></div><button class="wz-skip" id="wz-skip" type="button">Salta</button></div>
+<div class="wz-body" id="wz-body"></div><div class="wz-bot"><button class="btn pri wide" id="wz-next" type="button">Avanti</button></div></section>
 <nav id="tabs" aria-label="Sezioni"><div>
   <a href="#esplora" data-t="esplora"><svg><use href="#i-search"/></svg>Esplora</a>
   <a href="#attivita" data-t="attivita"><svg><use href="#i-route"/></svg>Attività</a>
@@ -1351,7 +1386,7 @@ async function syncPush(sb,uid,st){
   const del=async(t,col,ids,own="user_id")=>{for(let i=0;i<ids.length;i+=100){const {error}=await sb.from(t).delete().eq(own,uid).in(col,ids.slice(i,i+100));if(error)throw error}};
   // cani
   const map={};
-  const dRows=DL.map(d=>({owner_id:uid,local_id:d.id,nome:d.name||"",razza:d.breed||null,eta_anni:syNum(d.age),peso_kg:syNum(d.weight),energia:d.train||null,agilita:d.agil||null,mantello:d.coat||null,
+  const dRows=DL.map(d=>({owner_id:uid,local_id:d.id,nome:d.name||"",razza:d.breed||null,eta_anni:syNum(d.age),data_nascita:d.birth||null,peso_kg:syNum(d.weight),energia:d.energy||null,allenamento:d.train||null,orari_liberi:d.orari?{fasce:d.orari,slots:d.orariSlots||orariSlots(d.orari)}:{},durata_preferita:syNum(d.durata),obiettivo:d.obiettivo||null,soffre_caldo:!!d.caldo,agilita:d.agil||null,mantello:d.coat||null,
     brachicefalo:!!d.brachy,patologie:d.pat||{},patologie_note:d.patOther||null,
     dati:{profilo:d,obiettivo:store.get(syK("alldogs-goal",d.id)),lezioni:store.get(syK("alldogs-train",d.id)),salute:store.get(syK("alldogs-salute",d.id))}}));
   if(dRows.length){const {data,error}=await sb.from("dogs").upsert(dRows,{onConflict:"owner_id,local_id"}).select("id,local_id");if(error)throw error;data.forEach(r=>map[r.local_id]=r.id)}
@@ -1506,7 +1541,7 @@ function capacity(d){
   if(p.diab){f*=.85;notes.push("ha il diabete")}
   if(p.altro){f*=.85;notes.push("ha un problema di salute"+(d.patOther?" ("+d.patOther+")":""))}
   if(p.conv){k=Math.min(k,3);up=Math.min(up,100);notes.push("è in convalescenza")}
-  const sensitive=d.brachy||d.coat==="lungo"||d.age<1||d.age>=senior||d.weight>35||p.cuore||p.resp||p.peso;
+  const sensitive=d.brachy||d.caldo||d.coat==="lungo"||d.age<1||d.age>=senior||d.weight>35||p.cuore||p.resp||p.peso;
   const agil=p.art||p.conv?"bassa":d.agil;
   return {km:Math.max(1,Math.round(k*f*10)/10),up:Math.max(50,Math.round(up*f*fu/10)*10),notes,heat:(sensitive?21:24)+heat,sensitive,agil,health:pats(d).length>0};
 }
@@ -4712,7 +4747,7 @@ function renderPick(){const el=$("dpick");el.hidden=!S.dog||!!S.addDog;if(el.hid
   el.querySelectorAll("[data-dg]").forEach(b=>b.onclick=()=>{const id=b.dataset.dg;if(id===DOGS.cur)return;
     DOGS.cur=id;if(!DOGS.walk.includes(id))DOGS.walk=[id];dogsSave();
     try{localStorage.setItem("alldogs-dog",JSON.stringify(DOGS.list.find(x=>x.id===id)))}catch(e){}location.reload()});
-  $("dog-add").onclick=()=>{S.addDog=true;showDog();window.scrollTo(0,0)};
+  $("dog-add").onclick=()=>wzOpen("add");
 }
 $("add-cancel").onclick=()=>{S.addDog=false;showDog()};
 $("dog-del").onclick=()=>{const nm=S.dog&&S.dog.name||"questo cane";if(DOGS.list.length<2||!confirm(`Tolgo ${nm} dall'app? Profilo, salute e lezioni di ${nm} saranno cancellati da questo telefono. Le passeggiate nel diario restano.`))return;
@@ -4754,6 +4789,134 @@ $("dog-save").onclick=()=>{
   if(first)location.hash="esplora";else showDog();
 };
 
+// ================= Primo avvio a domande =================
+// Una domanda per schermata. Riempie lo stesso profilo del cane del modulo "I suoi dati" (niente doppioni) e aggiunge
+// abitudini: orari liberi (d.orari + d.orariSlots), durata preferita (d.durata, minuti) e obiettivo (d.obiettivo). Gli orari servono poi per le notifiche.
+const FASCE=[["mattina","Mattina","7:00","9:00"],["pranzo","Pranzo","12:00","14:00"],["pomeriggio","Pomeriggio","16:00","18:00"],["sera","Sera","19:00","21:00"]];
+const ORARI_GIORNI=[["feriali","Lun-Ven",[1,2,3,4,5]],["weekend","Sab-Dom",[6,0]]];
+// orari liberi come elenco riutilizzabile: [{giorni:[1,2,3,4,5], fascia:"mattina", dalle:"7:00", alle:"9:00"}] (giorni: 0 = domenica)
+function orariSlots(o){const out=[];if(!o)return out;for(const [k,,gg] of ORARI_GIORNI)for(const f of o[k]||[]){const F=FASCE.find(x=>x[0]===f);if(F)out.push({giorni:gg,fascia:f,dalle:F[2],alle:F[3]})}return out}
+const RAZZE=["Meticcio piccolo (fino a 10 kg)","Meticcio medio (10-25 kg)","Meticcio grande (oltre 25 kg)","Labrador","Golden retriever","Pastore tedesco","Pastore australiano","Border collie","Jack Russell","Barboncino","Barboncino toy","Chihuahua","Yorkshire","Maltese","Shih tzu","Bassotto","Beagle","Cocker spaniel","Bulldog francese","Bulldog inglese","Carlino","Boxer","Cavalier King Charles","Volpino italiano","Pomerania","Spitz","Shiba inu","Akita","Husky","Alaskan malamute","Samoiedo","Corgi","Setter inglese","Setter irlandese","Pointer","Bracco italiano","Spinone italiano","Kurzhaar","Weimaraner","Vizsla","Segugio italiano","Lagotto romagnolo","Springer spaniel","Epagneul breton","Dalmata","Maremmano","Pastore belga malinois","Pastore svizzero bianco","Pastore bergamasco","Collie","Shetland","Rottweiler","Dobermann","Cane corso","Mastino napoletano","Alano","San Bernardo","Terranova","Bovaro del Bernese","Leonberger","Dogo argentino","Amstaff","Pitbull","Staffordshire bull terrier","Bull terrier","Schnauzer","Schnauzer nano","West highland terrier","Fox terrier","Boston terrier","Bichon frisé","Levriero","Whippet","Greyhound","Galgo","Basset hound","Chow chow","Shar pei","Bolognese","Cirneco dell'Etna","Pinscher","Pastore del Caucaso"];
+const PESO_MET={"Meticcio piccolo (fino a 10 kg)":7,"Meticcio medio (10-25 kg)":17,"Meticcio grande (oltre 25 kg)":30};
+const LIMITI=[["caldo","Soffre il caldo"],["art","Problemi alle articolazioni"],["brachy","Muso schiacciato"],["cuore","Cuore o respiro"],["peso","Un po' in sovrappeso"],["salti","Meglio evitare salti e rocce"],["conv","Si sta riprendendo da un intervento"],["altro","Altro"]];
+const OBIETTIVI=[["movimento","Più movimento","Camminare di più, con un programma prudente"],["social","Socializzazione","Incontrare altri cani e persone con calma"],["addestramento","Addestramento","Una lezione nuova ogni giorno"],["peso","Rimettersi in forma","Perdere qualche chilo, piano piano"],["scoprire","Scoprire posti nuovi","Sentieri, parchi e spiagge adatti a lui"]];
+const ENERGIA=[["bassa","Bassa","Tranquillo: gli bastano passeggiate brevi e con calma","poco"],["media","Media","Gli piace camminare, ogni tanto un'escursione","medio"],["alta","Alta","Instancabile: corre, esplora, vorrebbe uscire sempre","molto"]];
+const DURATE=[15,30,45,60,90];
+const W={on:false,mode:"new",i:0,d:null,photo:undefined,ageMode:"anni",q:""};
+const wzN=()=>esc((W.d.name||"").trim()||"il tuo cane");
+const wzNC=()=>{const n=wzN();return n.charAt(0).toUpperCase()+n.slice(1)};
+const wzOn=(sel)=>{const b=document.querySelector(sel);return !!b&&b.getAttribute("aria-pressed")==="true"};
+const WSTEPS=[
+ {k:"name",t:()=>"Come si chiama il tuo cane?",sub:()=>"Ti faccio qualche domanda veloce per consigliarti i giri giusti per lui. Puoi saltare quelle che vuoi.",
+  html:()=>`<input class="field" id="wz-in" autocomplete="off" autocapitalize="words" enterkeyhint="next" placeholder="Nome" value="${esc(W.d.name||"")}" aria-label="Nome del cane">`,
+  read:()=>{W.d.name=$("wz-in").value.trim();if(!W.d.name){toast("Scrivi il suo nome, oppure tocca Salta");return false}return true},skip:()=>{W.d.name=W.d.name||"Il mio cane"}},
+ {k:"photo",t:()=>`Una foto di ${wzN()}?`,sub:()=>"Facoltativa: la vedi nella barra in basso e nella sua pagina.",
+  html:()=>{const ph=W.photo||null;return `<div class="wz-ph" style="${ph?`background-image:url(${ph});color:transparent`:""}">${esc((W.d.name||"?").charAt(0).toUpperCase())}</div>
+   <div class="row" style="justify-content:center;margin-top:14px;flex-wrap:wrap"><button class="btn" id="wz-phb" type="button">${ph?"Cambia foto":"Scegli una foto"}</button>${ph?`<button class="btn" id="wz-phx" type="button">Togli</button>`:""}</div><input type="file" id="wz-phin" accept="image/*" hidden>`},
+  bind:()=>{$("wz-phb").onclick=()=>$("wz-phin").click();const x=$("wz-phx");if(x)x.onclick=()=>{W.photo=null;wzPaint()};
+   $("wz-phin").onchange=e=>{const fl=e.target.files[0];if(!fl)return;const img=new Image(),u=URL.createObjectURL(fl);
+    img.onload=()=>{const q=Math.min(img.width,img.height),c=document.createElement("canvas");c.width=c.height=320;c.getContext("2d").drawImage(img,(img.width-q)/2,(img.height-q)/2,q,q,0,0,320,320);URL.revokeObjectURL(u);W.photo=c.toDataURL("image/jpeg",.82);wzPaint()};
+    img.onerror=()=>{URL.revokeObjectURL(u);toast("Non riesco a leggere questa immagine")};img.src=u}},read:()=>true},
+ {k:"breed",t:()=>`Di che razza è ${wzN()}?`,sub:()=>"Scrivi per cercare. Se è un meticcio, scegli la sua taglia.",
+  html:()=>`<input class="field" id="wz-in" type="search" autocomplete="off" placeholder="Cerca la razza" value="${esc(W.q||W.d.breed||"")}" aria-label="Razza"><div class="wz-list" id="wz-list"></div>`,
+  bind:()=>{const paint=()=>{const raw=$("wz-in").value.trim(),q=norm(raw),L=(q?RAZZE.filter(r=>norm(r).includes(q)):RAZZE).slice(0,9);
+     $("wz-list").innerHTML=L.map(r=>`<button type="button" aria-pressed="${W.d.breed===r}">${esc(r)}</button>`).join("")+(q&&!RAZZE.some(r=>norm(r)===q)?`<button type="button" data-own="1">Usa «${esc(raw)}»</button>`:"");
+     $("wz-list").querySelectorAll("button").forEach(b=>b.onclick=()=>{W.d.breed=b.dataset.own?$("wz-in").value.trim():b.textContent;W.q="";wzGo(1)})};
+   $("wz-in").oninput=()=>{W.q=$("wz-in").value;paint()};paint()},
+  read:()=>{const v=$("wz-in").value.trim();if(v)W.d.breed=RAZZE.find(r=>norm(r)===norm(v))||v;return true}},
+ {k:"age",t:()=>`Quanti anni ha ${wzN()}?`,sub:()=>"Puoi scrivere gli anni oppure la data di nascita.",
+  html:()=>`<div class="wz-seg"><button class="pill" type="button" data-am="anni" aria-pressed="${W.ageMode==="anni"}">Anni</button><button class="pill" type="button" data-am="data" aria-pressed="${W.ageMode==="data"}">Data di nascita</button></div>
+   ${W.ageMode==="anni"?`<input class="field" id="wz-in" type="number" inputmode="decimal" min="0" max="25" step="0.5" placeholder="Es. 4" value="${W.d.age!=null&&W.d.age!==""?esc(W.d.age):""}" aria-label="Età in anni"><p class="small muted" style="margin-top:8px">Per un cucciolo: 6 mesi = 0,5.</p>`
+   :`<input class="field" id="wz-in" type="date" max="${dKey(Date.now())}" value="${esc(W.d.birth||"")}" aria-label="Data di nascita">`}`,
+  bind:()=>document.querySelectorAll("[data-am]").forEach(b=>b.onclick=()=>{W.ageMode=b.dataset.am;wzPaint()}),
+  read:()=>{const v=$("wz-in").value.trim();if(!v){toast("Scrivi l'età, oppure tocca Salta");return false}
+   if(W.ageMode==="data"){const t=Date.parse(v);if(!(t<Date.now())){toast("Controlla la data");return false}W.d.birth=v;W.d.age=Math.round((Date.now()-t)/(365.25*864e5)*10)/10}
+   else{const a=parseFloat(v.replace(",","."));if(!(a>=0&&a<=25)){toast("Controlla l'età");return false}W.d.age=a;delete W.d.birth}return true},
+  skip:()=>{if(!(W.d.age>=0)||W.d.age==="")W.d.age=4}},
+ {k:"weight",t:()=>`Quanto pesa ${wzN()}?`,sub:()=>{const r=breedRange(W.d);return r?`Di solito pesa tra ${r.min} e ${r.max} kg.`:"Anche un peso a occhio va bene: serve per capire quanta strada può fare."},
+  html:()=>`<input class="field" id="wz-in" type="number" inputmode="decimal" min="1" max="100" placeholder="Chili" value="${W.d.weight>0?esc(W.d.weight):""}" aria-label="Peso in chili">`,
+  read:()=>{const w=parseFloat($("wz-in").value.replace(",","."));if(!(w>0&&w<=100)){toast("Scrivi il peso in chili, oppure tocca Salta");return false}W.d.weight=w;return true},
+  skip:()=>{if(!(W.d.weight>0)){const r=breedRange(W.d);W.d.weight=PESO_MET[W.d.breed]||(r?Math.round((r.min+r.max)/2):20)}}},
+ {k:"energy",t:()=>`Quanta energia ha ${wzN()}?`,sub:()=>"Pensa a una giornata normale.",
+  html:()=>ENERGIA.map(([v,b,s])=>`<button class="wz-card" type="button" data-v="${v}" aria-pressed="${W.d.energy===v}"><b>${b}</b><small>${s}</small></button>`).join(""),
+  bind:()=>document.querySelectorAll("#wz-body [data-v]").forEach(b=>b.onclick=()=>{W.d.energy=b.dataset.v;wzGo(1)}),
+  read:()=>{if(!W.d.energy){toast("Scegli una risposta, oppure tocca Salta");return false}return true}},
+ {k:"limits",t:()=>`${wzNC()} ha qualche limite?`,sub:()=>"Ne tengo conto per i giri e per il caldo. Puoi sceglierne più di uno, o nessuno.",
+  html:()=>{const L=wzLim();return `<div class="wz-opts">${LIMITI.map(([k,t])=>`<button class="pill" type="button" data-l="${k}" aria-pressed="${!!L[k]}">${t}</button>`).join("")}</div>
+   <div class="form" style="margin-top:12px" id="wz-altro" ${L.altro?"":"hidden"}><label class="w">Quale?<input id="wz-altro-in" autocomplete="off" value="${esc(W.d.patOther||"")}"></label></div>
+   <p class="small muted" style="margin-top:14px">Non sostituisce il veterinario: se hai dubbi, chiedi a lui.</p>`},
+  bind:()=>document.querySelectorAll("[data-l]").forEach(b=>b.onclick=()=>{const on=b.getAttribute("aria-pressed")!=="true";b.setAttribute("aria-pressed",on);if(b.dataset.l==="altro")$("wz-altro").hidden=!on}),
+  read:()=>{const on=k=>wzOn(`[data-l="${k}"]`),p=Object.assign({},W.d.pat||{});
+   for(const k of ["art","cuore","peso","conv","altro"]){if(on(k))p[k]=true;else delete p[k]}if(!on("cuore"))delete p.resp;
+   W.d.brachyAsked=true;W.d.pat=p;W.d.patOther=on("altro")?$("wz-altro-in").value.trim():"";W.d.brachy=on("brachy");W.d.caldo=on("caldo");
+   if(on("salti"))W.d.agil="bassa";else if(W.d.agil==="bassa")W.d.agil="media";W.d.healthOk=!Object.keys(p).length;return true}},
+ {k:"orari",t:()=>"Quando siete liberi per uscire?",sub:()=>"Tocca le fasce in cui di solito potete fare una passeggiata. Più avanti potrò ricordartelo all'orario giusto.",
+  html:()=>{const o=W.d.orari||{},has=(g,f)=>!!(o[g]&&o[g].includes(f));return `<div class="wz-grid" role="group" aria-label="Orari liberi"><span></span>${FASCE.map(f=>`<span>${f[1]}<br>${f[2]}</span>`).join("")}
+   ${ORARI_GIORNI.map(([g,lb])=>`<span class="rl">${lb}</span>${FASCE.map(f=>`<button type="button" data-g="${g}" data-f="${f[0]}" aria-pressed="${has(g,f[0])}" aria-label="${lb}, ${f[1]}">${has(g,f[0])?"Sì":"–"}</button>`).join("")}`).join("")}</div>`},
+  bind:()=>document.querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>{const on=b.getAttribute("aria-pressed")!=="true";b.setAttribute("aria-pressed",on);b.textContent=on?"Sì":"–"}),
+  read:()=>{const o={};for(const [g] of ORARI_GIORNI)o[g]=[...document.querySelectorAll(`[data-g="${g}"][aria-pressed="true"]`)].map(b=>b.dataset.f);W.d.orari=o;return true}},
+ {k:"durata",t:()=>`Quanto dura di solito una passeggiata con ${wzN()}?`,sub:()=>"La uso come punto di partenza quando crei un giro.",
+  html:()=>`<div class="wz-opts">${DURATE.map(m=>`<button class="pill" type="button" data-m="${m}" aria-pressed="${W.d.durata===m}">${m===90?"Un'ora e mezza o più":m===60?"Un'ora":m+" minuti"}</button>`).join("")}</div>`,
+  bind:()=>document.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{W.d.durata=+b.dataset.m;wzGo(1)}),
+  read:()=>{if(!W.d.durata){toast("Scegli una durata, oppure tocca Salta");return false}return true}},
+ {k:"goal",t:()=>`Cosa vorresti fare con ${wzN()}?`,sub:()=>"Scegli la cosa più importante adesso. Puoi cambiarla quando vuoi.",
+  html:()=>OBIETTIVI.map(([v,b,s])=>`<button class="wz-card" type="button" data-v="${v}" aria-pressed="${W.d.obiettivo===v}"><b>${b}</b><small>${s}</small></button>`).join(""),
+  bind:()=>document.querySelectorAll("#wz-body [data-v]").forEach(b=>b.onclick=()=>{W.d.obiettivo=b.dataset.v;wzGo(1)}),
+  read:()=>{if(!W.d.obiettivo){toast("Scegli una risposta, oppure tocca Salta");return false}return true}},
+ {k:"end",end:true,t:()=>`Tutto pronto per <span class="wz-name">${wzN()}</span>!`,sub:()=>"",
+  html:()=>`<div class="wz-tip">${wzTip(W.d).map(x=>`<p>${x}</p>`).join("")}</div>
+   ${SY.user?"":`<div class="wz-tip"><p><b>Vuoi un account?</b> È facoltativo: serve per non perdere i dati di ${wzN()} se cambi telefono.</p><button class="btn wide" id="wz-acc" type="button" style="margin-top:10px">Crea un account</button></div>`}
+   ${W.mode==="new"?`<p class="small muted" style="margin-top:14px">Toccando Inizia accetti le <a href="termini.html">condizioni d'uso</a>. <a href="privacy.html">Informativa sulla privacy</a>.</p>`:""}`,
+  bind:()=>{const a=$("wz-acc");if(a)a.onclick=()=>wzFinish(true)},read:()=>true}
+];
+function wzLim(){const d=W.d,p=d.pat||{};return {caldo:!!d.caldo,art:!!p.art,brachy:!!d.brachy||(!d.onb&&!d.brachyAsked&&dogKind(d).brachy),cuore:!!(p.cuore||p.resp),peso:!!p.peso,salti:d.agil==="bassa",conv:!!p.conv,altro:!!p.altro}}
+// il primo consiglio, fatto sulle risposte
+function wzTip(d0){const d=Object.assign({},DEF_DOG,d0),c=capacity(d),k=dogKind(d),nm=wzN(),out=[];
+  const E=ENERGIA.find(e=>e[0]===d.energy);if(E)d.train=E[3];
+  const mins=d.durata||({bassa:30,media:45,alta:60}[d.energy])||45,fer=(d.orari&&d.orari.feriali)||[],we=(d.orari&&d.orari.weekend)||[];
+  out.push(`<b>Il primo consiglio:</b> ${nm} può fare giri fino a circa <b>${kmN(c.km)} km</b> e ${c.up} m di salita. Parti da passeggiate di <b>${mins} minuti</b> e allunga piano piano, se lo vedi in forma.`);
+  if(fer.length||we.length){const fl=a=>a.map(f=>({mattina:"la mattina",pranzo:"a pranzo",pomeriggio:"il pomeriggio",sera:"la sera"})[f]);
+    const hot=(k.brachy||d.caldo||k.heart)&&[...fer,...we].some(f=>f==="pranzo"||f==="pomeriggio");
+    out.push(`${fer.length?`Nei giorni feriali siete liberi ${andNames(fl(fer))}`:"Nei giorni feriali non avete segnato orari"}${we.length?`, nel weekend ${andNames(fl(we))}. Il weekend è il momento giusto per un sentiero un po' più lungo.`:"."}${hot?` Con il caldo, per ${nm} meglio mattina e sera: a pranzo e nel pomeriggio solo uscite brevi all'ombra.`:""}`)}
+  else if(k.brachy||d.caldo)out.push(`D'estate esci con ${nm} la mattina presto o la sera: soffre il caldo.`);
+  out.push({movimento:`Per muoversi di più: in <b>Allenati › Obiettivi</b> crei un calendario prudente, con il giorno della passeggiata lunga e i giorni di riposo.`,
+    social:`Per socializzare: sulla mappa trovi le aree cani vicine. Le prime volte vai negli orari tranquilli e resta poco.`,
+    addestramento:`Per l'addestramento: in <b>Allenati › Addestramento</b> trovi ogni giorno una lezione di pochi minuti, scelta per ${nm}.`,
+    peso:`Per rimettersi in forma: in <b>Salute e peso</b> fai la prova delle costole, poi crea in <b>Obiettivi</b> un programma che cresce piano.`,
+    scoprire:`Per scoprire posti nuovi: in <b>Esplora</b> i sentieri hanno già il verdetto per ${nm}. Inizia da quelli segnati Fattibile.`}[d.obiettivo]||`In <b>Esplora</b> trovi i sentieri vicini, già giudicati per ${nm}.`);
+  return out}
+function wzOpen(mode){W.mode=mode||"new";W.i=0;W.q="";W.ageMode="anni";W.photo=undefined;
+  W.d=W.mode==="redo"?JSON.parse(JSON.stringify(dog())):{name:"",breed:"",age:"",weight:"",train:"medio",agil:"media",coat:"corto",brachy:false,pat:{},patOther:"",health:{}};
+  if(W.mode==="redo"){W.photo=store.get(PHK)||undefined;if(W.d.birth)W.ageMode="data"}
+  W.on=true;$("wiz").hidden=false;document.body.style.overflow="hidden";wzPaint()}
+function wzClose(){W.on=false;$("wiz").hidden=true;document.body.style.overflow=""}
+function wzPaint(){const st=WSTEPS[W.i],n=WSTEPS.length-1,pc=Math.round(W.i/n*100);
+  $("wz-bar").style.width=pc+"%";$("wz-bar").parentNode.setAttribute("aria-valuenow",pc);
+  $("wz-back").style.visibility=W.i>0||W.mode!=="new"?"visible":"hidden";$("wz-back").setAttribute("aria-label",W.i>0?"Indietro":"Chiudi");
+  $("wz-skip").style.visibility=st.end?"hidden":"visible";
+  $("wz-body").innerHTML=`<h1 id="wz-t">${st.t()}</h1>${st.sub()?`<p class="wz-sub">${st.sub()}</p>`:""}${st.html()}`;
+  $("wz-next").textContent=st.end?(W.mode==="redo"?"Salva":"Inizia"):"Avanti";
+  if(st.bind)st.bind();$("wz-body").scrollTop=0;
+  const inp=$("wz-in");if(inp){if(inp.type!=="date"&&!matchMedia("(pointer:coarse)").matches)inp.focus();inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();wzNext()}}}}
+function wzGo(dir){W.i=Math.max(0,Math.min(WSTEPS.length-1,W.i+dir));wzPaint()}
+function wzNext(){const st=WSTEPS[W.i];if(st.end){wzFinish(false);return}if(st.read()===false)return;wzGo(1)}
+$("wz-next").onclick=wzNext;
+$("wz-skip").onclick=()=>{const st=WSTEPS[W.i];if(st.skip)st.skip();wzGo(1)};
+$("wz-back").onclick=()=>{if(W.i>0)wzGo(-1);else if(W.mode!=="new")wzClose()};
+$("wz-redo").onclick=()=>wzOpen("redo");
+function wzFinish(acc){const d=W.d;
+  if(!d.name)d.name="Il mio cane";if(!(d.age>=0)||d.age==="")d.age=4;if(!(d.weight>0))WSTEPS.find(s=>s.k==="weight").skip();
+  const E=ENERGIA.find(e=>e[0]===d.energy);if(E)d.train=E[3];
+  if(!d.pat)d.pat={};if(d.patOther==null)d.patOther="";if(!d.health)d.health={};
+  d.orariSlots=orariSlots(d.orari);d.onb=Date.now();
+  if(W.mode==="add"){DOGS.cur="d"+Date.now().toString(36);DOGS.walk=[DOGS.cur];dogsSave()}
+  const id=DOGS.cur,pk=id==="d1"?"alldogs-photo":"alldogs-photo-"+id;
+  S.dog=d;store.set("alldogs-dog",d);
+  if(W.photo!==undefined){if(W.photo)store.set(pk,W.photo);else store.del(pk)}
+  try{if(acc)sessionStorage.setItem("alldogs-openacc","1")}catch(e){}
+  location.hash=acc||W.mode!=="new"?"cane":"esplora";location.reload()}
+setTimeout(()=>{try{if(sessionStorage.getItem("alldogs-openacc")){sessionStorage.removeItem("alldogs-openacc");setTimeout(openAcc,400)}}catch(e){}
+  if(!S.dog&&!location.hash.startsWith("#segui-"))wzOpen("new")},0);
 // i dati del cane stanno in cima alla sua pagina
 $("fold-slot").replaceWith($("fold-dog"));
 // ================= Avvio =================
