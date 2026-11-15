@@ -76,7 +76,7 @@ che mappa, miniature, filtri, scheda, meteo funzionino a larghezza telefono (390
 - Pagine vuote con un pulsante per cominciare; avvertenze in una riga in fondo alle pagine.
 
 ## Aggiunte del 15 novembre 2026 (dopo il check-up, richieste da Giuseppe)
-- **Andata e ritorno**: nei sentieri non ad anello (partenza e arrivo a più di 500 m) km, salita (salita + discesa dell'andata), tempo, acqua, passi,
+- **Andata e ritorno**: nei sentieri non ad anello (partenza e arrivo a più di 300 m) km, salita (salita + discesa dell'andata), tempo, acqua, passi,
   filtro lunghezza e verdetto contano SEMPRE andata e ritorno (`totLen`, `totUp`, `item()`). In cammino: avviso a fine andata, km mancanti col ritorno (`nav.back`).
 - **Cani ammessi** (priorità di Giuseppe: è il vantaggio dell'app): campo `dg` = [stato, testo, area] in ogni sentiero, da `tools/build_dogs.py`.
   Stati: `no` vietati, `lim` solo alcuni sentieri/periodi, `lea` al guinzaglio, `ok` nessun divieto noto. Regole dei parchi scritte in `RULES`
@@ -92,7 +92,22 @@ che mappa, miniature, filtri, scheda, meteo funzionino a larghezza telefono (390
   in IndexedDB `rv-<id>-<ora>`), foto scattate durante il giro (`nv-…`, con il punto GPS) che a fine giro si possono mettere nella recensione.
   Le risposte compaiono in «Punti critici». Per ora tutto locale: con Supabase diventeranno pubbliche.
 - **Primo avvio corto**: nome, età, peso, allenamento, muso schiacciato. Il resto dopo, con l'invito «Completa il libretto di …» nella pagina del cane.
-- **Privacy e condizioni d'uso**: `privacy.html`, `termini.html` (bozze; mancano i dati del titolare). Link nel primo avvio e nelle Impostazioni.
+- **Privacy e condizioni d'uso**: `privacy.html`, `termini.html` (bozze; titolare Giuseppe Parisi, da far rivedere a un esperto). Link nel primo avvio e nelle Impostazioni.
+
+## Sistemazioni del 15 novembre 2026, notte
+- **Forma del percorso** (`retInfo` in index.html = `ret_info` in tools/build_data.py): ritorno = metri lungo il percorso fino al primo punto a meno di 80 m
+  dall'arrivo, riportati alla lunghezza ufficiale. 0 = anello; meno di 3/4 = **anello con un tratto da rifare** (`shape:"lolli"`, es. Lago d'Averno: 3,6 + 0,8 = 4,5 km);
+  altrimenti andata e ritorno (`line`, il doppio). Totali, verdetto, ricerca (`names.json` colonna 8), descrizioni, navigazione (`nav.retK`) usano questo.
+- **Anteprima 3D**: dopo l'arrivo torna alla partenza (tutto o solo il tratto iniziale), km e quota del ritorno; visuale che guarda 140 m avanti e gira piano, centro che insegue la freccia.
+- **Mappa con i filtri**: l'allargamento automatico del raggio scatta una sola volta per combinazione di filtri (`fsig`), poi la mappa si muove liberamente.
+- **Verdetto**: «Con prudenza»/«Non adatto» mostrano il motivo breve tra parentesi (pioggia, caldo, lunghezza…) su schede, scheda sentiero e ricerca.
+- **Mappa**: segnaposto di partenza grande con bandierina e scritta; fontanelle del sentiero solo se «Fontanelle e punti acqua» è acceso (spento di base);
+  dopo il tramonto Outdoor → navigation-night e Strade → dark (alba/tramonto calcolati sul centro mappa, controllo ogni 5 minuti).
+- **Filtro «Tipo di percorso»**: ad anello, anello con tratto da rifare, andata e ritorno, giri in città, sentieri con numero, pianeggianti.
+- **Proposte degli utenti**: «Proponi un luogo o un sentiero» (pagina del cane e menu mappe). Per ora salvate sul telefono e inviate per e-mail allo sviluppatore;
+  con Supabase diventeranno una tabella da approvare.
+- Tolto il tasto «Indicazioni» dalla scheda sentiero. Tasto «Chiedi» con la foto di un pastore australiano black tricolor (crediti in `img/aussie/credits.txt`).
+- **Mappe di Apple**: MapKit JS richiede l'account Apple Developer (99 $/anno, serve comunque per l'App Store): rimandato all'app negli store.
 
 ## Rimandato, deciso con Giuseppe (15/11/2026)
 - Dati solo sul telefono: va bene per l'alpha. Poi **account** (Supabase) con dati salvati per account, multi-cane e sync.
