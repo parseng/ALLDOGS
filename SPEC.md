@@ -107,6 +107,9 @@ che mappa, miniature, filtri, scheda, meteo funzionino a larghezza telefono (390
 - **Proposte degli utenti**: «Proponi un luogo o un sentiero» (pagina del cane e menu mappe). Per ora salvate sul telefono e inviate per e-mail allo sviluppatore;
   con Supabase diventeranno una tabella da approvare.
 - Tolto il tasto «Indicazioni» dalla scheda sentiero. Tasto «Chiedi» con la foto di un pastore australiano black tricolor (crediti in `img/aussie/credits.txt`).
+- **Luoghi da lontano**: `data/p/all.json` (da `tools/build_poiall.py`, solo tipo e posizione) mostra aree cani, veterinari, spiagge e parchi raggruppati in cerchi con il numero anche a mappa lontana; da vicino restano i punti con i dettagli. Aree cani anche dalla ricerca Mapbox (categoria dog_park), come i veterinari.
+- **Anteprima 3D**: la scheda del sentiero si abbassa e la barra dell'anteprima le sta sopra (prima la copriva e non si poteva più rialzare).
+- **Assistente con meta**: Gemini restituisce `destination`/`via`/`one_way`/`from_my_position`; l'app trova il posto (ricerca Mapbox vicino alla partenza) e OpenRouteService calcola partenza → meta → partenza, con la meta come tappa (`toRoute`).
 - **Mappe di Apple**: MapKit JS richiede l'account Apple Developer (99 $/anno, serve comunque per l'App Store): rimandato all'app negli store.
 
 ## Rimandato, deciso con Giuseppe (15/11/2026)

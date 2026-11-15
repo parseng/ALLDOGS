@@ -402,7 +402,7 @@ button.tag{font:inherit;font-size:15px;color:var(--ink);cursor:pointer}
 .mk-fly{width:34px;height:34px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
 .mk-fly svg{width:100%;height:100%;display:block}
 .mk-fly path{fill:#d9531a;stroke:#fff;stroke-width:2;stroke-linejoin:round}
-.flybar{position:absolute;left:10px;right:10px;bottom:30px;z-index:9;background:var(--surface);border-radius:16px;padding:8px 10px;display:flex;gap:10px;align-items:center;box-shadow:0 6px 20px rgba(0,0,0,.35);font-size:15px}
+.flybar{position:absolute;left:10px;right:10px;bottom:calc(var(--tsh,18px) + 12px);z-index:9;background:var(--surface);border-radius:16px;padding:8px 10px;display:flex;gap:10px;align-items:center;box-shadow:0 6px 20px rgba(0,0,0,.35);font-size:15px}
 .flybar .sp{min-width:0}
 .flyprog{height:6px;border-radius:3px;background:var(--line);margin-top:5px;overflow:hidden}
 .flyprog i{display:block;height:100%;width:0;background:var(--accent)}
@@ -1523,7 +1523,11 @@ function vxView(){
   if((i1-i0+1)*(j1-j0+1)>12)return;
   for(const t of ["v","a"])if(poiK[t])for(let i=i0;i<=i1;i++)for(let j=j0;j<=j1;j++){const k=i+"_"+j;if(!MX[t][k])vxTile(t,k,[i*VX_S,j*VX_S,(i+1)*VX_S,(j+1)*VX_S])}
 }
-function poiData(){if(!M||!styleOK||!M.getSource("poi"))return;
+const FAR_K=["g","s","v","a"];let farAll=null,farReq=null;
+function farData(){if(!M||!styleOK)return;
+  if(!farAll&&FAR_K.some(k=>poiK[k])){if(!farReq)farReq=getJSON(`data/p/all.json?v=${IDX?IDX.t:0}`).then(d=>{farAll=d;farData()}).catch(()=>{farReq=null});return}
+  for(const k of FAR_K)setData("far-"+k,fc(poiK[k]&&farAll&&farAll[k]?farAll[k].map(p=>({type:"Feature",properties:{},geometry:{type:"Point",coordinates:[p[1],p[0]]}})):[]))}
+function poiData(){if(!M||!styleOK||!M.getSource("poi"))return;farData();
   const P=allPoi().filter(p=>poiK[p[0]]),F=P.map(p=>({type:"Feature",properties:{k:p[0],n:p[3]||"",tel:p[4]||"",h:p[5]||"",dog:p[7]||"",col:POI_T[p[0]][1]},geometry:{type:"Point",coordinates:[p[2],p[1]]}}));
   for(const t of ["v","a"])if(poiK[t]){const ov=P.filter(p=>p[0]===t),near=t==="a"?150:70;
     for(const k in MX[t])for(const x of MX[t][k]){if(ov.some(p=>Math.abs(p[1]-x[0])<.002&&Math.abs(p[2]-x[1])<.0025&&hav([p[1],p[2]],x)<near))continue;
@@ -1767,6 +1771,12 @@ function addLayers(){
   M.addLayer({id:"ad-poi-gl",type:"symbol",source:"poi",minzoom:14.5,filter:["==",["get","k"],"g"],layout:{"text-field":["get","n"],"text-size":11,"text-offset":[0,1.1],"text-anchor":"top","text-max-width":9,"text-font":["DIN Pro Medium","Arial Unicode MS Regular"]},paint:{"text-color":"#2f5d12","text-halo-color":"#fff","text-halo-width":1.5}});
   M.addLayer({id:"ad-poi",type:"circle",source:"poi",minzoom:10.5,filter:["!=",["get","k"],"g"],paint:{"circle-color":["get","col"],"circle-radius":["interpolate",["linear"],["zoom"],10.5,3.5,14,7.5],"circle-stroke-color":"#fff","circle-stroke-width":2}});
   M.addLayer({id:"ad-poi-l",type:"symbol",source:"poi",minzoom:13,filter:["!=",["get","k"],"g"],layout:{"text-field":["match",["get","k"],"a","C","v","+","~"],"text-size":10,"text-font":["DIN Pro Bold","Arial Unicode MS Bold"],"text-allow-overlap":true},paint:{"text-color":"#fff"}});
+  // da lontano: tutti i luoghi d'Italia raggruppati in cerchi con il numero (come i sentieri); toccando un cerchio la mappa si avvicina
+  for(const k of FAR_K){const src="far-"+k,mz=k==="g"?12:10.5,col=POI_T[k][1];
+    if(!M.getSource(src))M.addSource(src,{type:"geojson",data:fc([]),cluster:true,clusterRadius:42,clusterMaxZoom:mz-.5});
+    M.addLayer({id:src,type:"circle",source:src,maxzoom:mz,minzoom:k==="g"?8:0,paint:{"circle-color":col,"circle-opacity":.9,"circle-radius":["case",["has","point_count"],["interpolate",["linear"],["get","point_count"],2,11,50,16,500,22],4],"circle-stroke-color":"#fff","circle-stroke-width":["case",["has","point_count"],2,1.2]}});
+    M.addLayer({id:src+"-n",type:"symbol",source:src,maxzoom:mz,minzoom:k==="g"?8:0,filter:["has","point_count"],layout:{"text-field":["get","point_count_abbreviated"],"text-size":11,"text-font":["DIN Pro Bold","Arial Unicode MS Bold"],"text-allow-overlap":true},paint:{"text-color":"#fff"}});
+    M.on("click",src,e=>{const f=e.features&&e.features[0];if(!f)return;M.easeTo({center:f.geometry.coordinates,zoom:Math.min(mz+.3,M.getZoom()+2.5)})})}
   poiData();setTimeout(vxView,1200);
   // da lontano: un cerchio per ogni riquadro con il numero dei sentieri
   M.addLayer({id:"ad-cells",type:"circle",source:"cells",paint:{"circle-color":"#1d4f3c","circle-opacity":.85,"circle-stroke-color":"#fff","circle-stroke-width":2,"circle-radius":["interpolate",["linear"],["get","n"],1,11,200,17,1500,26]}});
@@ -1916,7 +1926,7 @@ function setStyleKind(k){
   else if(OVNAME[k]){wxOv=wxOv===k?null:k;if(M){overlays();if(wxOv&&M.getZoom()>(k==="ndvi"?11:9.5))M.easeTo({zoom:k==="ndvi"?10.5:k==="rain"?7.5:9})}if(wxOv)toast(OVNAME[k])}
   else if(k==="trails"){trailsOn=!trailsOn;store.set("alldogs-trailson",trailsOn);applyScene();toast(trailsOn?"Sentieri sulla mappa":"Sentieri nascosti: restano nell'elenco qui sotto")}
   else if(k.startsWith("poi-")){const t=k.slice(4);poiK[t]=!poiK[t];store.set("alldogs-poik",poiK);poiData();if(t==="v"||t==="a")vxView();if(t==="w"){wtData();wtView();applyScene()}
-    toast((poiK[t]?"":"Nascosti: ")+({a:"Aree cani",v:"Veterinari",s:"Spiagge per cani",g:"Ville comunali e parchi",w:"Fontanelle e punti acqua"})[t]+(poiK[t]?(t==="g"||t==="w"?": avvicinati alla mappa per vederle":" sulla mappa"):""))}
+    toast((poiK[t]?"":"Nascosti: ")+({a:"Aree cani",v:"Veterinari",s:"Spiagge per cani",g:"Ville comunali e parchi",w:"Fontanelle e punti acqua"})[t]+(poiK[t]?(t==="w"?": avvicinati alla mappa per vederle":" sulla mappa"):""))}
   else if(k==="legend"){$("layers").hidden=true;showLegend()}
   else if(k!==mapStyle&&STYLES[k]){mapStyle=k;store.set("alldogs-mapstyle",k);syncStyle();if(styleNow!==k&&isNight()&&styleNow!=="topo")toast("Dopo il tramonto la mappa diventa scura da sola: all'alba torna chiara");else if(styleNow!==k)toast(navigator.onLine?"Durante la navigazione di un sentiero scaricato uso la mappa topografica salvata":"Senza internet uso la mappa topografica dei sentieri scaricati")}
   syncLayersMenu();
@@ -2014,7 +2024,7 @@ function bearing(a,b){const r=Math.PI/180,y=Math.sin((b[1]-a[1])*r)*Math.cos(b[0
 function stopSpin(){if(spin){cancelAnimationFrame(spin);spin=null}}
 function end3d(){
   if(!prev3d)return;prev3d=false;stopSpin();
-  if(fly){fly.mk.remove();fly=null}$("fly").hidden=true;
+  if(fly){fly.mk.remove();if(!fly.tsWasMin)tsMin(false);fly=null}$("fly").hidden=true;
   if(!map3d)terrain(false);else if(M)M.easeTo({pitch:55,duration:400});
   syncSurf();
 }
@@ -2037,6 +2047,7 @@ function preview3D(){
   fly={P,C,total,out,cOut:C[out],prof:src.prof,len:src.len,full:src.len+(src.shape==="loop"?0:src.ret||src.len),d:0,i:0,brg:b0,mb:b0,cen:P[0],playing:true,started:false,last:0,painted:0,
     speed:total/Math.min(100,Math.max(28,total/1000*14)), // tutto il giro in 28-100 secondi
     mk:new mapboxgl.Marker({element:el,rotationAlignment:"map",pitchAlignment:"map"}).setLngLat(ll(P[0])).setRotation(b0).addTo(M)};
+  if(curHost&&curHost.id==="hostTrail"){fly.tsWasMin=$("tsheet").classList.contains("min");tsMin(true)} // la scheda si abbassa e la barra dell'anteprima le sta sopra, senza coprirla
   $("surfleg").hidden=true;$("fly").hidden=false;paintFly();
   setTimeout(()=>{if(!fly)return;
     try{M.setTerrain({source:"dem",exaggeration:1.4});M.setFog({})}catch(e){console.warn("3D:",e)} // se il telefono non regge il rilievo, il volo funziona lo stesso in piano
@@ -2780,13 +2791,17 @@ const GEM_SCHEMA={type:"OBJECT",properties:{
   prefer_green:{type:"BOOLEAN"},prefer_quiet:{type:"BOOLEAN"},avoid_steps:{type:"BOOLEAN"},
   stops:{type:"ARRAY",items:{type:"OBJECT",properties:{title:{type:"STRING"},text:{type:"STRING"}},required:["title","text"]}},
   commands:{type:"ARRAY",items:{type:"OBJECT",properties:{command:{type:"STRING"},how:{type:"STRING"}},required:["command","how"]}},
-  suggest:{type:"ARRAY",description:"Numeri (id) dei sentieri esistenti consigliati, presi solo dalla lista data, al massimo 3",items:{type:"INTEGER"}}
+  suggest:{type:"ARRAY",description:"Numeri (id) dei sentieri esistenti consigliati, presi solo dalla lista data, al massimo 3",items:{type:"INTEGER"}},
+  destination:{type:"STRING",description:"Posto da raggiungere, con il comune (es. 'Villa Comunale, Giugliano in Campania'). Vuoto se il giro non ha una meta"},
+  via:{type:"ARRAY",description:"Posti dove passare prima della meta, con il comune, nell'ordine",items:{type:"STRING"}},
+  one_way:{type:"BOOLEAN",description:"true solo se l'utente vuole arrivare alla meta senza tornare indietro"},
+  from_my_position:{type:"BOOLEAN",description:"true se l'utente vuole partire da dove si trova adesso"}
 },required:["reply","create"]};
 function sysPrompt(){
   const d=dog(),cap=capacity(d),n=nowWx(),w=dayWx(S.start,0),hr=new Date().getHours();
   const next=w?w.H.slice(hr,Math.min(24,hr+6)).map(x=>`${x.h}:00 ${Math.round(x.f)}° percepiti, pioggia ${x.rain}%`).join("; "):"non disponibile";
   return `Sei l'assistente di AllDogs, un'app per passeggiate ed escursioni col cane in Italia. Parli in italiano semplice, frasi brevi, tono gentile.
-Il tuo compito: capire che giro ad anello vuole fare l'utente col suo cane, decidere la durata e le preferenze, e proporre tappe e comandi da dare al cane. Il percorso lo calcola l'app (OpenRouteService), tu non inventi strade né luoghi.
+Il tuo compito: capire che giro vuole fare l'utente col suo cane (ad anello, oppure verso una meta e ritorno), decidere la durata e le preferenze, e proporre tappe e comandi da dare al cane. Il percorso lo calcola l'app (OpenRouteService), tu non inventi strade né luoghi.
 Profilo del cane: nome ${d.name}; razza ${d.breed||"non indicata"}; età ${d.age} anni; peso ${d.weight} kg; allenamento ${d.train}; agilità ${cap.agil}; pelo ${d.coat}; muso schiacciato ${d.brachy?"sì":"no"}.
 Problemi di salute: ${pats(d).join(", ")||"nessuno indicato"}.
 Limite consigliato dall'app: circa ${kmN(cap.km)} km e ${cap.up} m di salita; oltre ${cap.heat}° percepiti fa troppo caldo per lui.
@@ -2805,7 +2820,10 @@ ${S.cand&&S.cand.length?S.cand.map(c=>c.line).join("\n"):"nessuno caricato"}
 - Se l'utente chiede un consiglio su dove andare, un sentiero, un'escursione, un posto, oppure nomina un sentiero, scegli da questa lista da 1 a 3 sentieri adatti al cane e metti i loro id in suggest (create=false). In reply spiega in breve perché vanno bene per lui.
 - Preferisci quelli con verdetto "Fattibile". Se ne proponi uno "Con prudenza" dillo. Non proporre quelli "Sconsigliato": se l'utente ne chiede uno, spiega con gentilezza che per il suo cane è sconsigliato e proponi un'alternativa dalla lista.
 - Non inventare sentieri: solo quelli della lista, con il loro id esatto. Se nessuno è adatto, dillo e proponi di creare un giro nuovo.
-- Usa create=true solo quando l'utente vuole un giro nuovo che parte dal segnaposto (per esempio "un giro di mezz'ora qui vicino").`;
+- Usa create=true quando l'utente vuole un giro nuovo che parte dal segnaposto (per esempio "un giro di mezz'ora qui vicino").
+- PERCORSI CON UNA META: se l'utente vuole arrivare a un posto preciso (una villa comunale, un parco, una piazza, un lago, una spiaggia, un bar, un indirizzo) e tornare, NON dire che non puoi: metti create=true, destination con il nome del posto e il comune, e via con eventuali posti intermedi. L'app trova il posto sulla mappa e calcola strade e sentieri per andare e tornare alla partenza (one_way=true solo se l'utente non vuole tornare).
+- Se dice "da dove mi trovo", "dalla mia posizione", "qui" metti from_my_position=true.
+- Se il comune non è detto, usa quello più probabile vicino alla partenza. In reply di' che stai creando il percorso e, se la distanza può essere troppa per il cane, avvisalo.`;
 }
 async function gemini(key,msgs=S.chat,sys=sysPrompt(),schema=GEM_SCHEMA){
   const contents=msgs.filter(m=>!m.err&&!m.local).map(m=>({role:m.r==="u"?"user":"model",parts:[{text:m.raw||m.t}]}));
@@ -2873,6 +2891,7 @@ async function chatSend(text){
     const o=await gemini(key);S.busy=false;
     const ok=new Set((S.cand||[]).map(c=>c.id)),sug=[...new Set((o.suggest||[]).map(Number))].filter(id=>ok.has(id)&&TR.has(id)).slice(0,3); // solo sentieri veri della lista
     S.chat.push({r:"a",t:o.reply||"…",raw:JSON.stringify(o),sug});renderChat();
+    if(o.create&&o.destination&&String(o.destination).trim()){toRoute(o);return}
     if(o.create&&!sug.length){closeAI();
       const mins=Math.max(10,Math.min(180,+o.minutes||40));
       generate({mins,prefs:{green:!!o.prefer_green,quiet:!!o.prefer_quiet,avoidSteps:!!o.avoid_steps||capacity(dog()).agil==="bassa"},aiStops:o.stops,aiCmds:(o.commands||[]).slice(0,6),source:"chat"});
@@ -2884,6 +2903,39 @@ async function chatSend(text){
   }
 }
 $("chat-form").onsubmit=e=>{e.preventDefault();chatSend($("chat-in").value)};
+// Percorso verso una meta chiesta all'assistente: trovo il posto con la ricerca di Mapbox (vicino alla partenza), poi OpenRouteService
+// calcola strade e sentieri partenza → (posti intermedi) → meta → partenza.
+async function geoFind(q,near){
+  const r=await getJSON(`https://api.mapbox.com/search/searchbox/v1/forward?q=${encodeURIComponent(q)}&country=it&language=it&limit=5&proximity=${near[1]},${near[0]}&access_token=${MAPBOX_TOKEN}`);
+  const f=(r.features||[]).filter(x=>x.geometry);if(!f.length)return null;
+  f.sort((a,b)=>(a.properties.feature_type==="poi"?0:1)-(b.properties.feature_type==="poi"?0:1)||hav(near,[a.geometry.coordinates[1],a.geometry.coordinates[0]])-hav(near,[b.geometry.coordinates[1],b.geometry.coordinates[0]]));
+  const x=f.find(x=>hav(near,[x.geometry.coordinates[1],x.geometry.coordinates[0]])<60000)||f[0],g=x.geometry.coordinates;
+  return {p:[+g[1].toFixed(5),+g[0].toFixed(5)],name:x.properties.name||q,adr:(x.properties.full_address||"").replace(/, Italia$/,"")};
+}
+async function toRoute(o){
+  const say=t=>{S.chat.push({r:"a",t,local:true});renderChat()};
+  const key=store.get("alldogs-ors");if(!key){say("Per calcolare il percorso serve la chiave gratuita di OpenRouteService: incollala nella pagina del cane, in Impostazioni.");return}
+  S.busy=true;renderChat();
+  try{
+    if(o.from_my_position){try{const p=await getPos();showMe(p);setStart(p)}catch(e){}}
+    const st=S.start,names=[...(o.via||[]).slice(0,4),String(o.destination)].map(x=>String(x).trim()).filter(Boolean),found=[];
+    for(const q of names){const g=await geoFind(q,st).catch(()=>null);if(!g){S.busy=false;say(`Non trovo «${q}» sulla mappa. Prova a scriverlo con il nome del comune o l'indirizzo.`);return}found.push(g)}
+    const dest=found[found.length-1],far=hav(st,dest.p);
+    if(far>40000){S.busy=false;say(`«${dest.name}» è a ${km(far)} km in linea d'aria: troppo lontano per una passeggiata col cane.`);return}
+    const pts=[st,...found.map(g=>g.p)];if(!o.one_way)pts.push(st);
+    const r=await getJSON("https://api.openrouteservice.org/v2/directions/foot-walking/geojson",{method:"POST",headers:{"Authorization":key,"Content-Type":"application/json"},
+      body:JSON.stringify({language:"it",coordinates:pts.map(ll),elevation:true,extra_info:["surface","green","waytype"],options:{avoid_features:capacity(dog()).agil==="bassa"?["ferries","steps"]:["ferries"]}})});
+    const rt=parseRoute(r.features[0]),d=dog();S.busy=false;
+    rt.name=(o.one_way?"Fino a ":"Andata e ritorno: ")+dest.name;rt.source="chat";rt.cmds=(o.commands||[]).slice(0,6);rt.loop=true;
+    rt.stops=stopsFor(rt,d,o.stops);
+    // la meta diventa una tappa vera, nel punto del percorso più vicino al posto trovato
+    let bi=0,bd=Infinity,cum=0,bk=0;rt.path.forEach((q,i)=>{if(i)cum+=hav(rt.path[i-1],q);const dd=hav(q,dest.p);if(dd<bd){bd=dd;bi=i;bk=cum}});
+    rt.stops.push({p:rt.path[bi],km:bk,t:"Meta: "+esc(dest.name),d:esc(dest.adr||"")+(o.one_way?"":" · da qui si torna alla partenza.")});rt.stops.sort((a,b)=>a.km-b.km);
+    const cap=capacity(d);say(`Ecco il percorso fino a ${dest.name}${o.one_way?"":" e ritorno"}: ${km(rt.len)} km.`+(rt.len/1000>cap.km?` Attenzione: è oltre il limite consigliato per ${dn()} (circa ${kmN(cap.km)} km).`:""));
+    closeAI();S.gen=[rt];S.genIdx=0;location.hash="crea";setTimeout(()=>{fitPending=true;showGen()},300);
+  }catch(e){S.busy=false;console.warn("Percorso con meta:",e);
+    say(e.status===401||e.status===403?"La chiave di OpenRouteService non è valida: controllala in Impostazioni.":e.status===429?"Limite gratuito di OpenRouteService raggiunto per oggi: riprova domani.":"Non riesco a calcolare il percorso fino a lì. Riprova tra poco o scegli un punto più vicino a una strada.")}
+}
 
 // ================= Salvati =================
 function showSaved(){
