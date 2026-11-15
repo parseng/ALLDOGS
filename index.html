@@ -13,6 +13,8 @@
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://api.mapbox.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600;6..72,700&family=Albert+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/3.9.4/mapbox-gl.min.css">
 <style>
@@ -1195,8 +1197,9 @@ body{font-size:17px;line-height:1.5}
 <div class="sheetbg" id="sheet" hidden><div class="box" id="sheet-box"></div></div>
 <div class="toast" id="toast" role="status"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/3.9.4/mapbox-gl.min.js"></script>
-<script src="lezioni-anim.js"></script>
+<!-- la libreria della mappa (1,5 MB) si carica in parallelo: elenco, meteo e pulsanti compaiono subito, la mappa appena è pronta -->
+<script id="mbjs" src="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/3.9.4/mapbox-gl.min.js" async onerror="window.__mbErr=1"></script>
+<script id="anjs" src="lezioni-anim.js" defer></script>
 <script>
 "use strict";
 // ================= Impostazioni =================
@@ -1547,7 +1550,7 @@ function vxView(){
 const FAR_K=["g","s","v","a"];let farAll=null,farReq=null;
 function farData(){if(!M||!styleOK)return;
   if(!farAll&&FAR_K.some(k=>poiK[k])){if(!farReq)farReq=getJSON(`data/p/all.json?v=${IDX?IDX.t:0}`).then(d=>{farAll=d;farData()}).catch(()=>{farReq=null});return}
-  for(const k of FAR_K)setData("far-"+k,fc(poiK[k]&&farAll&&farAll[k]?farAll[k].map(p=>({type:"Feature",properties:{},geometry:{type:"Point",coordinates:[p[1],p[0]]}})):[]))}
+  for(const k of FAR_K)if(setDataK("far-"+k,(poiK[k]&&farAll&&farAll[k])?"on":"off"))setData("far-"+k,fc(poiK[k]&&farAll&&farAll[k]?farAll[k].map(p=>({type:"Feature",properties:{},geometry:{type:"Point",coordinates:[p[1],p[0]]}})):[]))}
 function poiData(){if(!M||!styleOK||!M.getSource("poi"))return;farData();
   const P=allPoi().filter(p=>poiK[p[0]]),F=P.map(p=>({type:"Feature",properties:{k:p[0],n:p[3]||"",tel:p[4]||"",h:p[5]||"",dog:p[7]||"",col:POI_T[p[0]][1]},geometry:{type:"Point",coordinates:[p[2],p[1]]}}));
   for(const t of ["v","a"])if(poiK[t]){const ov=P.filter(p=>p[0]===t),near=t==="a"?150:70;
@@ -1588,6 +1591,7 @@ function acts(tr,res){
 // ================= Dati: meteo =================
 const WX_KEY="alldogs-wx-v2";
 const wx=(()=>{const c=store.get(WX_KEY);return c&&Date.now()-c.t<3600e3&&c.d===new Date().toDateString()?c.wx:{}})();
+let wxVer=0; // cambia ogni volta che arriva meteo nuovo: serve a sapere quando rifare i verdetti
 const wxKey=p=>(Math.round(p[0]*4)/4).toFixed(2)+","+(Math.round(p[1]*4)/4).toFixed(2); // un punto meteo ogni quarto di grado (circa 25 km)
 // Meteo: prima fonte Open-Meteo (una sola richiesta per tanti punti). Se è bloccata o non risponde, seconda fonte gratuita: MET Norway.
 async function loadWeather(points){
@@ -1595,8 +1599,8 @@ async function loadWeather(points){
   if(!keys.length)return;
   try{await omLoad(keys)}
   catch(e){console.warn("Open-Meteo non disponibile, uso MET Norway",e.status||e);await metLoad(keys.filter(k=>!wx[k]))}
-  {const ks=Object.keys(wx);if(ks.length>150)ks.slice(0,ks.length-150).forEach(k=>delete wx[k])} // non riempire la memoria del telefono
-  store.set(WX_KEY,{t:Date.now(),d:new Date().toDateString(),wx});
+  {const ks=Object.keys(wx);if(ks.length>90)ks.slice(0,ks.length-90).forEach(k=>delete wx[k])} // non riempire la memoria del telefono (e non rallentare il salvataggio)
+  wxVer++;store.set(WX_KEY,{t:Date.now(),d:new Date().toDateString(),wx});
 }
 // ---- fonte di riserva: MET Norway (api.met.no), convertita nello stesso formato di Open-Meteo ----
 const romeT=ts=>new Date(ts).toLocaleString("sv-SE",{timeZone:"Europe/Rome",hour12:false}); // "2026-11-14 07:00:00"
@@ -1652,8 +1656,14 @@ async function omLoad(keys){
     r.forEach((w,j)=>wx[part[j]]=w);
   }));
 }
+// il meteo di un giorno si calcola una volta sola per ogni punto (prima si rifaceva per ogni sentiero a ogni spostamento della mappa)
+const dayWxMemo=new WeakMap();
 function dayWx(p,day){
   const w=p&&wx[wxKey(p)];if(!w)return null;
+  let m=dayWxMemo.get(w);if(!m)dayWxMemo.set(w,m={});
+  return m[day]||(m[day]=dayWx0(w,day));
+}
+function dayWx0(w,day){
   const o=day*24,H=[];for(let h=0;h<24;h++)H.push({h,t:w.hourly.temperature_2m[o+h],f:w.hourly.apparent_temperature[o+h],rain:w.hourly.precipitation_probability[o+h]??0,c:(w.hourly.weather_code||[])[o+h]??0});
   const sr=w.daily.sunrise[day],ss=w.daily.sunset[day];
   return {H,sr:parseInt(sr.slice(11,13))+(sr.slice(14,16)!=="00"?1:0),ss:parseInt(ss.slice(11,13)),srT:sr.slice(11,16),ssT:ss.slice(11,16),daily:w.daily};
@@ -1683,6 +1693,9 @@ let hillOn=!!store.get("alldogs-hill"),rainPath=null,surfOn=!!store.get("alldogs
 let scene={mode:"explore"},stopMarkers=[],pinM=null,meM=null,fitPending=false;
 const HANDLERS=["dragPan","scrollZoom","boxZoom","dragRotate","keyboard","doubleClickZoom","touchZoomRotate","touchPitch"];
 function mapOK(){return !!window.mapboxgl}
+$("mbjs").addEventListener("load",()=>{if(curHost&&!M)mountMap(curHost,interactive)});
+$("mbjs").addEventListener("error",()=>{window.__mbErr=1;if(curHost&&!M)mountMap(curHost,interactive)});
+$("anjs").addEventListener("load",()=>{if(curScr==="addestramento")showTrain()}); // animazioni delle lezioni: arrivano un attimo dopo
 function mountMap(host,inter){
   const wrap=$("mapwrap");
   if(wrap.parentNode!==host)host.prepend(wrap);
@@ -1690,7 +1703,7 @@ function mountMap(host,inter){
   if(M&&host.id!=="hostNav"&&(M.getBearing()||(!map3d&&M.getPitch())))M.jumpTo({bearing:0,pitch:map3d?M.getPitch():0});
   document.querySelectorAll(".maphost.full").forEach(h=>{if(h!==host)h.classList.remove("full")});
   syncFullBtn();
-  if(!mapOK()){$("map").innerHTML=`<div class="mapnote">La mappa non si carica. Controlla la connessione e ricarica la pagina.</div>`;return}
+  if(!mapOK()){if(window.__mbErr)$("map").innerHTML=`<div class="mapnote">La mappa non si carica. Controlla la connessione e ricarica la pagina.</div>`;return} // se la libreria sta ancora arrivando, la mappa parte da sola appena pronta
   if(!M)initMap();
   setInteractive(inter||host.classList.contains("full"));
   syncStyle();
@@ -1715,7 +1728,7 @@ function initMap(){
     styleNow=wantStyle();M=new mapboxgl.Map({container:"map",style:STYLES[styleNow],center:ll(S.view.c),zoom:S.view.z,attributionControl:false,pitchWithRotate:true});
   }catch(e){$("map").innerHTML=`<div class="mapnote">Questo telefono non riesce a mostrare la mappa (serve WebGL).</div>`;M=null;return}
   M.addControl(new mapboxgl.AttributionControl({compact:true,customAttribution:"Sentieri © OpenStreetMap contributors"}),"bottom-left");
-  M.on("style.load",()=>{styleOK=true;itLabels();addLayers();if(map3d)terrain(true);applyScene()});
+  M.on("style.load",()=>{styleOK=true;dataSig={};itLabels();addLayers();if(map3d)terrain(true);applyScene()});
   M.on("error",e=>console.warn("Mapbox:",e&&e.error&&e.error.message));
   M.on("mouseenter","ad-trails-hit",()=>M.getCanvas().style.cursor="pointer");M.on("mouseleave","ad-trails-hit",()=>M.getCanvas().style.cursor="");
   M.on("moveend",()=>{clearTimeout(vxT);vxT=setTimeout(vxView,600)});
@@ -1794,10 +1807,12 @@ function addLayers(){
   M.addLayer({id:"ad-poi-l",type:"symbol",source:"poi",minzoom:13,filter:["!=",["get","k"],"g"],layout:{"text-field":["match",["get","k"],"a","C","v","+","~"],"text-size":10,"text-font":["DIN Pro Bold","Arial Unicode MS Bold"],"text-allow-overlap":true},paint:{"text-color":"#fff"}});
   // da lontano: tutti i luoghi d'Italia raggruppati in cerchi con il numero (come i sentieri); toccando un cerchio la mappa si avvicina
   for(const k of FAR_K){const src="far-"+k,mz=k==="g"?12:10.5,col=POI_T[k][1];
-    if(!M.getSource(src))M.addSource(src,{type:"geojson",data:fc([]),cluster:true,clusterRadius:42,clusterMaxZoom:mz-.5});
+    if(!M.getSource(src))M.addSource(src,{type:"geojson",data:fc([]),cluster:true,clusterRadius:42,clusterMaxZoom:Math.floor(mz-.5)}); // deve essere un numero intero: con 11,5 i cerchi dei parchi non comparivano (errore «Invalid array length»)
     M.addLayer({id:src,type:"circle",source:src,maxzoom:mz,minzoom:k==="g"?8:0,paint:{"circle-color":col,"circle-opacity":.9,"circle-radius":["case",["has","point_count"],["interpolate",["linear"],["get","point_count"],2,11,50,16,500,22],4],"circle-stroke-color":"#fff","circle-stroke-width":["case",["has","point_count"],2,1.2]}});
     M.addLayer({id:src+"-n",type:"symbol",source:src,maxzoom:mz,minzoom:k==="g"?8:0,filter:["has","point_count"],layout:{"text-field":["get","point_count_abbreviated"],"text-size":11,"text-font":["DIN Pro Bold","Arial Unicode MS Bold"],"text-allow-overlap":true},paint:{"text-color":"#fff"}});
-    M.on("click",src,e=>{const f=e.features&&e.features[0];if(!f)return;M.easeTo({center:f.geometry.coordinates,zoom:Math.min(mz+.3,M.getZoom()+2.5)})})}
+    // il tocco si collega una volta sola: Mapbox lo tiene anche quando cambia lo stile (prima si sommava a ogni cambio, per esempio al tramonto)
+    if(!addLayers.far)M.on("click",src,e=>{const f=e.features&&e.features[0];if(!f)return;M.easeTo({center:f.geometry.coordinates,zoom:Math.min(mz+.3,M.getZoom()+2.5)})})}
+  addLayers.far=true;
   poiData();setTimeout(vxView,1200);
   // da lontano: un cerchio per ogni riquadro con il numero dei sentieri
   M.addLayer({id:"ad-cells",type:"circle",source:"cells",paint:{"circle-color":"#1d4f3c","circle-opacity":.85,"circle-stroke-color":"#fff","circle-stroke-width":2,"circle-radius":["interpolate",["linear"],["get","n"],1,11,200,17,1500,26]}});
@@ -1956,6 +1971,9 @@ function syncLayersMenu(){document.querySelectorAll("#layers [data-st]").forEach
 const fc=f=>({type:"FeatureCollection",features:f});
 const lineF=(ways,props)=>({type:"Feature",properties:props||{},geometry:{type:"MultiLineString",coordinates:ways.map(w=>w.map(ll))}});
 function setData(src,data){const s=M.getSource(src);if(s)s.setData(data)}
+// true se i dati di questa sorgente vanno rimandati (sono cambiati o la mappa ha ricaricato lo stile)
+let dataSig={};
+function setDataK(src,key){if(!M.getSource(src))return false;if(dataSig[src]===key)return false;dataSig[src]=key;return true}
 function vis(id,on){if(M.getLayer(id))M.setLayoutProperty(id,"visibility",on?"visible":"none")}
 function vColor(v){return css(v<0?"--wait":["--ok","--warn","--no"][v])}
 function clearMarkers(){stopMarkers.forEach(m=>m.remove());stopMarkers=[]}
@@ -1976,10 +1994,12 @@ function applyScene(){
   {const sp=sc.mode==="trail"&&cur&&cur.tr?cur.tr.path:sc.mode==="crea"&&S.gen?S.gen[S.genIdx].path:sc.mode==="nav"&&nav?nav.o.path:sc.mode==="follow"&&follow&&follow.path?follow.path:null;
     setData("selpath",fc(sp&&sp.length>1?[{type:"Feature",properties:{},geometry:{type:"LineString",coordinates:sp.map(ll)}}]:[]))}
   if(ex){
-    const rows=S.far?[]:(S.rows||[]).slice(0,500);
-    setData("cells",fc(S.far&&IDX?Object.entries(IDX.cells).map(([k,n])=>{const q=k.split("_").map(Number);return {type:"Feature",properties:{n,t:n>=1000?(n/1000).toFixed(1).replace(".",",")+"k":String(n)},geometry:{type:"Point",coordinates:[q[1]+CELL/2,q[0]+CELL/2]}}}):[]));
-    setData("trails",fc(rows.map(r=>lineF(r.tr.ways,{id:r.tr.id,col:vColor(r.res.v)}))));
-    setData("startpt",fc(rows.map(r=>({type:"Feature",properties:{id:r.tr.id,col:vColor(r.res.v)},geometry:{type:"Point",coordinates:ll(r.tr.start)}}))));
+    const rows=S.far?[]:(S.rows||[]).slice(0,500),VC=[-1,0,1,2].map(vColor),col=v=>VC[v+1]||VC[0];
+    // i dati della mappa si rimandano solo se sono cambiati: ridisegnare 500 sentieri a ogni spostamento faceva scattare la mappa
+    if(setDataK("cells",S.far&&IDX?"far"+IDX.t:"-"))setData("cells",fc(S.far&&IDX?Object.entries(IDX.cells).map(([k,n])=>{const q=k.split("_").map(Number);return {type:"Feature",properties:{n,t:n>=1000?(n/1000).toFixed(1).replace(".",",")+"k":String(n)},geometry:{type:"Point",coordinates:[q[1]+CELL/2,q[0]+CELL/2]}}}):[]));
+    const rk=VC.join()+"|"+rows.map(r=>r.tr.id+":"+r.res.v).join(",");
+    if(setDataK("trails",rk))setData("trails",fc(rows.map(r=>lineF(r.tr.ways,{id:r.tr.id,col:col(r.res.v)}))));
+    if(setDataK("startpt",rk))setData("startpt",fc(rows.map(r=>({type:"Feature",properties:{id:r.tr.id,col:col(r.res.v)},geometry:{type:"Point",coordinates:ll(r.tr.start)}}))));
     const p=S.peek&&TR.get(S.peek);
     setData("sel",p?fc([lineF(p.ways)]):fc([]));setData("water",fc([]));
     if(fitPending){fitPending=false;
@@ -2168,7 +2188,7 @@ function showMe(p){if(!M)return;
 function meDir(){if(!meM||!M)return;const el=meM.getElement(),on=scene.mode==="nav"&&nav&&nav.hd!=null;el.classList.toggle("dir",on);if(on)el.querySelector(".hd").style.transform=`rotate(${nav.hd-M.getBearing()}deg)`}
 $("m-loc").onclick=async()=>{
   if(scene.mode==="nav"&&nav){navFollow=true;if(nav.pos)navCam(500);else toast("Cerco il segnale GPS…");return}
-  try{const p=await getPos();showMe(p);if(scene.mode==="crea")setStart(p);else M.flyTo({center:ll(p),zoom:Math.max(M.getZoom(),13)})}catch(e){toast("Non riesco a leggere la posizione")}};
+  try{const p=await getPos();showMe(p);if(scene.mode==="crea")setStart(p);else if(M)M.flyTo({center:ll(p),zoom:Math.max(M.getZoom(),13)})}catch(e){toast("Non riesco a leggere la posizione")}};
 
 // ================= Navigazione =================
 var curScr="esplora";
@@ -2242,7 +2262,7 @@ function placeCard(f,i){
 function bindCards(root){
   root.querySelectorAll(".tcard").forEach(c=>c.onclick=ev=>{
     const b=ev.target.closest("[data-save]");
-    if(b){ev.stopPropagation();toggleSave(+b.dataset.save);b.classList.toggle("saved",S.saved.includes(+b.dataset.save));return}
+    if(b){ev.stopPropagation();toggleSave(+b.dataset.save);const on=S.saved.includes(+b.dataset.save);b.classList.toggle("saved",on);b.setAttribute("aria-label",on?"Togli dai salvati":"Salva");return}
     if(c.dataset.place!=null){setNear(FAMOUS[+c.dataset.place]);return}
     lastList=window.scrollY;location.hash="s-"+c.dataset.id});
 }
@@ -2251,32 +2271,41 @@ function setNear(f){
   if(f&&!M){S.view={c:f.c,z:11,b:[[f.c[0]-.15,f.c[1]-.2],[f.c[0]+.15,f.c[1]+.2]]};refreshView()}
   if(f)$("hostExplore").scrollIntoView({behavior:"smooth",block:"start"});
 }
+// il sentiero di ogni posto famoso si cerca una volta sola finché non arrivano sentieri nuovi
+const famMemo={arr:null,m:{}};
 function famousMatch(){
+  if(famMemo.arr!==S.trails){famMemo.arr=S.trails;famMemo.m={}}
   // solo i posti famosi entro 90 km dal centro della mappa
   return FAMOUS.map((f,i)=>({f,i,d:hav(f.c,S.view.c)})).filter(x=>x.d<90000).sort((a,b)=>a.d-b.d).slice(0,8).map(({f,i})=>{
+    if(i in famMemo.m)return {f,i,tr:famMemo.m[i]};
     let best=null,bd=Infinity;
     for(const tr of S.trails){if(Math.abs(tr.start[0]-f.c[0])>.2||Math.abs(tr.start[1]-f.c[1])>.25||!f.re.test(tr.name+" "+tr.from+" "+tr.to))continue;
       const d=Math.min(...sample(tr.path,20).map(p=>hav(p,f.c)));if(d<8000&&d<bd){bd=d;best=tr}}
-    return {f,i,tr:best};
+    famMemo.m[i]=best;return {f,i,tr:best};
   });
 }
 const inView=tr=>{const b=S.view.b;return tr.bb[0][0]<=b[1][1]&&tr.bb[1][0]>=b[0][1]&&tr.bb[0][1]<=b[1][0]&&tr.bb[1][1]>=b[0][0]};
 function activeFilters(){return $("q").value.trim()||S.act||S.feat.length||S.near||["f-dog","f-fit","f-type","f-eff","f-len","f-up","f-dif","f-zone"].some(id=>$(id).value!=="all")}
+// Verdetti già calcolati: si rifanno solo se cambiano cane, giorno, meteo o passeggiate salvate (prima si rifacevano tutti a ogni spostamento della mappa)
+const vMemo={sig:"",m:new Map()};
+function verdictMemo(tr,d){const r=vMemo.m.get(tr.id);if(r)return r;const v=verdict(item(tr),d,S.day);vMemo.m.set(tr.id,v);return v}
+function vMemoSync(d){const a=S.acts,sig=JSON.stringify(d)+"|"+S.day+"|"+wxVer+"|"+Object.keys(wx).length+"|"+(S.wxFail?1:0)+"|"+a.length+"|"+(a[0]?a[0].t+":"+a[0].dist:"");
+  if(sig!==vMemo.sig){vMemo.sig=sig;vMemo.m.clear()}}
 function filtered(){
   const d=dog(),q=$("q").value.trim().toLowerCase(),fit=$("f-fit").value,len=$("f-len").value,upf=$("f-up").value,dif=$("f-dif").value,zone=$("f-zone").value,eff=$("f-eff").value;
-  const rows=[];
+  const rows=[];vMemoSync(d);
   for(const tr of S.trails){
     if(!S.near&&!q){if(S.wide){if(hav(tr.start,S.wide.c)>S.wide.r*1000)continue}else if(!inView(tr))continue} // la zona inquadrata, o il cerchio allargato quando con i filtri non c'era niente
     if(q&&!(tr.name+" "+tr.ref+" "+tr.zone+" "+tr.from+" "+tr.to+" "+(FT[tr.id]&&FT[tr.id].n?Object.values(FT[tr.id].n).flat().join(" "):"")).toLowerCase().includes(q))continue;
     if(len!=="all"){const [a,b]=len.split("-").map(Number);const L=totLen(tr);if(L<a*1000||L>=b*1000)continue}
-    if(upf!=="all"){const e=elev[tr.id];if(!e)continue;const [a,b]=upf.split("-").map(Number);if(e.up<a||e.up>=b)continue}
+    if(upf!=="all"){const u=totUp(tr);if(u==null)continue;const [a,b]=upf.split("-").map(Number);if(u<a||u>=b)continue} // salita di andata e ritorno, come nelle schede
     if(dif!=="all"&&tr.scale!==dif)continue;
     {const ty=$("f-type").value;if(ty!=="all"&&!(ty==="walk"?tr.type==="walk":ty==="cai"?tr.ref&&tr.type!=="walk":ty==="flat"?elev[tr.id]&&elev[tr.id].up<100*Math.max(1,tr.len/5000):tr.type!=="walk"&&tr.shape===ty))continue}
     {const dg=tr.dg&&tr.dg[0],dv=$("f-dog").value;if(dg==="no"&&dv!=="show")continue;if(dv==="free"&&dg==="lim")continue} // di base i sentieri vietati ai cani non si mostrano
     if(zone!=="all"&&tr.zone!==zone)continue;
     if(S.feat.length){const f=FT[tr.id];if(!f||!S.feat.every(k=>f.f.includes(k)))continue}
     let dist;if(S.near){dist=Math.min(...sample(tr.path,20).map(p=>hav(p,S.near.c)));if(dist>6000)continue}else dist=hav(tr.start,S.view.c);
-    const res=verdict(item(tr),d,S.day);
+    const res=verdictMemo(tr,d);
     if(fit!=="all"&&!fit.includes(String(res.v)))continue;
     if(eff!=="all"&&(res.v<0||String(res.effort)!==eff))continue;
     if(S.act&&!acts(tr,res).has(S.act))continue;
@@ -2347,7 +2376,7 @@ function renderList(){paintFAll();fitLabels();setTimeout(sizeSels,0);
   // Consigliati
   const fam=af||S.far?[]:famousMatch().filter(m=>!(m.tr&&m.tr.dg&&m.tr.dg[0]==="no")); // niente consigliati dove i cani sono vietati
   $("reco-box").hidden=!fam.length;
-  if(fam.length){const d=dog();$("reco").innerHTML=fam.map(m=>m.tr?cardHTML(m.tr,verdict(item(m.tr),d,S.day),m.f.n):placeCard(m.f,m.i)).join("");bindCards($("reco"))}
+  if(fam.length){const d=dog();vMemoSync(d);if(putHTML($("reco"),fam.map(m=>m.tr?cardHTML(m.tr,verdictMemo(m.tr,d),m.f.n):placeCard(m.f,m.i)).join("")))bindCards($("reco"))}
   renderParks();
   if(!af)S.wide=null;
   const rows=filtered();S.rows=rows;
@@ -2360,17 +2389,19 @@ function renderList(){paintFAll();fitLabels();setTimeout(sizeSels,0);
     if(scene.mode==="explore")applyScene();return}
   if(af&&!S.near&&!S.wide&&!widening&&!S.loadingView&&rows.length<5&&S.widenSig!==fsig()){widen();$("count").textContent="Cerco più lontano…";$("list").innerHTML=`<div class="skel"></div><div class="skel"></div>`;return}
   $("count").textContent=af?(rows.length===1?"1 sentiero":rows.length+" sentieri")+(S.wide?` entro ${S.wide.r} km`:""):`Sentieri in questa zona (${rows.length})`;
-  $("list").innerHTML=rows.slice(0,S.limit).map(r=>cardHTML(r.tr,r.res)).join("")||(S.loadingView?`<div class="skel"></div><div class="skel"></div>`:`<div class="empty"><p>${af?"Nessun sentiero con questi filtri in questa zona.":"In questa zona non ci sono ancora sentieri."}</p><p class="small">Sposta o allontana la mappa${IDX&&IDX.todo?": alcune zone d'Italia sono ancora in arrivo":""}. In città puoi creare un giro con il pulsante <b>+</b>.</p></div>`);
+  const listChanged=putHTML($("list"),rows.slice(0,S.limit).map(r=>cardHTML(r.tr,r.res)).join("")||(S.loadingView?`<div class="skel"></div><div class="skel"></div>`:`<div class="empty"><p>${af?"Nessun sentiero con questi filtri in questa zona.":"In questa zona non ci sono ancora sentieri."}</p><p class="small">Sposta o allontana la mappa${IDX&&IDX.todo?": alcune zone d'Italia sono ancora in arrivo":""}. In città puoi creare un giro con il pulsante <b>+</b>.</p></div>`));
   $("more").hidden=rows.length<=S.limit;
-  bindCards($("list"));
+  if(listChanged)bindCards($("list"));
   if(S.peek&&!rows.some(r=>r.tr.id===S.peek))hidePeek();
   if(scene.mode==="explore")applyScene();
 }
+// riscrive un elenco solo se è cambiato davvero: così le foto non lampeggiano e lo scorrimento resta fluido mentre si muove la mappa
+function putHTML(el,h){if(el._h===h&&el._n===el.firstChild)return false;el.innerHTML=h;el._h=h;el._n=el.firstChild;return true}
 function toggleSave(id){rememberCell(TR.get(id));const i=S.saved.indexOf(id);if(i>=0)S.saved.splice(i,1);else S.saved.push(id);store.set("alldogs-saved",S.saved);toast(i>=0?"Tolto dai salvati":"Salvato")}
 function peek(id){
   const tr=TR.get(id);if(!tr)return;S.peek=id;
   const res=verdict(item(tr),dog(),S.day),p=$("peek");
-  p.innerHTML=`<img alt="" src="${staticImg(tr.path,200,150)}"><div><h3>${esc(tr.name)}</h3><p class="sub"><span class="c${Math.max(0,res.v)}"><i class="dot b${res.v<0?"w":res.v}"></i>${res.v<0?"Sto valutando…":VLABEL[res.v]+(res.short?" ("+res.short+")":"")+" · "+EFFORT[res.effort].toLowerCase()+" per lui"}</span> · ${km(tr.len)} km · ${fmtH(res.hours)}</p></div><span>›</span>`;
+  p.innerHTML=`<img alt="" src="${staticImg(tr.path,200,150)}"><div><h3>${esc(tr.name)}</h3><p class="sub"><span class="c${Math.max(0,res.v)}"><i class="dot b${res.v<0?"w":res.v}"></i>${res.v<0?"Sto valutando…":VLABEL[res.v]+(res.short?" ("+res.short+")":"")+" · "+EFFORT[res.effort].toLowerCase()+" per lui"}</span> · ${km(totLen(tr))} km${tr.shape==="line"?" a/r":""} · ${fmtH(res.hours)}</p></div><span>›</span>`;
   p.classList.add("on");p.onclick=()=>{lastList=window.scrollY;location.hash="s-"+id};
   applyScene();
   if(M)M.fitBounds(tr.bb,{padding:{top:50,bottom:120,left:40,right:60},maxZoom:15,duration:500});
@@ -2897,12 +2928,12 @@ async function chatCandidates(text){
   // un po' di tutto: i nominati, i migliori, e qualcuno sconsigliato vicino (così l'assistente sa dirlo)
   const pick=rows.filter(r=>r.named).slice(0,8).concat(rows.filter(r=>!r.named&&r.res.v<=1).slice(0,26),rows.filter(r=>!r.named&&r.res.v===2).sort((a,b)=>a.dist-b.dist).slice(0,6));
   S.cand=pick.map(r=>{const f=FT[r.tr.id],e=elev[r.tr.id];
-    return {id:r.tr.id,line:`${r.tr.id} | ${r.tr.name} | ${r.tr.zone||"-"} | ${km(r.tr.len)} km | ${e?e.up:"?"} m | ${r.res.v<0?"da valutare":VLABEL[r.res.v]} | ${EFFORT[r.res.effort].toLowerCase()} | ${f&&f.f.length?f.f.map(k=>FEATL[k]).join(", "):"-"} | ${km(r.dist)} km`}});
+    return {id:r.tr.id,line:`${r.tr.id} | ${r.tr.name} | ${r.tr.zone||"-"} | ${km(totLen(r.tr))} km${r.tr.loop===false?" (andata e ritorno)":""} | ${e?totUp(r.tr):"?"} m | ${r.res.v<0?"da valutare":VLABEL[r.res.v]} | ${EFFORT[r.res.effort].toLowerCase()} | ${f&&f.f.length?f.f.map(k=>FEATL[k]).join(", "):"-"} | ${km(r.dist)} km`}});
 }
 function chatTrailCard(id){
   const tr=TR.get(id);if(!tr)return "";
   const res=verdict(Object.assign(item(tr),{start:wx[wxKey(tr.start)]?tr.start:S.start}),dog(),0),e=elev[tr.id];
-  return `<button type="button" class="box chatcard" data-tr="${id}"><img alt="" loading="lazy" src="${staticImg(tr.path,200,150)}" onerror="this.remove()"><span><b>${esc(tr.name)}</b><small>${res.v<0?"":`<i class="dot b${res.v}"></i>${VLABEL[res.v]} · `}${km(tr.len)} km${e?" · ↑ "+e.up+" m":""} · ${fmtH(res.hours)}${tr.zone?" · "+esc(tr.zone):""}</small></span><i>›</i></button>`;
+  return `<button type="button" class="box chatcard" data-tr="${id}"><img alt="" loading="lazy" src="${staticImg(tr.path,200,150)}" onerror="this.remove()"><span><b>${esc(tr.name)}</b><small>${res.v<0?"":`<i class="dot b${res.v}"></i>${VLABEL[res.v]} · `}${km(totLen(tr))} km${tr.shape==="line"?" a/r":""}${e?" · ↑ "+totUp(tr)+" m":""} · ${fmtH(res.hours)}${tr.zone?" · "+esc(tr.zone):""}</small></span><i>›</i></button>`;
 }
 function renderChat(){setTimeout(aiBottom,0);
   $("msgs").innerHTML=S.chat.map(m=>`<div class="msg ${m.r}${m.err?" err":""}">${esc(m.t)}</div>`+(m.sug&&m.sug.length?m.sug.map(chatTrailCard).join(""):"")).join("")+(S.busy?`<div class="msg a wait">Sto pensando…</div>`:"");
@@ -3636,12 +3667,12 @@ function wtLayers(){
   if(!M.getSource("wpts"))M.addSource("wpts",{type:"geojson",data:fc([])});
   M.addLayer({id:"ad-wt",type:"circle",source:"wpts",minzoom:12.5,paint:{"circle-color":["match",["get","k"],"s","#0f9d8a","#1e88e5"],"circle-radius":["interpolate",["linear"],["zoom"],12.5,3.5,16,7],"circle-stroke-color":"#fff","circle-stroke-width":2}});
   M.addLayer({id:"ad-wt-l",type:"symbol",source:"wpts",minzoom:15,layout:{"text-field":"acqua","text-size":10.5,"text-offset":[0,1.1],"text-anchor":"top","text-font":["DIN Pro Medium","Arial Unicode MS Regular"]},paint:{"text-color":"#155fa0","text-halo-color":"#fff","text-halo-width":1.4}});
-  M.on("click","ad-wt",e=>{if(scene.mode==="nav"||(scene.mode==="crea"&&drawing()))return;const f=e.features[0],c=f.geometry.coordinates,p=f.properties,g=`${c[1].toFixed(5)},${c[0].toFixed(5)}`;
+  if(!wtLayers.on)M.on("click","ad-wt",e=>{if(scene.mode==="nav"||(scene.mode==="crea"&&drawing()))return;const f=e.features[0],c=f.geometry.coordinates,p=f.properties,g=`${c[1].toFixed(5)},${c[0].toFixed(5)}`;
     openSheet(`<p class="small muted">${p.k==="s"?"Sorgente":"Fontanella o punto acqua"}${p.dog==1?" · segnata anche per cani":""}</p><h2>${esc(p.n||"Acqua potabile")}</h2>
       <p style="margin-top:8px">Segnata come acqua potabile su OpenStreetMap${p.se==1?", ma <b>solo in alcuni periodi dell'anno</b>":""}.${p.cd?` Ultimo controllo segnato: ${esc(p.cd)}.`:""} Può essere chiusa o rotta: porta sempre acqua con te.</p>
       <p class="small muted" style="margin-top:6px">Fai bere ${dn()} dalla ciotola, non direttamente dal getto, e lascia pulito.</p>
       <div class="stack" style="margin-top:14px"><a class="btn pri wide" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${g}&travelmode=walking">Portami lì a piedi</a></div>`)});
-  wtData();setTimeout(wtView,1500);
+  wtLayers.on=true;wtData();setTimeout(wtView,1500);
 }
 
 // ================= Libretto sanitario e promemoria =================

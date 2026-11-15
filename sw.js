@@ -2,7 +2,7 @@
 // - L'app (pagina, script, icone, libreria della mappa, caratteri) resta salvata nel telefono.
 // - I file dei sentieri già aperti restano disponibili offline.
 // - Le mappe dei sentieri scaricati (cache "ad-off-...") vengono servite dal telefono.
-const V = "alldogs-v14";
+const V = "alldogs-v15";
 const SHELL = "ad-shell-" + V, DATA = "ad-data", RUN = "ad-run";
 const CORE = ["./", "index.html", "lezioni-anim.js", "manifest.json", "icon-192.png", "icon-512.png", "img/aussie/chiedi.jpg", "privacy.html", "termini.html", "legal.css",
   "https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/3.9.4/mapbox-gl.min.js",
@@ -31,6 +31,23 @@ async function netFirst(req, cacheName, key, ms) {
     throw err;
   }
 }
+async function versioned(req, u) {
+  const c = await caches.open(DATA), key = dataKey(u), ver = u.searchParams.get("v");
+  const hit = await c.match(key);
+  if (hit && hit.headers.get("x-ad-v") === ver) return hit;
+  const net = fetch(req).then(r => {
+    if (r && r.ok) r.clone().blob().then(b => { const h = new Headers(r.headers); h.set("x-ad-v", ver); return c.put(key, new Response(b, { status: 200, headers: h })); }).catch(() => 0);
+    return r;
+  });
+  try {
+    // con una versione più vecchia già salvata non aspetto più di 8 secondi
+    return await (hit ? Promise.race([net, new Promise((_, rej) => setTimeout(() => rej(new Error("lento")), 8000))]) : net);
+  } catch (err) {
+    const old = hit || await caches.match(key, { ignoreSearch: true }); // senza rete: anche una versione più vecchia o quella scaricata va bene
+    if (old) return old;
+    throw err;
+  }
+}
 async function cacheFirst(req, cacheName, key) {
   const hit = await caches.match(key);
   if (hit) return hit;
@@ -49,8 +66,13 @@ self.addEventListener("fetch", e => {
     if (/\.(js|json|png|html|svg|webp|jpg)$/.test(u.pathname)) { e.respondWith(netFirst(req, SHELL, dataKey(u), 6000)); return; }
     return;
   }
-  // dati dei sentieri e dei luoghi
-  if (u.origin === location.origin) { e.respondWith(netFirst(req, DATA, dataKey(u), 8000)); return; }
+  // dati dei sentieri e dei luoghi.
+  // I file con ?v= (riquadri, luoghi, foto) cambiano nome a ogni aggiornamento dei dati: se la stessa versione è già nel telefono
+  // la uso subito, senza aspettare la rete (la mappa si riempie molto più in fretta, soprattutto con poco campo).
+  if (u.origin === location.origin) {
+    if (u.searchParams.has("v")) { e.respondWith(versioned(req, u)); return; }
+    e.respondWith(netFirst(req, DATA, dataKey(u), 8000)); return;
+  }
   // mappa topografica: prima i tasselli scaricati, poi la rete
   if (/\.tile\.opentopomap\.org$/.test(u.hostname)) { e.respondWith(cacheFirst(req, null, topoKey(u))); return; }
   // caratteri delle scritte sulla mappa, libreria della mappa, caratteri del testo
