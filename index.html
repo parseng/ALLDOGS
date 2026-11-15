@@ -1125,15 +1125,7 @@ body{font-size:17px;line-height:1.5}
     <button class="btn wide" id="prop-open" type="button" style="margin-top:10px">Proponi qualcosa</button>
     <div id="prop-list"></div>
   </div></details>
-  <details class="fold" id="settings"><summary><span><b>Impostazioni</b><small>Chiavi dei servizi e avvertenze</small></span><i>›</i></summary><div class="foldb">
-    <div class="block"><h2>Chiavi dei servizi</h2>
-      <p class="muted small" style="margin-bottom:10px"><b>Giri ad anello</b>: OpenRouteService, gratuito. Registrati su <a href="https://openrouteservice.org/dev/#/signup" target="_blank" rel="noopener">openrouteservice.org</a>, copia la chiave e incollala qui.</p>
-      <input class="field" id="ors-key" placeholder="Chiave OpenRouteService" autocomplete="off" autocapitalize="off" spellcheck="false">
-      <p class="muted small" style="margin:14px 0 10px"><b>Chat con l'AI</b>: Gemini, gratuito. Crea la chiave su <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> e incollala qui.</p>
-      <input class="field" id="gem-key" placeholder="Chiave Gemini" autocomplete="off" autocapitalize="off" spellcheck="false">
-      <button class="btn wide" id="keys-save" style="margin-top:10px">Salva le chiavi</button>
-      <p class="muted small" style="margin-top:8px">Le chiavi restano salvate solo su questo telefono.</p>
-    </div>
+  <details class="fold" id="settings"><summary><span><b>Impostazioni</b><small>Avvertenze e fonti dei dati</small></span><i>›</i></summary><div class="foldb">
     <div class="block small muted">
       <p>Il verdetto è un <b>consiglio prudente, non una garanzia</b>. Osserva sempre il tuo cane, fermati ai primi segni di stanchezza o affanno. L'app <b>non sostituisce il veterinario</b>: per qualsiasi dubbio sulla salute chiedi a lui.</p>
       <p style="margin-top:10px"><a href="privacy.html">Informativa sulla privacy</a> · <a href="termini.html">Condizioni d'uso</a></p>
@@ -1204,7 +1196,7 @@ body{font-size:17px;line-height:1.5}
 <script>
 "use strict";
 // ================= Impostazioni =================
-// Token PUBBLICO Mapbox (inizia con pk.): può stare nel codice. Le chiavi segrete (OpenRouteService, Gemini) le incolla l'utente.
+// Token PUBBLICO Mapbox (inizia con pk.): può stare nel codice. Le chiavi segrete (OpenRouteService, Gemini) stanno sul server, nelle funzioni Supabase ai-chat e ors-route.
 const MAPBOX_TOKEN="pk.eyJ1IjoicGFyc2VuZyIsImEiOiJjbXdmOWdvdm0wNXVpMnhxcDIyaHc0bmVnIn0.j8nlRTa34ZMNdK8Oz-Go4w";
 // Satellite: stile ufficiale, ma le foto aeree arrivano dalla Static Tiles API (l'API "raster tiles" v4 di questo account risponde 429).
 // Rilievo 3D: AWS Terrain Tiles (dati aperti).
@@ -1306,11 +1298,14 @@ function walkers(){return DOGS.walk.map(id=>DOGS.list.find(x=>x.id===id)).filter
 // di ogni giorno vengono copiati anche nel database. Senza internet resta il segno "da inviare" e si riprova appena torna la rete.
 const SB_URL="https://xljgemccvkxlypxrtcbr.supabase.co",SB_KEY="sb_publishable_X_5tyF5-sySPsVo8WEaCBw_t38fvh61";
 const SB_LIB="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js";
+const FN_URL=SB_URL+"/functions/v1/",AI_SRV="server"; // chat AI e calcolo dei giri passano dalle funzioni sul server: le chiavi non stanno più nell'app
+function fnHeaders(){let t="";try{const o=JSON.parse(localStorage.getItem("sb-xljgemccvkxlypxrtcbr-auth-token"));t=o&&o.access_token||""}catch(e){}return {"Content-Type":"application/json",apikey:SB_KEY,Authorization:"Bearer "+(t||SB_KEY)}}
 const SB_TOK="sb-xljgemccvkxlypxrtcbr-auth-token",SYK="alldogs-sync",SYD="alldogs-sync-dirty";
 const SYNC_RE=/^alldogs-(acts|dogs?|reviews|goal|train|salute)(-|$)/;
 const SY={sb:null,p:null,user:null,busy:false,again:false,msg:"",err:"",mail:"",hash:null,rec:false};
 // il link dell'email (conferma o nuova password) arriva con #access_token=...: lo tolgo subito per non confondere le schermate
 if(/access_token=|error_description=/.test(location.hash)){SY.hash=location.hash.slice(1);history.replaceState(null,"",location.pathname+location.search+"#cane")}
+try{localStorage.removeItem("alldogs-gemini");localStorage.removeItem("alldogs-ors")}catch(e){}
 {const _set=store.set;store.set=function(k,v){const r=_set.call(store,k,v);if(SYNC_RE.test(k))syncDirty();return r}}
 function syncDirty(){try{localStorage.setItem("alldogs-sync-dirty","1")}catch(e){}clearTimeout(syncDirty.t);syncDirty.t=setTimeout(()=>syncNow(),4000)}
 const sbHas=()=>{try{return !!localStorage.getItem(SB_TOK)}catch(e){return false}};
@@ -2836,19 +2831,19 @@ function editTrail(tr){
   location.hash="crea";setTimeout(()=>{fitPending=true;drawRoute(false);toast("Sposta, togli o aggiungi i punti per cambiare il percorso")},350);
 }
 async function drawRoute(added){
-  const D=S.draw,pts=D.pts,loop=$("draw-loop").checked&&pts.length>=2,follow=$("draw-follow").checked,key=store.get("alldogs-ors");
+  const D=S.draw,pts=D.pts,loop=$("draw-loop").checked&&pts.length>=2,follow=$("draw-follow").checked,key=AI_SRV;
   const all=loop?pts.concat([pts[0]]):pts.slice(),my=++D.req;
   D.route=null;D.msg="";D.busy=false;
   if(all.length>=2){
     if(follow&&key){
       D.busy=true;paintDraw();if(scene.mode==="crea")applyScene();
       try{
-        const r=await getJSON("https://api.openrouteservice.org/v2/directions/foot-walking/geojson",{method:"POST",headers:{"Authorization":key,"Content-Type":"application/json"},body:JSON.stringify({language:"it",coordinates:all.map(ll),elevation:true,extra_info:["surface","green","waytype"],options:{avoid_features:["ferries"]}})});
+        const r=await getJSON(FN_URL+"ors-route",{method:"POST",headers:fnHeaders(),body:JSON.stringify({language:"it",coordinates:all.map(ll),elevation:true,extra_info:["surface","green","waytype"],options:{avoid_features:["ferries"]}})});
         if(my!==D.req)return;D.route=parseRoute(r.features[0]);
       }catch(e){
         if(my!==D.req)return;
         if(added&&(e.status===404||e.status===400)){pts.pop();toast("Quel punto è troppo lontano da strade e sentieri: l'ho tolto");return drawRoute(false)}
-        D.msg=e.status===401||e.status===403?"La chiave di OpenRouteService non è valida: per ora unisco i punti con linee dritte.":e.status===429?"Limite gratuito di OpenRouteService raggiunto: per ora unisco i punti con linee dritte.":"Non riesco a seguire strade e sentieri in questo momento: unisco i punti con linee dritte.";
+        D.msg=e.status===401||e.status===403?"Il calcolo dei percorsi non è disponibile adesso: per ora unisco i punti con linee dritte.":e.status===429?"Limite gratuito di OpenRouteService raggiunto: per ora unisco i punti con linee dritte.":"Non riesco a seguire strade e sentieri in questo momento: unisco i punti con linee dritte.";
       }
       D.busy=false;
     }
@@ -2954,9 +2949,7 @@ function stopsFor(r,d,ai){
   return use.map((a,i)=>({p:at(i/use.length),km:r.len*i/use.length,t:acts[a][0],d:acts[a][1]}));
 }
 async function generate(o){
-  const key=store.get("alldogs-ors"),out=$("gen-out");
-  if(!key){out.innerHTML=`<div class="note"><b>Manca un passaggio.</b> Per disegnare i giri serve la chiave gratuita di OpenRouteService. Incollala qui sotto (resta solo su questo telefono).<input class="field" id="ors-inline" placeholder="Chiave OpenRouteService" autocomplete="off" autocapitalize="off" spellcheck="false" style="margin-top:10px"><button class="btn pri wide" id="ors-inline-save" style="margin-top:8px">Salva e crea il giro</button><p class="small" style="margin-top:8px">La chiave si crea su <a href="https://openrouteservice.org/dev/#/signup" target="_blank" rel="noopener">openrouteservice.org</a>.</p></div>`;
-    $("ors-inline-save").onclick=()=>{const v=$("ors-inline").value.trim();if(!v){toast("Incolla la chiave");return}store.set("alldogs-ors",v);generate(o)};return}
+  const key=AI_SRV,out=$("gen-out");
   const d=dog(),cap=capacity(d),{k,want}=targetKm(o.mins),target=k*1000,area=o.area||null;
   out.innerHTML=`<div class="note">Sto disegnando il giro (circa ${k.toFixed(1).replace(".",",")} km)${area?" dentro "+esc(area.n):""}…</div>`;$("gen").disabled=true;
   // Giro dentro un parco: oltre ai giri della lunghezza giusta provo anelli più corti, che ci stanno dentro; poi scelgo quello che esce meno dal parco
@@ -2971,7 +2964,7 @@ async function generate(o){
   let ok;
   if(inPark&&inPark.length){ok=inPark;$("gen").disabled=false}else{
   const base=Math.floor(Math.random()*1000);
-  const call=b=>getJSON("https://api.openrouteservice.org/v2/directions/foot-walking/geojson",{method:"POST",headers:{"Authorization":key,"Content-Type":"application/json"},body:JSON.stringify(b)});
+  const call=b=>getJSON(FN_URL+"ors-route",{method:"POST",headers:fnHeaders(),body:JSON.stringify(b)});
   let rs=await Promise.allSettled(tries.map(([i,L])=>call(body(base+i,L))));
   // se le preferenze non sono accettate, riprovo senza
   if(!rs.some(r=>r.status==="fulfilled")&&rs.some(r=>r.reason&&r.reason.status===400)&&(o.prefs&&(o.prefs.green||o.prefs.avoidSteps))){
@@ -2979,7 +2972,7 @@ async function generate(o){
   $("gen").disabled=false;
   ok=rs.filter(r=>r.status==="fulfilled"&&r.value.features&&r.value.features.length).map(r=>parseRoute(r.value.features[0]));
   if(!ok.length){const e=(rs.find(r=>r.status==="rejected")||{}).reason||{};
-    out.innerHTML=`<div class="err">${e.status===401||e.status===403?"La chiave di OpenRouteService non è valida. Controllala nella pagina del cane, in Impostazioni.":e.status===429?"Hai raggiunto il limite gratuito di oggi di OpenRouteService. Riprova domani.":e.status===404||e.status===400?"Da questo punto non riesco a creare un giro. Sposta il segnaposto su una strada o un sentiero.":"Non riesco a creare il giro. Controlla la connessione e che la chiave di OpenRouteService sia giusta (pagina del cane, in Impostazioni)."}</div>`;return}
+    out.innerHTML=`<div class="err">${e.status===401||e.status===403?"Il calcolo dei percorsi non è disponibile in questo momento. Riprova più tardi.":e.status===429?"Hai raggiunto il limite gratuito di oggi di OpenRouteService. Riprova domani.":e.status===404||e.status===400?"Da questo punto non riesco a creare un giro. Sposta il segnaposto su una strada o un sentiero.":"Non riesco a creare il giro. Controlla la connessione e che la chiave di OpenRouteService sia giusta (pagina del cane, in Impostazioni)."}</div>`;return}
   const sane=ok.filter(r=>r.len<=target*1.8+300);if(sane.length)ok.splice(0,ok.length,...sane); // scarta i giri assurdamente lunghi
   }
   const n=nowWx(),hot=n&&n.t>=25;
@@ -3085,7 +3078,7 @@ function loopsIn(G,start,target){
 async function parkRoutes(area,target,key,prefs){
   const G=await parkShape(area,S.start);if(!G)return null;
   const L=loopsIn(G,S.start,target);if(!L.length)return null;
-  const call=pts=>getJSON("https://api.openrouteservice.org/v2/directions/foot-walking/geojson",{method:"POST",headers:{"Authorization":key,"Content-Type":"application/json"},
+  const call=pts=>getJSON(FN_URL+"ors-route",{method:"POST",headers:fnHeaders(),
     body:JSON.stringify({language:"it",coordinates:pts.map(ll),elevation:true,extra_info:["surface","green","waytype"],options:{avoid_features:prefs&&prefs.avoidSteps?["ferries","steps"]:["ferries"]}})});
   const inShare=path=>{let t=0,i=0;for(let j=1;j<path.length;j++){const l=hav(path[j-1],path[j]),m=[(path[j-1][0]+path[j][0])/2,(path[j-1][1]+path[j][1])/2];t+=l;if(inPoly(m,G.polys)||edgeDist(m,G.polys)<15)i+=l}return t?i/t:1};
   const out=await Promise.all(L.map(async l=>{
@@ -3181,27 +3174,25 @@ ${S.cand&&S.cand.length?S.cand.map(c=>c.line).join("\n"):"nessuno caricato"}
 }
 async function gemini(key,msgs=S.chat,sys=sysPrompt(),schema=GEM_SCHEMA){
   const contents=msgs.filter(m=>!m.err&&!m.local).map(m=>({role:m.r==="u"?"user":"model",parts:[{text:m.raw||m.t}]}));
-  const body=JSON.stringify({systemInstruction:{parts:[{text:sys}]},contents,generationConfig:{responseMimeType:"application/json",responseSchema:schema,temperature:.6}});
+  const req={systemInstruction:{parts:[{text:sys}]},contents,generationConfig:{responseMimeType:"application/json",responseSchema:schema,temperature:.6}};
   let err;const seen=[];
   for(const model of gemGood?[gemGood,...GEM_MODELS.filter(m=>m!==gemGood)]:GEM_MODELS){
     const ac=new AbortController(),to=setTimeout(()=>ac.abort(),15000);
-    try{const r=await getJSON(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":key},body,signal:ac.signal});
+    try{const r=await getJSON(FN_URL+"ai-chat",{method:"POST",headers:fnHeaders(),body:JSON.stringify({model,req}),signal:ac.signal});
       const txt=r.candidates&&r.candidates[0]&&r.candidates[0].content&&r.candidates[0].content.parts.map(p=>p.text||"").join("");
       if(!txt)throw new Error("risposta vuota");
       const o=JSON.parse(txt);gemGood=model;return o}
     catch(e){err=e;seen.push(e.name==="AbortError"?"lento":e.status||"rete");
       const msg=e.body&&e.body.error&&e.body.error.message||"";
-      if(e.status===401||e.status===403||(e.status===400&&/key/i.test(msg)))throw e} // chiave sbagliata: inutile provare gli altri
+      if(e.status===401||e.status===403||e.status===429||(e.status===400&&/key/i.test(msg)))throw e} // chiave sbagliata o limite: inutile provare gli altri
     finally{clearTimeout(to)}
   }
   if(gemGood)gemGood=null;
   err.seen=seen;throw err;
 }
 function showChat(){
-  const key=store.get("alldogs-gemini");
-  $("chat-key").innerHTML=key?"":`<div class="note" style="margin-top:14px"><b>Serve la chiave Gemini (gratuita).</b> Creala su <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> con il tuo account Google, poi incollala qui. Resta solo su questo telefono.
-    <input class="field" id="gem-inline" placeholder="Chiave Gemini" autocomplete="off" autocapitalize="off" spellcheck="false" style="margin-top:10px"><button class="btn pri wide" id="gem-inline-save" style="margin-top:8px">Salva la chiave</button></div>`;
-  if(!key)$("gem-inline-save").onclick=()=>{const v=$("gem-inline").value.trim();if(!v){toast("Incolla la chiave");return}store.set("alldogs-gemini",v);toast("Chiave salvata");showChat()};
+  const key=AI_SRV;
+  $("chat-key").innerHTML="";
   if(!S.chat.length)S.chat.push({r:"a",t:`Ciao! Dove andiamo oggi con ${dog().name||"il tuo cane"}? Posso consigliarti un sentiero della mappa oppure creare un giro nuovo: dimmi quanto tempo hai e cosa preferite.`,local:true});
   renderChat();
 }
@@ -3238,7 +3229,7 @@ function renderChat(){setTimeout(aiBottom,0);
 }
 async function chatSend(text){
   text=text.trim();if(!text||S.busy)return;
-  const key=store.get("alldogs-gemini");if(!key){showChat();toast("Prima incolla la chiave Gemini");return}
+  const key=AI_SRV;
   S.chat.push({r:"u",t:text});S.busy=true;renderChat();$("chat-in").value="";
   try{await chatCandidates(text)}catch(e){console.warn(e);S.cand=[]}
   try{
@@ -3289,7 +3280,7 @@ async function geoFind(q,near){
 }
 async function toRoute(o){
   const say=t=>{S.chat.push({r:"a",t,local:true});renderChat()};
-  const key=store.get("alldogs-ors");if(!key){say("Per calcolare il percorso serve la chiave gratuita di OpenRouteService: incollala nella pagina del cane, in Impostazioni.");return}
+  const key=AI_SRV;
   S.busy=true;renderChat();
   try{
     if(o.from_my_position){try{const p=await getPos();showMe(p);setStart(p,false,"gps")}catch(e){}}
@@ -3298,7 +3289,7 @@ async function toRoute(o){
     const dest=found[found.length-1],far=hav(st,dest.p);
     if(far>40000){S.busy=false;say(`«${dest.name}» è a ${km(far)} km in linea d'aria: troppo lontano per una passeggiata col cane.`);return}
     const pts=[st,...found.map(g=>g.p)];if(!o.one_way)pts.push(st);
-    const r=await getJSON("https://api.openrouteservice.org/v2/directions/foot-walking/geojson",{method:"POST",headers:{"Authorization":key,"Content-Type":"application/json"},
+    const r=await getJSON(FN_URL+"ors-route",{method:"POST",headers:fnHeaders(),
       body:JSON.stringify({language:"it",coordinates:pts.map(ll),elevation:true,extra_info:["surface","green","waytype"],options:{avoid_features:capacity(dog()).agil==="bassa"?["ferries","steps"]:["ferries"]}})});
     const rt=parseRoute(r.features[0]),d=dog();S.busy=false;
     rt.name=(o.one_way?"Fino a ":"Andata e ritorno: ")+dest.name;rt.source="chat";rt.cmds=(o.commands||[]).slice(0,6);rt.loop=true;
@@ -3455,7 +3446,7 @@ const MINI_SCHEMA={type:"OBJECT",properties:{reply:{type:"STRING",description:"R
 const MC={};
 const fold=(t,sub,body,open)=>`<details class="fold"${open?" open":""}><summary><span><b>${t}</b>${sub?`<small>${sub}</small>`:""}</span><i>›</i></summary><div class="foldb">${body}</div></details>`;
 function gemErr(e){const st=e.status,msg=e.body&&e.body.error&&e.body.error.message||"",seen=e.seen||[];
-  return st===400&&/key/i.test(msg)||st===401||st===403?"La chiave Gemini non è valida. Controllala nella pagina del cane, in Impostazioni."
+  return st===429&&/ora|giornalier/.test(msg)?"Hai fatto tante domande in poco tempo: riprova tra un po'.":st===400&&/key/i.test(msg)||st===401||st===403?"L'assistente non è disponibile in questo momento. Riprova più tardi."
     :seen.some(x=>x===503||x===500||x==="lento")?"L'assistente di Google è molto occupato in questo momento (succede con il servizio gratuito). Riprova tra un minuto."
     :seen.includes(429)||st===429?"Hai raggiunto il limite gratuito di Gemini per adesso. Riprova tra un po'.":"Non riesco a parlare con l'assistente. Controlla la connessione e riprova."}
 function miniChat(id,cfg){
@@ -3465,10 +3456,8 @@ function miniChat(id,cfg){
   if(!host.dataset.ready){host.dataset.ready=1;
     host.innerHTML=`<div id="${id}-key"></div><div class="msgs" id="${id}-msgs"></div><div class="sugg" id="${id}-sugg"></div><form class="chatin" id="${id}-form"><input id="${id}-in" autocomplete="off" placeholder="${esc(cfg.ph)}" aria-label="Messaggio per l'assistente"><button class="round" aria-label="Invia">${icon("send")}</button></form><p class="small muted" style="margin-top:8px">Usa Gemini di Google e riceve il profilo del cane (senza veterinario né microchip). Può sbagliare.</p>`;
     $(id+"-form").onsubmit=e=>{e.preventDefault();miniSend(id,$(id+"-in").value)}}
-  const key=store.get("alldogs-gemini");
-  $(id+"-key").innerHTML=key?"":`<div class="note" style="margin-top:4px"><b>Per la chat serve la chiave Gemini (gratuita).</b> Creala su <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> con il tuo account Google, poi incollala qui. Resta solo su questo telefono.
-    <input class="field" id="${id}-gk" placeholder="Chiave Gemini" autocomplete="off" autocapitalize="off" spellcheck="false" style="margin-top:10px"><button class="btn pri wide" id="${id}-gks" style="margin-top:8px" type="button">Salva la chiave</button></div>`;
-  if(!key)$(id+"-gks").onclick=()=>{const v=$(id+"-gk").value.trim();if(!v){toast("Incolla la chiave");return}store.set("alldogs-gemini",v);toast("Chiave salvata");miniChat(id,cfg)};
+  const key=AI_SRV;
+  $(id+"-key").innerHTML="";
   miniRender(id);
 }
 function miniRender(id){
@@ -3479,7 +3468,7 @@ function miniRender(id){
 }
 async function miniSend(id,text){
   const c=MC[id];text=text.trim();if(!text||c.busy)return;
-  const key=store.get("alldogs-gemini");if(!key){toast("Prima incolla la chiave Gemini");return}
+  const key=AI_SRV;
   c.msgs.push({r:"u",t:text});c.busy=true;$(id+"-in").value="";miniRender(id);
   try{const o=await gemini(key,c.msgs,c.cfg.sys(),MINI_SCHEMA);c.msgs.push({r:"a",t:o.reply||"…",raw:JSON.stringify(o)})}
   catch(e){console.warn("Gemini:",e);c.msgs.push({r:"a",t:gemErr(e),err:true})}
@@ -4750,8 +4739,6 @@ function showDog(){
   if(!first){const c=capacity(d);$("avatar").textContent=(d.name||"?").trim().charAt(0).toUpperCase();$("dog-title").textContent=d.name||"Il mio cane";
     $("dog-cap").textContent=`Fino a circa ${kmN(c.km)} km e ${c.up} m di salita`;$("dog-alert").innerHTML=healthAlerts(d)+bookTodo(d)}
   else $("dog-alert").innerHTML="";
-  $("ors-key").value=store.get("alldogs-ors")?"••••••••••••":"";
-  $("gem-key").value=store.get("alldogs-gemini")?"••••••••••••":"";
 }
 $("dog-save").onclick=()=>{
   const d={};DF.forEach(f=>{const el=$("d-"+f);d[f]=el.type==="checkbox"?el.checked:el.value.trim()});
@@ -4765,12 +4752,6 @@ $("dog-save").onclick=()=>{
   if(S.addDog){DOGS.cur="d"+Date.now().toString(36);DOGS.walk=[DOGS.cur];dogsSave();store.set("alldogs-dog",d);toast("Nuovo cane aggiunto");location.hash="cane";location.reload();return}
   const first=!S.dog;S.dog=d;store.set("alldogs-dog",d);toast(first?`Fatto! Quando vuoi, completa il libretto di ${d.name} nella sua pagina.`:"Profilo salvato");S.chat=[];for(const c in MC)MC[c].msgs=[];
   if(first)location.hash="esplora";else showDog();
-};
-$("keys-save").onclick=()=>{
-  let n=0;const o=$("ors-key").value.trim(),g=$("gem-key").value.trim();
-  if(o&&!o.startsWith("•")){store.set("alldogs-ors",o);n++}else if(!o)store.del("alldogs-ors");
-  if(g&&!g.startsWith("•")){store.set("alldogs-gemini",g);n++}else if(!g)store.del("alldogs-gemini");
-  showDog();toast(n?"Chiavi salvate":"Nessuna chiave nuova");
 };
 
 // i dati del cane stanno in cima alla sua pagina
