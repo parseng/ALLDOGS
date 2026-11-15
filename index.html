@@ -673,6 +673,8 @@ body.noscroll{overflow:hidden}
 .fab{position:fixed;right:max(14px,env(safe-area-inset-right,0px));bottom:calc(var(--tab) + env(safe-area-inset-bottom,0px) + 14px);z-index:895;display:flex;align-items:center;gap:8px;border:0;border-radius:999px;padding:6px 16px 6px 6px;background:var(--ink);color:var(--bg);font:inherit;font-weight:700;font-size:15px;box-shadow:0 6px 20px rgba(0,0,0,.28);cursor:pointer}
 .fab-i{width:40px;height:40px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;flex:none}
 .fab-i svg{width:26px;height:26px}
+.fab-i img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
+.fab .fab-i{width:44px;height:44px;box-shadow:0 0 0 2px var(--dog)}
 .fab:active{transform:scale(.96)}
 #s-crea,#s-obiettivi,#s-addestramento{padding-bottom:calc(var(--tab) + env(safe-area-inset-bottom,0px) + 90px)}
 .aisheet{position:fixed;inset:0;z-index:970;background:rgba(10,14,28,.4);display:flex;align-items:flex-end;justify-content:center}
@@ -918,7 +920,7 @@ body{font-size:17px;line-height:1.5}
   <button class="btn sm" id="reset" hidden style="margin-bottom:12px">Azzera i filtri</button>
   <div id="list"><div class="skel"></div><div class="skel"></div></div>
   <button class="btn wide" id="more" hidden>Mostra altri sentieri</button>
-  <p class="small muted" style="margin-top:18px">Sentieri © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> (ODbL) · Mappe e immagini © <a href="https://www.mapbox.com/about/maps/" target="_blank" rel="noopener">Mapbox</a> · Meteo <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> e <a href="https://www.met.no/en" target="_blank" rel="noopener">MET Norway</a></p>
+  <p class="small muted" style="margin-top:18px">Foto del tasto Chiedi: «Black Trie Hündin mit 11 Monaten» di Lothar Krautmann, <a href="https://commons.wikimedia.org/wiki/File:Black_Trie_H%C3%BCndin_mit_11_Monaten.jpg" target="_blank" rel="noopener">Wikimedia Commons</a>, <a href="https://creativecommons.org/licenses/by/3.0/deed.it" target="_blank" rel="noopener">CC BY 3.0</a> (ritagliata) · Sentieri © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> (ODbL) · Mappe e immagini © <a href="https://www.mapbox.com/about/maps/" target="_blank" rel="noopener">Mapbox</a> · Meteo <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> e <a href="https://www.met.no/en" target="_blank" rel="noopener">MET Norway</a></p>
 </section>
 
 <!-- SCHEDA SENTIERO -->
@@ -1145,9 +1147,9 @@ body{font-size:17px;line-height:1.5}
   <a href="#cane" data-t="cane" class="tdog"><span class="tav" id="tab-av"></span><span class="tnm" id="tab-name">Il mio cane</span></a>
 </div></nav>
 <a class="btn pri sm" id="nav-pill" href="#vai" hidden><svg><use href="#i-play"/></svg>Passeggiata in corso · torna alla mappa</a>
-<button class="fab" id="fab" type="button" hidden><span class="fab-i"><svg><use href="#i-dogface"/></svg></span><b>Chiedi</b></button>
+<button class="fab" id="fab" type="button" hidden><span class="fab-i"><img src="img/aussie/chiedi.jpg" alt="" width="40" height="40"></span><b>Chiedi</b></button>
 <div class="aisheet" id="ai" hidden><div class="aibox" role="dialog" aria-labelledby="ai-t">
-  <div class="aihd"><span class="fab-i"><svg><use href="#i-dogface"/></svg></span><div class="sp" style="min-width:0"><h2 id="ai-t">Chiedi all'assistente</h2><p class="small muted" id="ai-sub"></p></div><button class="round" id="ai-x" type="button" aria-label="Chiudi"><svg><use href="#i-x"/></svg></button></div>
+  <div class="aihd"><span class="fab-i"><img src="img/aussie/chiedi.jpg" alt="" width="40" height="40"></span><div class="sp" style="min-width:0"><h2 id="ai-t">Chiedi all'assistente</h2><p class="small muted" id="ai-sub"></p></div><button class="round" id="ai-x" type="button" aria-label="Chiudi"><svg><use href="#i-x"/></svg></button></div>
   <div class="aibody">
   <div id="ai-crea" hidden>
     <div id="chat-key"></div>
