@@ -1104,7 +1104,7 @@ body{font-size:17px;line-height:1.5}
     <div class="form" style="margin-top:10px"><label class="w" id="pat-other-l" hidden>Altro: scrivi quale<input id="pat-other" autocomplete="off"></label></div>
   </div>
   <div class="block full" id="b-book"><h2>Libretto sanitario</h2>
-    <p class="muted small" style="margin-bottom:10px">Resta salvato solo su questo telefono.</p>
+    <p class="muted small" style="margin-bottom:10px">Resta su questo telefono e, se accedi, anche nel tuo account privato (lo vedi solo tu).</p>
     <div class="form">
       <label class="w">Microchip<input id="h-chip" autocomplete="off" inputmode="numeric"></label>
       <label>Veterinario<input id="h-vet" autocomplete="off"></label>
@@ -1116,9 +1116,10 @@ body{font-size:17px;line-height:1.5}
     </div>
   </div>
   <button class="btn pri wide" id="dog-save" style="margin-top:18px">Salva</button>
-  <p class="small muted onbonly" style="margin-top:10px;text-align:center">Toccando Inizia accetti le <a href="termini.html">condizioni d'uso</a>. I dati restano su questo telefono: <a href="privacy.html">informativa sulla privacy</a>.</p>
+  <p class="small muted onbonly" style="margin-top:10px;text-align:center">Toccando Inizia accetti le <a href="termini.html">condizioni d'uso</a>. I dati restano su questo telefono (e nel tuo account, se accedi): <a href="privacy.html">informativa sulla privacy</a>.</p>
   <button class="btn wide" id="dog-del" type="button" hidden style="margin-top:10px">Togli questo cane dall'app</button>
   </div></details>
+  <details class="fold" id="fold-acc"><summary><span><b>Il tuo account</b><small id="acc-sub">Accedi per salvare i dati anche nel tuo account</small></span><i>›</i></summary><div class="foldb"><div id="acc-box"></div></div></details>
   <details class="fold" id="fold-prop"><summary><span><b>Proponi un luogo o un sentiero</b><small>Area cani, spiaggia, fontanella o un tuo giro: lo controllo e lo aggiungo</small></span><i>›</i></summary><div class="foldb">
     <p class="small muted">Manca qualcosa sulla mappa? Mandalo allo sviluppatore: lo controlla e, se va bene, lo aggiunge per tutti.</p>
     <button class="btn wide" id="prop-open" type="button" style="margin-top:10px">Proponi qualcosa</button>
@@ -1300,6 +1301,165 @@ const phOf=id=>store.get(id==="d1"?"alldogs-photo":"alldogs-photo-"+id);
 function dogsSave(){dogsVer++;try{localStorage.setItem("alldogs-dogs",JSON.stringify(DOGS))}catch(e){}}
 function dogsPut(v){const i=DOGS.list.findIndex(x=>x.id===DOGS.cur),e=Object.assign({},v,{id:DOGS.cur});if(i>=0)DOGS.list[i]=e;else DOGS.list.push(e);dogsSave()}
 function walkers(){return DOGS.walk.map(id=>DOGS.list.find(x=>x.id===id)).filter(Boolean)}
+// ================= Account e sincronizzazione (Supabase) =================
+// Senza account l'app funziona come sempre: tutto resta sul telefono. Con l'account, cani, uscite, recensioni e i progressi
+// di ogni giorno vengono copiati anche nel database. Senza internet resta il segno "da inviare" e si riprova appena torna la rete.
+const SB_URL="https://xljgemccvkxlypxrtcbr.supabase.co",SB_KEY="sb_publishable_X_5tyF5-sySPsVo8WEaCBw_t38fvh61";
+const SB_LIB="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js";
+const SB_TOK="sb-xljgemccvkxlypxrtcbr-auth-token",SYK="alldogs-sync",SYD="alldogs-sync-dirty";
+const SYNC_RE=/^alldogs-(acts|dogs?|reviews|goal|train|salute)(-|$)/;
+const SY={sb:null,p:null,user:null,busy:false,again:false,msg:"",err:"",mail:"",hash:null,rec:false};
+// il link dell'email (conferma o nuova password) arriva con #access_token=...: lo tolgo subito per non confondere le schermate
+if(/access_token=|error_description=/.test(location.hash)){SY.hash=location.hash.slice(1);history.replaceState(null,"",location.pathname+location.search+"#cane")}
+{const _set=store.set;store.set=function(k,v){const r=_set.call(store,k,v);if(SYNC_RE.test(k))syncDirty();return r}}
+function syncDirty(){try{localStorage.setItem("alldogs-sync-dirty","1")}catch(e){}clearTimeout(syncDirty.t);syncDirty.t=setTimeout(()=>syncNow(),4000)}
+const sbHas=()=>{try{return !!localStorage.getItem(SB_TOK)}catch(e){return false}};
+function openAcc(){const f=$("fold-acc");if(f){f.open=true;accPaint()}}
+function sbLoad(){if(SY.p)return SY.p;
+  SY.p=new Promise((ok,ko)=>{if(window.supabase)return ok();const s=document.createElement("script");s.src=SB_LIB;s.async=true;s.onload=ok;s.onerror=()=>ko(new Error("offline"));document.head.appendChild(s)})
+  .then(async()=>{const sb=SY.sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
+    if(SY.hash){const h=new URLSearchParams(SY.hash);SY.hash=null;
+      if(h.get("access_token")){const {error}=await sb.auth.setSession({access_token:h.get("access_token"),refresh_token:h.get("refresh_token")||""});
+        if(error)SY.msg="Il link non funziona più. Accedi con email e password.";else if(h.get("type")==="recovery"){SY.rec=true;SY.msg="Scrivi la nuova password."}else SY.msg="Email confermata: sei dentro! I dati del telefono ora si salvano anche nel tuo account."}
+      else SY.msg="Il link non è più valido (forse è scaduto). Accedi con email e password, oppure registrati di nuovo.";
+      setTimeout(openAcc,300)}
+    const {data}=await sb.auth.getSession();SY.user=data.session?data.session.user:null;
+    sb.auth.onAuthStateChange((ev,ses)=>{const was=SY.user&&SY.user.id;SY.user=ses?ses.user:null;if(ev==="PASSWORD_RECOVERY")SY.rec=true;
+      setTimeout(()=>{accPaint();if(SY.user&&SY.user.id!==was)syncNow()},0)});
+    accPaint();if(SY.user)syncNow();return sb})
+  .catch(e=>{SY.p=null;throw e});
+  return SY.p}
+const syH=s=>{let h=5381;for(let i=0;i<s.length;i++)h=(h*33^s.charCodeAt(i))|0;return h.toString(36)};
+const syNum=v=>v===""||v==null||!isFinite(+v)?null:+v;
+const syK=(k,id)=>id==="d1"?k:k+"-"+id;
+async function syncNow(){
+  if(!SY.user&&!sbHas())return;
+  if(!navigator.onLine){accPaint();return}
+  if(SY.busy){SY.again=true;return}
+  SY.busy=true;SY.err="";
+  try{const sb=await sbLoad();if(!SY.user)return;
+    const uid=SY.user.id;let st=store.get(SYK)||{};
+    if(st.uid!==uid){const n=await syncPull(sb,uid);st={uid};store.set(SYK,st);
+      if(n){try{localStorage.setItem(SYD,"1")}catch(e){}toast("Ho ripreso i dati dal tuo account");setTimeout(()=>location.reload(),1200);return}}
+    try{localStorage.removeItem(SYD)}catch(e){}accPaint();
+    await syncPush(sb,uid,st);
+    st.last=Date.now();store.set(SYK,st);
+  }catch(e){SY.err=e&&e.message||"errore";try{localStorage.setItem(SYD,"1")}catch(x){}
+    clearTimeout(syncDirty.t);syncDirty.t=setTimeout(()=>syncNow(),60000)}
+  finally{SY.busy=false;accPaint();if(SY.again){SY.again=false;syncNow()}}
+}
+// manda nel database lo stato del telefono; solo le righe cambiate dall'ultima volta
+async function syncPush(sb,uid,st){
+  const DL=(store.get("alldogs-dogs")||{}).list||[],acts=store.get("alldogs-acts")||[],revs=store.get("alldogs-reviews")||{};
+  const chg=(tab,key,row)=>{const h=syH(JSON.stringify(row));if(tab[key]===h)return false;tab[key]=h;return true};
+  const up=async(t,rows,on)=>{for(let i=0;i<rows.length;i+=200){const {error}=await sb.from(t).upsert(rows.slice(i,i+200),{onConflict:on});if(error)throw error}};
+  const del=async(t,col,ids,own="user_id")=>{for(let i=0;i<ids.length;i+=100){const {error}=await sb.from(t).delete().eq(own,uid).in(col,ids.slice(i,i+100));if(error)throw error}};
+  // cani
+  const map={};
+  const dRows=DL.map(d=>({owner_id:uid,local_id:d.id,nome:d.name||"",razza:d.breed||null,eta_anni:syNum(d.age),peso_kg:syNum(d.weight),energia:d.train||null,agilita:d.agil||null,mantello:d.coat||null,
+    brachicefalo:!!d.brachy,patologie:d.pat||{},patologie_note:d.patOther||null,
+    dati:{profilo:d,obiettivo:store.get(syK("alldogs-goal",d.id)),lezioni:store.get(syK("alldogs-train",d.id)),salute:store.get(syK("alldogs-salute",d.id))}}));
+  if(dRows.length){const {data,error}=await sb.from("dogs").upsert(dRows,{onConflict:"owner_id,local_id"}).select("id,local_id");if(error)throw error;data.forEach(r=>map[r.local_id]=r.id)}
+  const goneD=(st.dogs||[]).filter(id=>!map[id]);if(goneD.length)await del("dogs","local_id",goneD,"owner_id");
+  st.dogs=Object.keys(map);
+  // uscite
+  const first=DL[0]&&DL[0].id,caniOf=x=>(x.dogs&&x.dogs.length?x.dogs:[first]).filter(Boolean);
+  const wh=st.wh||{},wNow={},wRows=[];
+  for(const x of acts){if(!x||!x.t)continue;const cani=caniOf(x),dati=Object.assign({},x);delete dati.track;
+    const r={user_id:uid,local_id:String(x.t),dog_id:map[cani[0]]||null,inizio:new Date(x.t).toISOString(),fine:x.dur?new Date(x.t+x.dur).toISOString():null,
+      km:x.dist!=null?Math.round(x.dist)/1000:null,passi:x.steps||null,dislivello:x.up!=null?Math.round(x.up):null,
+      traccia:x.track&&x.track.length>1?{type:"LineString",coordinates:x.track.map(p=>[p[1],p[0]])}:null,trail_id:x.id!=null?String(x.id):null,nome:x.name||null,cani,dati};
+    wNow[r.local_id]=1;if(chg(wh,r.local_id,r))wRows.push(r)}
+  await up("walks",wRows,"user_id,local_id");
+  const goneW=Object.keys(wh).filter(k=>!wNow[k]);await del("walks","local_id",goneW);goneW.forEach(k=>delete wh[k]);st.wh=wh;
+  // progressi di ogni giorno, per cane: strada fatta, minuti, passi, lezioni, programma di allenamento
+  const days={},stride=(()=>{try{return myStride()}catch(e){return .75}})(),today=dKey(Date.now());
+  const add=(dl,g)=>days[dl+"|"+g]||(days[dl+"|"+g]={dl,g,passi:0,m:0,min:0,ob:{uscite:0}});
+  for(const x of acts){if(!x||!x.t)continue;const g=dKey(x.t);for(const dl of caniOf(x)){if(!map[dl])continue;const a=add(dl,g);
+    a.passi+=x.steps||Math.round((x.dist||0)/stride);a.m+=x.dist||0;a.min+=Math.round((x.dur||0)/60000);a.ob.uscite++}}
+  for(const d of DL){if(!map[d.id])continue;
+    const tr=store.get(syK("alldogs-train",d.id));
+    if(tr&&tr.st)for(const [lid,s] of Object.entries(tr.st)){if(!s||!s.s||s.s>today)continue;const a=add(d.id,s.s);(a.ob.lezioni_viste=a.ob.lezioni_viste||[]).push(lid);if(s.ok)(a.ob.lezioni_imparate=a.ob.lezioni_imparate||[]).push(lid)}
+    if(tr&&tr.day&&tr.day.d&&tr.day.d<=today)add(d.id,tr.day.d).ob.lezione_del_giorno=tr.day.id;
+    const go=store.get(syK("alldogs-goal",d.id));
+    if(go&&go.from&&go.target)try{for(const p of buildCal(go,go.r||.1).days){const g=dKey(p.t);if(g>today)break;
+      const a=add(d.id,g),fatto=Math.round(a.m)/1000;a.ob.programma={tipo:p.kd,km_previsti:p.km,raggiunto:p.kd==="riposo"?fatto<=p.km*1.5:fatto>=p.km*.9}}}catch(e){}}
+  const dh=st.dh||{},dNow={},pRows=[];
+  for(const [k,a] of Object.entries(days)){dNow[k]=1;const r={user_id:uid,dog_id:map[a.dl],giorno:a.g,passi:a.passi,km:Math.round(a.m)/1000,minuti:a.min,obiettivi_raggiunti:a.ob};if(chg(dh,k,r))pRows.push(r)}
+  for(const k of Object.keys(dh))if(!dNow[k]){const [dl,g]=k.split("|");delete dh[k];if(map[dl])pRows.push({user_id:uid,dog_id:map[dl],giorno:g,passi:0,km:0,minuti:0,obiettivi_raggiunti:{}})}
+  await up("daily_progress",pRows,"user_id,dog_id,giorno");st.dh=dh;
+  // recensioni (le foto per ora restano sul telefono)
+  const rh=st.rh||{},rNow={},rRows=[];
+  for(const [id,r] of Object.entries(revs)){if(!r||!(r.stars||r.note||(r.tags&&r.tags.length)||(r.q&&Object.keys(r.q).length)))continue;const q=r.q||{};
+    const row={user_id:uid,trail_id:String(id),voto:r.stars>=1&&r.stars<=5?r.stars:null,testo:r.note||null,tag:r.tags||[],domande:q,cani_ammessi:q.divieto===1?false:q.divieto===0?true:null};
+    rNow[id]=1;if(chg(rh,id,row))rRows.push(row)}
+  await up("reviews",rRows,"user_id,trail_id");
+  const goneR=Object.keys(rh).filter(k=>!rNow[k]);await del("reviews","trail_id",goneR);goneR.forEach(k=>delete rh[k]);st.rh=rh;
+}
+// primo accesso su questo telefono: aggiunge i dati già nell'account che qui mancano (senza toccare quelli del telefono)
+async function syncPull(sb,uid){
+  const [a,b,c]=await Promise.all([sb.from("dogs").select("*").eq("owner_id",uid),sb.from("walks").select("*").eq("user_id",uid),sb.from("reviews").select("*").eq("user_id",uid)]);
+  if(a.error||b.error||c.error)throw a.error||b.error||c.error;
+  let n=0;const ren={},had=DOGS.list.length>0,put=(k,v)=>{try{if(v!=null&&localStorage.getItem(k)==null)localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+  for(const r of a.data){const D=r.dati||{},p=Object.assign({name:r.nome},D.profilo||{});let lid=r.local_id;
+    const loc=lid&&DOGS.list.find(x=>x.id===lid);
+    if(loc&&(loc.name||"").trim().toLowerCase()===(p.name||"").trim().toLowerCase())continue; // stesso cane, già qui
+    if(!lid||loc){const nid="d"+Date.now().toString(36)+Math.random().toString(36).slice(2,5);const {error}=await sb.from("dogs").update({local_id:nid}).eq("id",r.id);if(error)throw error;if(lid)ren[lid]=nid;lid=nid}
+    DOGS.list.push(Object.assign({},p,{id:lid}));
+    put(syK("alldogs-goal",lid),D.obiettivo);put(syK("alldogs-train",lid),D.lezioni);put(syK("alldogs-salute",lid),D.salute);n++}
+  if(n&&!had){DOGS.cur=DOGS.list[0].id;DOGS.walk=[DOGS.cur];try{localStorage.setItem("alldogs-dog",JSON.stringify(DOGS.list[0]))}catch(e){}}
+  if(n)try{localStorage.setItem("alldogs-dogs",JSON.stringify(DOGS))}catch(e){}
+  const acts=store.get("alldogs-acts")||[],have=new Set(acts.map(x=>String(x.t)));let m=0;
+  for(const r of b.data){const t=+r.local_id||Date.parse(r.inizio);if(have.has(String(t)))continue;
+    const x=Object.assign({},r.dati||{});x.t=t;if(r.traccia&&r.traccia.coordinates)x.track=r.traccia.coordinates.map(p=>[p[1],p[0]]);
+    x.dogs=(x.dogs||r.cani||[]).map(id=>ren[id]||id);acts.push(x);m++}
+  if(m){acts.sort((p,q)=>q.t-p.t);try{localStorage.setItem("alldogs-acts",JSON.stringify(acts))}catch(e){}}
+  const revs=store.get("alldogs-reviews")||{};let k=0;
+  for(const r of c.data){if(revs[r.trail_id])continue;revs[r.trail_id]={stars:r.voto||0,tags:r.tag||[],q:r.domande||{},note:r.testo||"",t:Date.parse(r.aggiornato_il)||Date.now()};k++}
+  if(k)try{localStorage.setItem("alldogs-reviews",JSON.stringify(revs))}catch(e){}
+  return n+m+k}
+const ACC_ERR=e=>{const m=(e&&e.message||"")+"";
+  if(/invalid login/i.test(m))return "Email o password sbagliate.";
+  if(/not confirmed/i.test(m))return "Prima conferma l'email: apri il link che ti ho mandato (guarda anche nello spam).";
+  if(/already registered|already exists/i.test(m))return "Questa email è già registrata: tocca Accedi.";
+  if(/password/i.test(m)&&/(6|short|least)/i.test(m))return "La password deve avere almeno 6 caratteri.";
+  if(/not authorized|not allowed/i.test(m))return "Per ora non riesco a mandare l'email di conferma a questo indirizzo. Riprova più tardi.";
+  if(/email/i.test(m)&&/invalid/i.test(m))return "Questa email non sembra valida: controlla di averla scritta bene.";
+  if(/rate|too many|security purposes/i.test(m))return "Troppi tentativi ravvicinati: aspetta un minuto e riprova.";
+  if(/fetch|network|offline/i.test(m))return "Non c'è connessione a internet. Riprova quando torna la rete.";
+  return "Qualcosa non ha funzionato ("+m+"). Riprova tra poco."};
+function accPaint(){const box=$("acc-box"),sub=$("acc-sub"),u=SY.user;
+  if(sub)sub.textContent=u?"Collegato come "+u.email:"Accedi per salvare i dati anche nel tuo account";
+  if(!box)return;
+  const msg=SY.msg?`<p class="small" style="margin-top:8px"><b>${esc(SY.msg)}</b></p>`:"";
+  if(u&&SY.rec){box.innerHTML=`${msg}<div class="form" style="margin-top:10px"><label class="w">Nuova password<input id="acc-npw" type="password" autocomplete="new-password" minlength="6"></label></div>
+    <button class="btn sm pri" id="acc-npw-ok" type="button" style="margin-top:10px">Salva la nuova password</button>`;
+    $("acc-npw-ok").onclick=async()=>{const pw=$("acc-npw").value;if(pw.length<6){toast("Almeno 6 caratteri");return}
+      const {error}=await SY.sb.auth.updateUser({password:pw});if(error){SY.msg=ACC_ERR(error)}else{SY.rec=false;SY.msg="Nuova password salvata."}accPaint()};return}
+  if(u){let dirty=null;try{dirty=localStorage.getItem(SYD)}catch(e){}const st=store.get(SYK)||{};
+    const stato=SY.busy?"Sto salvando…":SY.err?"Non sono riuscito a salvare ("+SY.err+"). Riprovo da solo.":dirty&&!navigator.onLine?"Sei senza internet: salvo appena torna la connessione.":dirty?"Ci sono modifiche da salvare.":st.last?"Tutto salvato nel tuo account · "+new Date(st.last).toLocaleString("it-IT",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}):"Cani, uscite, recensioni e progressi di ogni giorno si salvano anche nel tuo account.";
+    box.innerHTML=`<p>Sei collegato come <b>${esc(u.email)}</b>.</p><p class="small muted" style="margin-top:6px">${esc(stato)}</p>${msg}
+      <div class="row" style="margin-top:10px;flex-wrap:wrap"><button class="btn sm" id="acc-sync" type="button">Salva ora</button><button class="btn sm" id="acc-out" type="button">Esci</button></div>
+      <p class="small muted" style="margin-top:8px">Se esci, i dati restano comunque su questo telefono.</p>`;
+    $("acc-sync").onclick=()=>{SY.msg="";const st=store.get(SYK)||{};if(st.uid){st.wh={};st.dh={};st.rh={};store.set(SYK,st)}syncNow()};
+    $("acc-out").onclick=async()=>{try{await SY.sb.auth.signOut()}catch(e){}SY.user=null;SY.msg="";accPaint();toast("Sei uscito dall'account")};return}
+  box.innerHTML=`<p class="small muted">Con un account i dati tuoi e dei tuoi cani restano al sicuro anche se cambi telefono. Senza account l'app funziona lo stesso, con i dati solo su questo telefono.</p>
+    <div class="form" style="margin-top:10px"><label class="w">Email<input id="acc-mail" type="email" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" value="${esc(SY.mail)}"></label>
+    <label class="w">Password<input id="acc-pw" type="password" autocomplete="current-password" minlength="6"></label></div>${msg}
+    <div class="row" style="margin-top:10px;flex-wrap:wrap"><button class="btn sm pri" id="acc-in" type="button">Accedi</button><button class="btn sm" id="acc-up" type="button">Registrati</button><button class="btn sm" id="acc-forgot" type="button">Password dimenticata</button></div>`;
+  const val=pw=>{const e=$("acc-mail").value.trim();SY.mail=e;if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)){toast("Scrivi un'email valida");return null}
+    const p=$("acc-pw").value;if(pw&&p.length<6){toast("La password deve avere almeno 6 caratteri");return null}return {e,p}};
+  const run=async(f,btn)=>{btn.disabled=true;try{const sb=await sbLoad();await f(sb)}catch(e){SY.msg=ACC_ERR(e)}btn.disabled=false;accPaint()};
+  const back=location.origin+location.pathname;
+  $("acc-in").onclick=e=>{const v=val(true);if(v)run(async sb=>{const {error}=await sb.auth.signInWithPassword({email:v.e,password:v.p});if(error)throw error;SY.msg="";toast("Bentornato!")},e.currentTarget)};
+  $("acc-up").onclick=e=>{const v=val(true);if(v)run(async sb=>{const {data,error}=await sb.auth.signUp({email:v.e,password:v.p,options:{emailRedirectTo:back}});if(error)throw error;
+    if(data.user&&data.user.identities&&!data.user.identities.length){SY.msg="Questa email è già registrata: tocca Accedi.";return}
+    SY.msg=data.session?"Account creato.":`Controlla la tua email: ti ho mandato un link a ${v.e}. Aprilo per confermare (guarda anche nello spam), poi torna qui e tocca Accedi.`},e.currentTarget)};
+  $("acc-forgot").onclick=e=>{const v=val(false);if(v)run(async sb=>{const {error}=await sb.auth.resetPasswordForEmail(v.e,{redirectTo:back});if(error)throw error;
+    SY.msg=`Ti ho mandato un'email a ${v.e} con il link per scegliere una nuova password.`},e.currentTarget)};
+}
+addEventListener("online",()=>{try{if(localStorage.getItem(SYD))syncNow()}catch(e){}});
+setTimeout(()=>{const f=$("fold-acc");if(f)f.addEventListener("toggle",()=>{if(f.open){accPaint();sbLoad().catch(()=>{})}});accPaint();if(sbHas()||SY.hash)sbLoad().catch(()=>{})},0);
 const andNames=a=>a.length<2?a.join(""):a.slice(0,-1).join(", ")+" e "+a[a.length-1];
 // Quando escono più cani insieme, sentieri e giri si giudicano sul più delicato del gruppo (quello che arriva meno lontano).
 let gdC=null,gdK="";

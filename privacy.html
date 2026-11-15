@@ -14,10 +14,10 @@
 
 <h2>In breve</h2>
 <ul>
-<li>Oggi AllDogs <b>non ha account e non ha un server proprio</b>: i dati tuoi e del tuo cane restano salvati <b>solo nel tuo telefono</b> (nel browser o nell'app).</li>
+<li>Puoi usare AllDogs <b>senza account</b>: in quel caso i dati tuoi e del tuo cane restano salvati <b>solo nel tuo telefono</b> (nel browser o nell'app). Se <b>crei un account</b> (email e password), una copia di questi dati viene salvata anche nel tuo account privato, così non li perdi se cambi telefono. Li vedi solo tu, tranne le recensioni dei sentieri, che sono pubbliche.</li>
 <li>Per mostrarti mappe, meteo e percorsi, il telefono chiede le informazioni ad alcuni servizi esterni (elencati sotto). A loro arrivano solo i dati che servono, per esempio un punto sulla mappa.</li>
 <li>Non vendiamo dati, non mostriamo pubblicità e non usiamo strumenti di profilazione.</li>
-<li>Puoi cancellare tutto in qualsiasi momento togliendo il cane dall'app o cancellando i dati del sito/dell'app dal telefono.</li>
+<li>Puoi cancellare tutto in qualsiasi momento togliendo il cane dall'app o cancellando i dati del sito/dell'app dal telefono. Se hai un account, togliendo un cane o un'uscita dall'app li togli anche dall'account; per cancellare l'account intero scrivi al titolare (indirizzo sotto).</li>
 </ul>
 
 <h2>1. Chi è il titolare</h2>
@@ -26,15 +26,16 @@
 <h2>2. Quali dati usa l'app e dove restano</h2>
 <table>
 <tr><th>Dato</th><th>A cosa serve</th><th>Dove resta</th></tr>
-<tr><td>Profilo del cane: nome, età, peso, razza, allenamento, agilità, pelo, muso schiacciato, foto</td><td>Giudicare quali sentieri sono adatti al tuo cane</td><td>Solo sul telefono</td></tr>
-<tr><td>Salute e libretto del cane: patologie, microchip, veterinario, vaccini, antiparassitario, promemoria, peso</td><td>Limiti più prudenti, promemoria, emergenze</td><td>Solo sul telefono</td></tr>
-<tr><td>Posizione (GPS)</td><td>Sentieri vicini, meteo del posto, navigazione, diario delle uscite</td><td>Usata sul momento; i percorsi fatti restano nel diario sul telefono</td></tr>
-<tr><td>Diario, passi, obiettivi, lezioni di addestramento</td><td>Statistiche e andatura del cane</td><td>Solo sul telefono</td></tr>
-<tr><td>Recensioni, risposte sul percorso e foto dei sentieri</td><td>Ricordare com'era il percorso per il cane</td><td>Solo sul telefono (in futuro, se lo scegli, pubblicate con il tuo account)</td></tr>
+<tr><td>Profilo del cane: nome, età, peso, razza, allenamento, agilità, pelo, muso schiacciato, foto</td><td>Giudicare quali sentieri sono adatti al tuo cane</td><td>Sul telefono; con l'account anche nel tuo account privato (la foto resta solo sul telefono)</td></tr>
+<tr><td>Salute e libretto del cane: patologie, microchip, veterinario, vaccini, antiparassitario, promemoria, peso</td><td>Limiti più prudenti, promemoria, emergenze</td><td>Sul telefono; con l'account anche nel tuo account privato</td></tr>
+<tr><td>Posizione (GPS)</td><td>Sentieri vicini, meteo del posto, navigazione, diario delle uscite</td><td>Usata sul momento; i percorsi fatti restano nel diario sul telefono (con l'account anche nel tuo account privato)</td></tr>
+<tr><td>Diario, passi, obiettivi, lezioni di addestramento</td><td>Statistiche e andatura del cane</td><td>Sul telefono; con l'account anche nel tuo account privato (uscite e progressi di ogni giorno)</td></tr>
+<tr><td>Recensioni, risposte sul percorso e foto dei sentieri</td><td>Ricordare com'era il percorso per il cane</td><td>Sul telefono; con l'account voto, testo e risposte vengono pubblicati e chiunque può leggerli (le foto per ora restano sul telefono)</td></tr>
 <tr><td>Proposte di luoghi e sentieri (nome, posizione, percorso, note)</td><td>Farli controllare e aggiungere alla mappa per tutti</td><td>Sul telefono; quando premi Invia partono per e-mail al titolare con il tuo indirizzo di posta, che usiamo solo per risponderti</td></tr>
+<tr><td>Account: email e password</td><td>Farti accedere e salvare i tuoi dati</td><td>Nel servizio Supabase (server in Unione Europea, Irlanda). La password è salvata cifrata: nessuno può leggerla</td></tr>
 <tr><td>Chiavi dei servizi (OpenRouteService, Gemini) che incolli tu</td><td>Creare giri e usare l'assistente</td><td>Solo sul telefono</td></tr>
 </table>
-<p>I dati sulla salute del cane non sono dati personali "sanitari" tuoi, ma li trattiamo con la stessa cura: non lasciano il telefono, salvo quando chiedi qualcosa all'assistente (vedi Gemini, sotto).</p>
+<p>I dati sulla salute del cane non sono dati personali "sanitari" tuoi, ma li trattiamo con la stessa cura: non lasciano il telefono, salvo quando chiedi qualcosa all'assistente (vedi Gemini, sotto) o se hai creato un account (in quel caso sono nel tuo account privato, protetti in modo che li veda solo tu).</p>
 
 <h2>3. Servizi esterni usati dall'app</h2>
 <p>Quando usi certe funzioni, il telefono si collega direttamente a questi servizi. Ognuno riceve l'indirizzo IP del tuo telefono (come succede per qualsiasi sito) e i dati indicati.</p>
@@ -47,6 +48,8 @@
 <tr><td>OpenRouteService (HeiGIT)</td><td>Crea giro, Lo disegno io</td><td>Punti del percorso da calcolare</td></tr>
 <tr><td>Google Gemini</td><td>Solo se usi l'assistente «Chiedi»</td><td>Il testo che scrivi e, per darti consigli giusti: nome e profilo del cane (razza, età, peso, allenamento, eventuali problemi di salute), la sua andatura, il meteo e l'elenco dei sentieri della zona in cui ti trovi. Non mandiamo microchip, veterinario, vaccini né il diario delle uscite.</td></tr>
 <tr><td>ntfy.sh</td><td>Solo se attivi «Condividi la posizione in tempo reale»</td><td>La tua posizione durante il giro, su un canale con nome casuale che conosce solo chi ha il link. Dopo 12 ore non è più disponibile.</td></tr>
+<tr><td>Supabase</td><td>Solo se crei un account o accedi</td><td>Email, password (cifrata) e la copia dei tuoi dati descritta sopra. Server nell'Unione europea (Irlanda)</td></tr>
+<tr><td>jsDelivr</td><td>Solo se usi l'account</td><td>Richiesta della libreria per accedere</td></tr>
 <tr><td>Google Fonts, cdnjs (Cloudflare)</td><td>Apertura dell'app</td><td>Richiesta dei caratteri e della libreria della mappa</td></tr>
 <tr><td>Google Maps</td><td>Solo se tocchi «Portami lì»</td><td>Il punto di arrivo (si apre l'app o il sito di Google Maps)</td></tr>
 </table>

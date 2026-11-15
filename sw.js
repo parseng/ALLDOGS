@@ -2,11 +2,12 @@
 // - L'app (pagina, script, icone, libreria della mappa, caratteri) resta salvata nel telefono.
 // - I file dei sentieri già aperti restano disponibili offline.
 // - Le mappe dei sentieri scaricati (cache "ad-off-...") vengono servite dal telefono.
-const V = "alldogs-v16";
+const V = "alldogs-v17";
 const SHELL = "ad-shell-" + V, DATA = "ad-data", RUN = "ad-run";
 const CORE = ["./", "index.html", "lezioni-anim.js", "manifest.json", "icon-192.png", "icon-512.png", "img/aussie/chiedi.jpg", "privacy.html", "termini.html", "legal.css",
   "https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/3.9.4/mapbox-gl.min.js",
-  "https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/3.9.4/mapbox-gl.min.css"];
+  "https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/3.9.4/mapbox-gl.min.css",
+  "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(SHELL).then(c => Promise.all(CORE.map(u => c.add(new Request(u, { cache: "reload" })).catch(() => 0)))).then(() => self.skipWaiting()));
@@ -77,5 +78,5 @@ self.addEventListener("fetch", e => {
   if (/\.tile\.opentopomap\.org$/.test(u.hostname)) { e.respondWith(cacheFirst(req, null, topoKey(u))); return; }
   // caratteri delle scritte sulla mappa, libreria della mappa, caratteri del testo
   if (u.hostname === "api.mapbox.com" && u.pathname.startsWith("/fonts/")) { e.respondWith(cacheFirst(req, RUN, dataKey(u))); return; }
-  if (u.hostname === "cdnjs.cloudflare.com" || u.hostname === "fonts.googleapis.com" || u.hostname === "fonts.gstatic.com") { e.respondWith(cacheFirst(req, RUN, req.url)); return; }
+  if (u.hostname === "cdnjs.cloudflare.com" || u.hostname === "cdn.jsdelivr.net" || u.hostname === "fonts.googleapis.com" || u.hostname === "fonts.gstatic.com") { e.respondWith(cacheFirst(req, RUN, req.url)); return; }
 });
