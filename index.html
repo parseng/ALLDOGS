@@ -156,6 +156,11 @@ body > #mapwrap{display:none}
 .mk-me .hd{display:none;position:absolute;inset:-14px;pointer-events:none}
 .mk-me .hd::before{content:"";position:absolute;left:50%;top:0;margin-left:-9px;border:9px solid transparent;border-top:0;border-bottom:13px solid var(--dog);filter:drop-shadow(0 0 1.5px #fff)}
 .mk-me.dir .hd{display:block}
+.mk-start{display:flex;flex-direction:column;align-items:center;pointer-events:none}
+.mk-start .pin{width:40px;height:40px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#1f8a4c;border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.45);display:grid;place-items:center;margin-bottom:6px}
+.mk-start svg{width:22px;height:22px;transform:rotate(45deg);fill:none;stroke:#fff;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.mk-start svg .fl{fill:#fff}
+.mk-start span{order:-1;margin-bottom:4px;background:#1f8a4c;color:#fff;font:700 12px/1 var(--body);padding:4px 8px;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.3);white-space:nowrap}
 .mk-pin{width:28px;height:28px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#d9531a;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4);cursor:grab}
 
 /* schede sentiero grandi */
@@ -613,6 +618,7 @@ body.noscroll{overflow:hidden}
 .frow .fall{flex:none;display:inline-flex;align-items:center;gap:8px;border:0;background:var(--surface);border-radius:12px;padding:0 14px;height:42px;font-size:15px;font-weight:600;color:var(--ink)}
 .frow .fall svg{width:20px;height:20px}
 .frow .fall .ddn{display:grid;place-items:center;min-width:22px;height:22px;border-radius:11px;background:var(--accent);color:var(--accent-ink);font-size:13px}
+.fsheet .field{display:block;width:100%;margin-top:5px;font-weight:400;color:var(--ink)}
 .fsheet label{display:block;margin-top:12px;font-size:14px;font-weight:600;color:var(--muted)}
 .fsheet select{display:block;width:100%;margin-top:5px;appearance:none;-webkit-appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:12px;padding:12px 14px;font-size:16px}
 .frow .dd{flex:none;display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:0 12px;height:41px;font-size:15px;font-weight:500;white-space:nowrap}
@@ -884,6 +890,7 @@ body{font-size:17px;line-height:1.5}
     <select id="f-day" aria-label="Giorno"></select>
     <select id="f-dog" aria-label="Cani ammessi"><option value="all">Cani ammessi</option><option value="free">Senza limiti per i cani</option><option value="show">Anche dove sono vietati</option></select>
     <select id="f-fit" aria-label="Adatti al cane"><option value="all">Per il cane: tutti</option><option value="0">Adatti al cane</option><option value="01">Adatti o con prudenza</option></select>
+    <select id="f-type" aria-label="Tipo di percorso"><option value="all">Tipo di percorso</option><option value="loop">Ad anello</option><option value="lolli">Anello con un tratto da rifare</option><option value="line">Andata e ritorno</option><option value="walk">Giri in città</option><option value="cai">Sentieri segnati con un numero</option><option value="flat">Pianeggianti</option></select>
     <select id="f-len" aria-label="Lunghezza"><option value="all">Lunghezza</option><option value="0-5">Fino a 5 km</option><option value="5-10">Da 5 a 10 km</option><option value="10-99">Più di 10 km</option></select>
     <select id="f-up" aria-label="Dislivello"><option value="all">Dislivello</option><option value="0-150">Fino a 150 m</option><option value="150-400">Da 150 a 400 m</option><option value="400-800">Da 400 a 800 m</option><option value="800-99999">Oltre 800 m</option></select>
     <button class="dd" id="dd-act" aria-expanded="false"></button>
@@ -1095,6 +1102,11 @@ body{font-size:17px;line-height:1.5}
   <p class="small muted onbonly" style="margin-top:10px;text-align:center">Toccando Inizia accetti le <a href="termini.html">condizioni d'uso</a>. I dati restano su questo telefono: <a href="privacy.html">informativa sulla privacy</a>.</p>
   <button class="btn wide" id="dog-del" type="button" hidden style="margin-top:10px">Togli questo cane dall'app</button>
   </div></details>
+  <details class="fold" id="fold-prop"><summary><span><b>Proponi un luogo o un sentiero</b><small>Area cani, spiaggia, fontanella o un tuo giro: lo controllo e lo aggiungo</small></span><i>›</i></summary><div class="foldb">
+    <p class="small muted">Manca qualcosa sulla mappa? Mandalo allo sviluppatore: lo controlla e, se va bene, lo aggiunge per tutti.</p>
+    <button class="btn wide" id="prop-open" type="button" style="margin-top:10px">Proponi qualcosa</button>
+    <div id="prop-list"></div>
+  </div></details>
   <details class="fold" id="settings"><summary><span><b>Impostazioni</b><small>Chiavi dei servizi e avvertenze</small></span><i>›</i></summary><div class="foldb">
     <div class="block"><h2>Chiavi dei servizi</h2>
       <p class="muted small" style="margin-bottom:10px"><b>Giri ad anello</b>: OpenRouteService, gratuito. Registrati su <a href="https://openrouteservice.org/dev/#/signup" target="_blank" rel="noopener">openrouteservice.org</a>, copia la chiave e incollala qui.</p>
@@ -1162,6 +1174,7 @@ body{font-size:17px;line-height:1.5}
   <h3>Sulla mappa</h3>
   <div class="mtog"><button data-st="trails"><i class="dot" style="background:var(--ok)"></i><span>Sentieri</span><i class="tg"></i></button><button data-st="poi-a"><i class="dot" style="background:#1f8a4c"></i><span>Aree cani</span><i class="tg"></i></button><button data-st="poi-v"><i class="dot" style="background:#d9483b"></i><span>Veterinari</span><i class="tg"></i></button><button data-st="poi-s"><i class="dot" style="background:#1e88e5"></i><span>Spiagge per cani</span><i class="tg"></i></button><button data-st="poi-g"><i class="dot" style="background:#6a9f2a"></i><span>Ville comunali e parchi</span><i class="tg"></i></button><button data-st="poi-w"><i class="dot" style="background:#1e88e5"></i><span>Fontanelle e punti acqua</span><i class="tg"></i></button></div>
   <button class="btn wide" data-st="legend" style="margin-top:14px">Legenda della mappa</button>
+  <button class="btn wide" id="prop-map" type="button" style="margin-top:8px">Manca un posto? Proponilo</button>
   <p class="small muted" style="margin-top:12px">Una mappa meteo o satellite alla volta. Fonti gratuite: Open-Meteo, RainViewer, NASA, Sentinel-2 di EOX.</p>
 </div></div>
 <div class="sheetbg" id="sheet" hidden><div class="box" id="sheet-box"></div></div>
@@ -1472,7 +1485,8 @@ function loadCell(k){
 // Luoghi utili per il cane (aree cani, veterinari, spiagge per cani) e parchi: data/p/<riquadro>.json, creati da tools/build_city.py
 const PL={},plState={},POI_T={a:["Area cani","#1f8a4c"],v:["Veterinario","#d9483b"],s:["Spiaggia per cani","#1e88e5"],g:["Villa comunale o parco","#6a9f2a"]};
 const poiOld=store.get("alldogs-poi")!==false;
-const poiK=Object.assign({a:poiOld,v:poiOld,s:poiOld,g:poiOld,w:true},store.get("alldogs-poik")||{}); // quali luoghi mostrare sulla mappa
+const poiK=Object.assign({a:poiOld,v:poiOld,s:poiOld,g:poiOld,w:false},store.get("alldogs-poik")||{}); // quali luoghi mostrare sulla mappa
+if(!store.get("alldogs-poik2")){poiK.w=false;store.set("alldogs-poik",poiK);store.set("alldogs-poik2",1)} // fontanelle spente finché non le accendi dal menu mappe
 let trailsOn=store.get("alldogs-trailson")!==false;
 function loadPlaces(k){
   if(plState[k])return plState[k];
@@ -1655,10 +1669,13 @@ function mountMap(host,inter){
   requestAnimationFrame(()=>{M.resize();applyScene()});
 }
 // Senza internet (o mentre segui un sentiero scaricato) uso la mappa topografica: è quella salvata nel telefono
+function isNight(){try{const c=S.view&&S.view.c||[41.9,12.5],t=romeT(Date.now()),now=t.slice(0,10)+"T"+t.slice(11,16),[sr,ss]=sunTimes(c[0],c[1],t.slice(0,10));return now<sr||now>ss}catch(e){return false}}
+setInterval(()=>syncStyle(),5*60e3);
 function wantStyle(){
   if(!navigator.onLine)return "topo";
   if(nav&&curHost&&curHost.id==="hostNav"&&OFF[offKeyOf(nav.o)])return "topo";
   if(nav&&curHost&&curHost.id==="hostNav"&&mapStyle==="map")return "navn"; // in cammino: mappa scura da navigazione con i palazzi in 3D
+  if(isNight()&&(mapStyle==="map"||mapStyle==="str"))return mapStyle==="map"?"navn":"dark"; // dopo il tramonto la mappa diventa scura, all'alba torna chiara
   return mapStyle;
 }
 function syncStyle(){const k=wantStyle();if(!M||k===styleNow)return;styleNow=k;styleOK=false;M.setStyle(STYLES[k],{diff:false})}
@@ -1895,10 +1912,10 @@ function setStyleKind(k){
   else if(k==="hill"){hillOn=!hillOn;store.set("alldogs-hill",hillOn);overlays()}
   else if(OVNAME[k]){wxOv=wxOv===k?null:k;if(M){overlays();if(wxOv&&M.getZoom()>(k==="ndvi"?11:9.5))M.easeTo({zoom:k==="ndvi"?10.5:k==="rain"?7.5:9})}if(wxOv)toast(OVNAME[k])}
   else if(k==="trails"){trailsOn=!trailsOn;store.set("alldogs-trailson",trailsOn);applyScene();toast(trailsOn?"Sentieri sulla mappa":"Sentieri nascosti: restano nell'elenco qui sotto")}
-  else if(k.startsWith("poi-")){const t=k.slice(4);poiK[t]=!poiK[t];store.set("alldogs-poik",poiK);poiData();if(t==="v")vxView();if(t==="w"){wtData();wtView()}
+  else if(k.startsWith("poi-")){const t=k.slice(4);poiK[t]=!poiK[t];store.set("alldogs-poik",poiK);poiData();if(t==="v")vxView();if(t==="w"){wtData();wtView();applyScene()}
     toast((poiK[t]?"":"Nascosti: ")+({a:"Aree cani",v:"Veterinari",s:"Spiagge per cani",g:"Ville comunali e parchi",w:"Fontanelle e punti acqua"})[t]+(poiK[t]?(t==="g"||t==="w"?": avvicinati alla mappa per vederle":" sulla mappa"):""))}
   else if(k==="legend"){$("layers").hidden=true;showLegend()}
-  else if(k!==mapStyle&&STYLES[k]){mapStyle=k;store.set("alldogs-mapstyle",k);syncStyle();if(styleNow!==k)toast(navigator.onLine?"Durante la navigazione di un sentiero scaricato uso la mappa topografica salvata":"Senza internet uso la mappa topografica dei sentieri scaricati")}
+  else if(k!==mapStyle&&STYLES[k]){mapStyle=k;store.set("alldogs-mapstyle",k);syncStyle();if(styleNow!==k&&isNight()&&styleNow!=="topo")toast("Dopo il tramonto la mappa diventa scura da sola: all'alba torna chiara");else if(styleNow!==k)toast(navigator.onLine?"Durante la navigazione di un sentiero scaricato uso la mappa topografica salvata":"Senza internet uso la mappa topografica dei sentieri scaricati")}
   syncLayersMenu();
 }
 function syncLayersMenu(){document.querySelectorAll("#layers [data-st]").forEach(b=>b.setAttribute("aria-pressed",({"3d":map3d,hill:hillOn,trails:trailsOn,"poi-a":poiK.a,"poi-v":poiK.v,"poi-s":poiK.s,"poi-g":poiK.g,"poi-w":poiK.w,legend:false})[b.dataset.st]??(OVNAME[b.dataset.st]?wxOv===b.dataset.st:b.dataset.st===mapStyle)))}
@@ -1932,9 +1949,8 @@ function applyScene(){
       else if(S.backView){S.backView=false;M.jumpTo({center:ll(S.view.c),zoom:S.view.z})}}
   } else if(sc.mode==="trail"){
     setData("sel",fc(selFeatures(sc.ways,sc.sf)));
-    setData("water",fc((sc.water||[]).map(p=>({type:"Feature",properties:{},geometry:{type:"Point",coordinates:ll(p)}}))));
-    const el=document.createElement("div");el.className="mk-stop";el.style.borderColor="#1f8a4c";el.textContent="▶";
-    stopMarkers.push(new mapboxgl.Marker({element:el}).setLngLat(ll(sc.start)).addTo(M));
+    setData("water",fc((poiK.w?sc.water||[]:[]).map(p=>({type:"Feature",properties:{},geometry:{type:"Point",coordinates:ll(p)}}))));
+    stopMarkers.push(startMarker(sc.start,cur&&cur.tr&&cur.tr.shape==="loop"?"Partenza e arrivo":"Partenza"));
     if(fitPending){fitPending=false;fitTo(boundsOf(sc.ways))}
   } else if(sc.mode==="crea"){
     setData("water",fc([]));
@@ -1964,13 +1980,18 @@ function applyScene(){
   } else if(sc.mode==="nav"&&nav){
     const o=nav.o;
     setData("sel",fc([lineF(o.ways)]));
-    setData("water",fc((o.water||[]).map(p=>({type:"Feature",properties:{},geometry:{type:"Point",coordinates:ll(p)}}))));
+    setData("water",fc((poiK.w?o.water||[]:[]).map(p=>({type:"Feature",properties:{},geometry:{type:"Point",coordinates:ll(p)}}))));
     setData("track",fc(nav.track.length>1?[lineF([nav.track])]:[]));
+    if(o.path&&o.path.length)stopMarkers.push(startMarker(o.path[0],"Partenza"));
     (o.stops||[]).forEach((s,i)=>{if(!i)return;const e2=document.createElement("div");e2.className="mk-stop";e2.textContent=i+1;stopMarkers.push(new mapboxgl.Marker({element:e2}).setLngLat(ll(s.p)).addTo(M))});
     if(fitPending){fitPending=false;if(nav.pos){navFollow=true;navCam(0)}else fitTo(boundsOf(o.ways),{top:120,left:40,right:70,bottom:$("nav-bot").offsetHeight+30})}
   }
 }
 // Fondo colorato: ogni tratto del percorso prende il colore del suo tipo di fondo
+// Segnaposto della partenza: goccia verde grande con la bandierina e la scritta sotto
+function startMarker(p,label){const el=document.createElement("div");el.className="mk-start";
+  el.innerHTML=`<div class="pin"><svg viewBox="0 0 24 24"><path d="M7 21V4"/><path class="fl" d="M7 4.5h10.5l-2.3 3.7 2.3 3.8H7Z"/></svg></div><span>${label}</span>`;
+  return new mapboxgl.Marker({element:el,anchor:"bottom"}).setLngLat(ll(p)).addTo(M)}
 function selFeatures(ways,sf,segs){
   if(surfOn&&segs&&segs.length)return segs.map(g=>lineF([g.pts],{sf:g.c}));
   if(surfOn&&sf)return ways.map((w,i)=>lineF([w],{sf:sf[i]||"u"}));
@@ -1995,8 +2016,8 @@ function end3d(){
   syncSurf();
 }
 function flySource(){
-  if(scene.mode==="trail"&&cur&&cur.tr)return {path:cur.tr.path,prof:elev[cur.tr.id]&&elev[cur.tr.id].p,len:cur.tr.len};
-  const r=scene.mode==="crea"&&S.gen&&S.gen[S.genIdx];return r?{path:r.path,prof:r.prof,len:r.len}:null;
+  if(scene.mode==="trail"&&cur&&cur.tr){const t=cur.tr;return {path:t.path,prof:elev[t.id]&&elev[t.id].p,len:t.len,shape:t.shape||"loop",ret:t.ret||0}}
+  const r=scene.mode==="crea"&&S.gen&&S.gen[S.genIdx];return r?{path:r.path,prof:r.prof,len:r.len,shape:"loop",ret:0}:null;
 }
 function preview3D(){
   if(!M||!styleOK){toast("La mappa non è ancora pronta: riprova tra un attimo");return}
@@ -2004,11 +2025,14 @@ function preview3D(){
   if(prev3d)end3d();
   if(!curHost.classList.contains("full"))setFull(true);
   prev3d=true;
-  const P=dense(src.path,15),C=[0];for(let i=1;i<P.length;i++)C.push(C[i-1]+hav(P[i-1],P[i]));
+  // se non è un anello, dopo l'arrivo la freccia torna indietro alla partenza (tutto o solo il tratto iniziale), così i km sono quelli veri
+  const O=dense(src.path,15),out=O.length-1;let P=O;
+  if(src.shape!=="loop"){const k=src.shape==="lolli"?retInfo(O).k:out;P=O.concat(O.slice(0,k).reverse())}
+  const C=[0];for(let i=1;i<P.length;i++)C.push(C[i-1]+hav(P[i-1],P[i]));
   const total=C[C.length-1],el=document.createElement("div");el.className="mk-fly";el.innerHTML=`<svg viewBox="0 0 24 24"><path d="M12 2.5 20 21 12 16.5 4 21Z"/></svg>`;
-  const b0=bearing(P[0],P[Math.min(P.length-1,5)]);
-  fly={P,C,total,prof:src.prof,len:src.len,d:0,i:0,brg:b0,playing:true,started:false,last:0,
-    speed:total/Math.min(90,Math.max(25,total/1000*14)), // tutto il percorso in 25-90 secondi
+  const b0=bearing(P[0],P[Math.min(P.length-1,6)]);
+  fly={P,C,total,out,cOut:C[out],prof:src.prof,len:src.len,full:src.len+(src.shape==="loop"?0:src.ret||src.len),d:0,i:0,brg:b0,mb:b0,cen:P[0],playing:true,started:false,last:0,painted:0,
+    speed:total/Math.min(100,Math.max(28,total/1000*14)), // tutto il giro in 28-100 secondi
     mk:new mapboxgl.Marker({element:el,rotationAlignment:"map",pitchAlignment:"map"}).setLngLat(ll(P[0])).setRotation(b0).addTo(M)};
   $("surfleg").hidden=true;$("fly").hidden=false;paintFly();
   setTimeout(()=>{if(!fly)return;
@@ -2023,23 +2047,28 @@ function flyStep(t){
     F.d=Math.min(F.total,F.d+dt/1000*F.speed);
     let i=F.i;while(i<F.C.length-2&&F.C[i+1]<F.d)i++;F.i=i;
     const a=F.P[i],b=F.P[i+1],sg=F.C[i+1]-F.C[i],g=sg>0?(F.d-F.C[i])/sg:0,p=[a[0]+(b[0]-a[0])*g,a[1]+(b[1]-a[1])*g];
-    let j=i+1;while(j<F.C.length-1&&F.C[j]-F.d<70)j++; // guarda 70 metri avanti: la visuale gira dolcemente
-    const tb=F.C[j]-F.d>5?bearing(p,F.P[j]):F.brg,diff=((tb-F.brg+540)%360)-180;
-    F.brg=(F.brg+diff*Math.min(1,dt/700)+360)%360;
-    F.mk.setLngLat(ll(p)).setRotation(sg>0?bearing(a,b):F.brg);
-    M.jumpTo({center:ll(p),bearing:F.brg});
-    paintFly();
+    // la visuale guarda 140 m avanti e gira piano; la freccia guarda 30 m avanti: niente scatti alle curve strette
+    const ahead=m=>{let j=i+1;while(j<F.C.length-1&&F.C[j]-F.d<m)j++;return F.C[j]-F.d>3?bearing(p,F.P[j]):null};
+    const turn=(cur,tb,ms)=>tb==null?cur:(cur+(((tb-cur+540)%360)-180)*Math.min(1,dt/ms)+360)%360;
+    F.brg=turn(F.brg,ahead(140),1600);F.mb=turn(F.mb,ahead(30),250);
+    // il centro della visuale insegue la freccia con un leggero ritardo: il movimento resta morbido anche se il telefono salta qualche fotogramma
+    const q=Math.min(1,dt/180);F.cen=[F.cen[0]+(p[0]-F.cen[0])*q,F.cen[1]+(p[1]-F.cen[1])*q];
+    F.mk.setLngLat(ll(p)).setRotation(F.mb);
+    M.jumpTo({center:ll(F.cen),bearing:F.brg});
+    if(t-F.painted>200||F.d>=F.total){F.painted=t;paintFly()}
     if(F.d>=F.total){F.playing=false;paintFly();M.fitBounds(boundsOf([F.P]),{padding:70,pitch:55,bearing:F.brg,duration:1800})}
   }
   spin=requestAnimationFrame(flyStep);
 }
 function paintFly(){
-  if(!fly)return;const fr=fly.total?fly.d/fly.total:0,pr=fly.prof;
-  $("fly-km").textContent=`${km(fr*fly.len)} di ${km(fly.len)} km`+(pr&&pr.length?` · quota ${pr[Math.round(fr*(pr.length-1))]} m`:"");
+  if(!fly)return;const F=fly,fr=F.total?F.d/F.total:0,pr=F.prof,back=F.d>F.cOut+1;
+  // la quota del ritorno è quella dell'andata letta al contrario
+  const o=back?Math.max(0,2*F.cOut-F.d):F.d,of=F.cOut?Math.min(1,Math.max(0,o/F.cOut)):0;
+  $("fly-km").textContent=`${km(fr*F.full)} di ${km(F.full)} km`+(back?" · ritorno":"")+(pr&&pr.length?` · quota ${pr[Math.round(of*(pr.length-1))]} m`:"");
   $("fly-bar").style.width=(fr*100).toFixed(1)+"%";$("fly-play").textContent=fly.playing?"⏸":fr>=1?"↻":"▶";
 }
 $("fly-play").onclick=()=>{if(!fly||!fly.started)return;
-  if(!fly.playing&&fly.d>=fly.total){fly.d=0;fly.i=0;fly.brg=bearing(fly.P[0],fly.P[Math.min(fly.P.length-1,5)]);M.easeTo({center:ll(fly.P[0]),zoom:15.6,pitch:62,bearing:fly.brg,duration:800})}
+  if(!fly.playing&&fly.d>=fly.total){fly.d=0;fly.i=0;fly.brg=fly.mb=bearing(fly.P[0],fly.P[Math.min(fly.P.length-1,6)]);fly.cen=fly.P[0];M.easeTo({center:ll(fly.P[0]),zoom:15.6,pitch:62,bearing:fly.brg,duration:800})}
   fly.playing=!fly.playing;fly.last=0;paintFly()};
 $("fly-x").onclick=()=>setFull(false);
 function bindTools(root){
@@ -2191,7 +2220,7 @@ function famousMatch(){
   });
 }
 const inView=tr=>{const b=S.view.b;return tr.bb[0][0]<=b[1][1]&&tr.bb[1][0]>=b[0][1]&&tr.bb[0][1]<=b[1][0]&&tr.bb[1][1]>=b[0][0]};
-function activeFilters(){return $("q").value.trim()||S.act||S.feat.length||S.near||["f-dog","f-fit","f-eff","f-len","f-up","f-dif","f-zone"].some(id=>$(id).value!=="all")}
+function activeFilters(){return $("q").value.trim()||S.act||S.feat.length||S.near||["f-dog","f-fit","f-type","f-eff","f-len","f-up","f-dif","f-zone"].some(id=>$(id).value!=="all")}
 function filtered(){
   const d=dog(),q=$("q").value.trim().toLowerCase(),fit=$("f-fit").value,len=$("f-len").value,upf=$("f-up").value,dif=$("f-dif").value,zone=$("f-zone").value,eff=$("f-eff").value;
   const rows=[];
@@ -2201,6 +2230,7 @@ function filtered(){
     if(len!=="all"){const [a,b]=len.split("-").map(Number);const L=totLen(tr);if(L<a*1000||L>=b*1000)continue}
     if(upf!=="all"){const e=elev[tr.id];if(!e)continue;const [a,b]=upf.split("-").map(Number);if(e.up<a||e.up>=b)continue}
     if(dif!=="all"&&tr.scale!==dif)continue;
+    {const ty=$("f-type").value;if(ty!=="all"&&!(ty==="walk"?tr.type==="walk":ty==="cai"?tr.ref&&tr.type!=="walk":ty==="flat"?elev[tr.id]&&elev[tr.id].up<100*Math.max(1,tr.len/5000):tr.type!=="walk"&&tr.shape===ty))continue}
     {const dg=tr.dg&&tr.dg[0],dv=$("f-dog").value;if(dg==="no"&&dv!=="show")continue;if(dv==="free"&&dg==="lim")continue} // di base i sentieri vietati ai cani non si mostrano
     if(zone!=="all"&&tr.zone!==zone)continue;
     if(S.feat.length){const f=FT[tr.id];if(!f||!S.feat.every(k=>f.f.includes(k)))continue}
@@ -2262,7 +2292,7 @@ function renderList(){paintFAll();fitLabels();setTimeout(sizeSels,0);
   renderToday();
   renderPills();
   if(!S.ready)return;
-  ["f-dog","f-fit","f-eff","f-len","f-up","f-dif","f-zone"].forEach(id=>$(id).classList.toggle("act",$(id).value!=="all"));
+  ["f-dog","f-fit","f-type","f-eff","f-len","f-up","f-dif","f-zone"].forEach(id=>$(id).classList.toggle("act",$(id).value!=="all"));
   $("f-day").classList.toggle("act",S.day>0);
   $("near-row").hidden=!S.near;
   if(S.near){$("near-row").innerHTML=`<button class="pill x" id="near-x">Vicino a ${esc(S.near.n)}<svg><use href="#i-x"/></svg></button>`;$("near-x").onclick=()=>setNear(null)}
@@ -2497,7 +2527,7 @@ async function showTrail(id){
     const shade=!f?"…":f.wood>=.7?`Tanta (${Math.round(f.wood*100)}%)`:f.wood>=.35?`A tratti (${Math.round(f.wood*100)}%)`:`Poca (${Math.round(f.wood*100)}%)`;
     const sh=surfShare(tr),dom=sh&&SFK.slice().sort((a,b)=>sh[b]-sh[a])[0];
     $("det").innerHTML=detailHTML({title:tr.name,ft:f,prof:elev[id]&&elev[id].p,
-      tools:`<div class="tools">${toolB("data-3d","layers","Anteprima 3D")}${sh?toolB("data-surf","surf","Colora il fondo"):""}${toolB("data-steps","list","Indicazioni")}${toolB("data-pack","bag","Zaino")}${toolB("data-edit","edit","Modifica")}${offButton(navObjTrail(tr))}</div>`,sub:[tr.type==="walk"?"Giro in città ad anello":"",esc(tr.zone),tr.ref?"sentiero n. "+esc(tr.ref):"",tr.cai?"CAI":"",tr.scale?"difficoltà "+tr.scale:""].filter(Boolean).join(" · "),it:item(tr),
+      tools:`<div class="tools">${toolB("data-3d","layers","Anteprima 3D")}${sh?toolB("data-surf","surf","Colora il fondo"):""}${toolB("data-pack","bag","Zaino")}${toolB("data-edit","edit","Modifica")}${offButton(navObjTrail(tr))}</div>`,sub:[tr.type==="walk"?"Giro in città ad anello":"",esc(tr.zone),tr.ref?"sentiero n. "+esc(tr.ref):"",tr.cai?"CAI":"",tr.scale?"difficoltà "+tr.scale:""].filter(Boolean).join(" · "),it:item(tr),
       sections:`${dogBlock(tr)}${tr.d?`<div class="block"><h2>Descrizione</h2><p>${esc(tr.d)}</p></div>`:""}${(hz=>hz.length?`<div class="block"><h2>Attenzione in questo periodo</h2><div class="tags">${hz.map(h=>`<span class="tag">${h.t}</span>`).join("")}</div><button class="btn sm" data-haz style="margin-top:10px">Leggi i consigli</button></div>`:"")(trailHaz(tr))}${sh?`<div class="block"><h2>Fondo del percorso</h2>${surfBlock(sh,dog())}</div>`:""}<div class="block"><h2>Particolarità</h2>${tags}<p class="small muted" style="margin-top:8px">Ricavate in automatico da OpenStreetMap: fiumi e torrenti che il sentiero costeggia, laghi e spiagge che raggiunge, cascate, cime, panorami e luoghi storici che si incontrano lungo il tracciato.</p></div>
       <div class="block"><h2>Scheda per il cane</h2><div class="tiles"><div class="tile"><span>Acqua lungo il percorso</span><b>${water}</b></div><div class="tile"><span>Ombra (stima)</span><b>${shade}</b></div><div class="tile"><span>Fondo prevalente</span><b>${sh?SFL[dom]:"Da verificare"}</b></div>${tr.type==="walk"?`<div class="tile"><span>Nel verde</span><b>${Math.round((tr.green||0)*100)}% del giro</b></div>`:`<div class="tile"><span>Punti critici</span><b>${(q=>q?esc(q):"Da verificare")(qSummary(((store.get("alldogs-reviews")||{})[tr.id]||{}).q))}</b></div>`}</div>
       ${f&&f.sh?shadeBar(f.sh,tr.len):""}<p class="small muted" style="margin-top:8px">${f&&f.w.length?"Le fontanelle sono i punti blu sulla mappa. ":""}${f&&f.sh?"L'ombra viene dalla mappa satellitare degli alberi (ESA WorldCover, 10 m): conta come ombra solo dove ci sono alberi sul sentiero o a pochi metri. L'acqua viene da OpenStreetMap. ":"Acqua e ombra sono stime dai dati di OpenStreetMap. "}Verificale sul posto: il sentiero non è ancora stato provato con un cane.</p></div>${trailRules(tr)}`})+
@@ -2915,6 +2945,46 @@ function showAct(){
   $("steps-box").innerHTML=`<h2>Quanti passi fa ${dn()}?</h2><p style="margin-top:8px">In una passeggiata di 5 km tu fai circa <b>${s.me.toLocaleString("it-IT")}</b> passi, ${dn()} circa <b>${s.dog.toLocaleString("it-IT")}</b>.</p><p class="small muted" style="margin-top:6px">${myStride()!==.75?`Il tuo passo misurato è di circa ${Math.round(myStride()*100)} cm, ricavato dai passi di Salute che hai scritto.`:"Per te uso un passo medio di 75 cm: scrivendo i passi dell'app Salute nelle passeggiate, l'app impara il tuo."} Per ${dn()} è una stima dalla taglia.</p>`;
 }
 
+// ================= Proposte degli utenti: luoghi e sentieri da far approvare allo sviluppatore =================
+// Per ora (alpha, senza account) la proposta parte come e-mail già scritta; resta anche nell'elenco «Le tue proposte».
+// Con gli account (Supabase) andrà in una tabella «proposte» da approvare.
+const PROP_TO="giuseppeparisi2805@gmail.com";
+const PROP_K={a:"Area cani",s:"Spiaggia per cani",g:"Parco o villa comunale",w:"Fontanella o punto acqua",v:"Veterinario",o:"Altro posto per cani",t:"Sentiero o giro"};
+const PROP_DG={ok:"Cani ammessi liberi",lea:"Cani ammessi al guinzaglio",no:"Cani vietati",nd:"Non so"};
+function propList(){const L=store.get("alldogs-props")||[],el=$("prop-list");if(!el)return;
+  el.innerHTML=L.length?`<h3 style="margin-top:14px">Le tue proposte</h3>`+L.map(x=>`<p class="small" style="margin:6px 0"><b>${esc(x.name)}</b> · ${PROP_K[x.k]} · <span class="muted">${propDate(x.t)}, in attesa di approvazione</span></p>`).join(""):""}
+function propDate(t){return new Date(t).toLocaleDateString("it-IT",{day:"numeric",month:"short"})}
+function propPaths(){const out=[];
+  (S.routes||[]).forEach((r,i)=>{if(r.path&&r.path.length>1)out.push({id:"r"+i,lab:`${r.name} (giro salvato)`,path:r.path,len:r.len})});
+  (S.acts||[]).forEach((a,i)=>{if(a.track&&a.track.length>1)out.push({id:"a"+i,lab:`${a.name}, ${propDate(a.t)} (registrato col GPS)`,path:a.track,len:a.dist})});
+  return out}
+function proposeSheet(kind){
+  const paths=propPaths(),c=M?[M.getCenter().lat,M.getCenter().lng]:S.view.c;let pos=[+c[0].toFixed(5),+c[1].toFixed(5)];
+  openSheet(`<div class="fsheet"><h2>Proponi un luogo o un sentiero</h2>
+    <label>Che cos'è<select id="pp-k">${Object.entries(PROP_K).map(([k,v])=>`<option value="${k}"${k===kind?" selected":""}>${v}</option>`).join("")}</select></label>
+    <label>Nome<input class="field" id="pp-n" maxlength="80" placeholder="Es. Area cani di Villa Floridiana"></label>
+    <div id="pp-place"><p class="small muted" style="margin:8px 0">Posizione: <b id="pp-pos">${pos.join(", ")}</b> (il centro della mappa). Se non è giusta, chiudi, sposta la mappa sul posto e riapri, oppure:</p>
+      <button class="btn sm" id="pp-me" type="button">Usa dove sono adesso</button></div>
+    <div id="pp-trail" hidden>${paths.length?`<label>Quale percorso<select id="pp-p">${paths.map(p=>`<option value="${p.id}">${esc(p.lab)}</option>`).join("")}</select></label>`:`<p class="small muted" style="margin:8px 0">Prima crea il giro con «Crea giro» e salvalo, oppure registralo camminando col GPS: poi lo trovi qui.</p>`}</div>
+    <label>Cani<select id="pp-dg">${Object.entries(PROP_DG).map(([k,v])=>`<option value="${k}">${v}</option>`).join("")}</select></label>
+    <label>Cosa c'è da sapere<textarea class="field" id="pp-d" rows="3" maxlength="600" placeholder="Recinto, acqua, ombra, orari, fondo, pericoli…"></textarea></label>
+    <p class="small muted" style="margin-top:8px">Si apre la tua app di posta con il messaggio già scritto: devi solo premere Invia. Lo sviluppatore la controlla prima di metterla sulla mappa.</p>
+    <button class="btn pri wide" id="pp-go" type="button" style="margin-top:10px">Invia la proposta</button></div>`);
+  const sync=()=>{const t=$("pp-k").value==="t";$("pp-place").hidden=t;$("pp-trail").hidden=!t};sync();$("pp-k").onchange=sync;
+  $("pp-me").onclick=async()=>{try{const p=await getPos();pos=[+p[0].toFixed(5),+p[1].toFixed(5)];$("pp-pos").textContent=pos.join(", ")}catch(e){toast("Non riesco a leggere la posizione")}};
+  $("pp-go").onclick=()=>{
+    const k=$("pp-k").value,name=$("pp-n").value.trim(),pp=k==="t"?paths.find(p=>p.id===($("pp-p")||{}).value):null;
+    if(!name){toast("Scrivi il nome");return}if(k==="t"&&!pp){toast("Scegli il percorso");return}
+    let P=pp?pp.path:null;if(P){let m=10;P=thin(P,m);while(P.length>120){m*=1.5;P=thin(pp.path,m)}}
+    const at=P?P[0]:pos,body=[`Proposta per AllDogs`,``,`Tipo: ${PROP_K[k]}`,`Nome: ${name}`,`Cani: ${PROP_DG[$("pp-dg").value]}`,`Posizione: ${at[0].toFixed(5)}, ${at[1].toFixed(5)}`,`Mappa: https://www.openstreetmap.org/?mlat=${at[0].toFixed(5)}&mlon=${at[1].toFixed(5)}#map=17/${at[0].toFixed(5)}/${at[1].toFixed(5)}`,
+      pp?`Lunghezza: ${km(pp.len||0)} km`:"",`Note: ${$("pp-d").value.trim()||"nessuna"}`,P?`\nPercorso (lat,lon):\n${P.map(q=>q[0].toFixed(5)+","+q[1].toFixed(5)).join(";")}`:""].filter(x=>x!=="").join("\n");
+    const L=store.get("alldogs-props")||[];L.unshift({t:Date.now(),k,name,at,dg:$("pp-dg").value,d:$("pp-d").value.trim(),path:P});store.set("alldogs-props",L.slice(0,50));propList();
+    location.href=`mailto:${PROP_TO}?subject=${encodeURIComponent("AllDogs: proposta «"+name+"»")}&body=${encodeURIComponent(body)}`;
+    $("sheet").hidden=true;toast("Grazie! Premi Invia nella posta: la proposta resta in attesa di approvazione")};
+}
+$("prop-open").onclick=()=>proposeSheet("a");
+$("prop-map").onclick=()=>{$("layers").hidden=true;proposeSheet("a")};
+propList();
 // ================= Assistente: bottone "Chiedi" in basso a destra =================
 // Un solo assistente, con lo stesso aspetto; cambia ruolo in base alla pagina.
 const AIP={crea:["ai-crea","Ti consiglia un sentiero o crea un giro su misura per "],obiettivi:["ob-chat","L'allenatore: come allenare bene "],addestramento:["tr-chat","L'educatore: come insegnare un comando a "]};
@@ -4300,7 +4370,7 @@ function openSearch(){
   setTimeout(()=>$("sq").focus(),30);loadNames().catch(()=>{});
 }
 function closeSearch(){$("srch").hidden=true;document.body.classList.remove("noscroll");$("sq").blur()}
-function quickFilter(fn){closeSearch();["f-dog","f-fit","f-eff","f-len","f-up","f-dif","f-zone"].forEach(id=>$(id).value="all");fn();S.limit=20;renderList();setTimeout(()=>document.querySelector(".frow").scrollIntoView({behavior:"smooth",block:"start"}),100)}
+function quickFilter(fn){closeSearch();["f-dog","f-fit","f-type","f-eff","f-len","f-up","f-dif","f-zone"].forEach(id=>$(id).value="all");fn();S.limit=20;renderList();setTimeout(()=>document.querySelector(".frow").scrollIntoView({behavior:"smooth",block:"start"}),100)}
 function trailSub(r){const tr=TR.get(r.id);let v="";
   if(tr){const res=verdict(item(tr),dog(),S.day);if(res.v>=0)v=`<span class="vl c${res.v}"><i class="dot b${res.v}"></i>${VLABEL[res.v]} per ${dn()}${res.short?" ("+res.short+")":""}</span> · `+fmtH(res.hours)+" · "}
   const d=hav(S.view.c,r.p);return [r.zone?esc(r.zone):"",(r.dg==="no"?`<span class="c2"><b>Cani vietati</b></span> · `:"")+v+km(r.tot||r.len)+" km"+(r.tot&&r.tot!==r.len?" a/r":""),d<100e3?Math.round(d/1000)+" km da qui":""].filter(Boolean).join(" · ")}
@@ -4369,10 +4439,10 @@ $("q").addEventListener("focus",e=>{e.target.blur();openSearch()});
 $("q").addEventListener("click",openSearch);
 document.querySelector("#s-esplora .search").addEventListener("click",openSearch);
 // ---- tutti i filtri in una finestra (il primo bottone della fila) ----
-function paintFAll(){const n=["f-dog","f-fit","f-eff","f-len","f-up","f-dif","f-zone"].filter(id=>$(id).value!=="all").length+(S.act?1:0)+S.feat.length;
+function paintFAll(){const n=["f-dog","f-fit","f-type","f-eff","f-len","f-up","f-dif","f-zone"].filter(id=>$(id).value!=="all").length+(S.act?1:0)+S.feat.length;
   $("f-all").innerHTML=`${icon("filter")}${n?`<span class="ddn">${n}</span>`:"Filtri"}`}
 $("f-all").onclick=()=>{
-  const ids=["f-dog","f-fit","f-eff","f-len","f-up","f-dif","f-zone"];
+  const ids=["f-dog","f-fit","f-type","f-eff","f-len","f-up","f-dif","f-zone"];
   openSheet(`<div class="fsheet"><h2>Filtri</h2>${ids.map(id=>`<label>${esc($(id).getAttribute("aria-label"))}<select data-fs="${id}">${$(id).innerHTML}</select></label>`).join("")}
     <p class="small muted" style="margin-top:12px">Attività e particolarità le trovi nella fila dei filtri.</p>
     <button class="btn wide" id="fs-reset" type="button" style="margin-top:14px">Azzera i filtri</button></div>`);
@@ -4380,11 +4450,11 @@ $("f-all").onclick=()=>{
   $("fs-reset").onclick=()=>{$("reset").click();$("sheet").hidden=true};
 };
 $("q").addEventListener("input",()=>{S.limit=20;renderList();clearTimeout(geoT);geoT=setTimeout(geoSuggest,450)});
-["f-dog","f-fit","f-eff","f-len","f-up","f-dif","f-zone"].forEach(id=>$(id).addEventListener("change",()=>{S.limit=20;renderList()}));
+["f-dog","f-fit","f-type","f-eff","f-len","f-up","f-dif","f-zone"].forEach(id=>$(id).addEventListener("change",()=>{S.limit=20;renderList()}));
 $("f-day").innerHTML=[0,1,2,3,4,5,6].map(i=>`<option value="${i}">${dayName(i)}</option>`).join("");
 $("f-day").addEventListener("change",e=>{S.day=+e.target.value;renderList()});
 $("more").onclick=()=>{S.limit+=20;renderList()};
-$("reset").onclick=()=>{$("q").value="";["f-dog","f-fit","f-eff","f-len","f-up","f-dif","f-zone"].forEach(id=>$(id).value="all");S.act=null;S.feat=[];S.near=null;S.limit=20;$("place-row").hidden=true;renderList()};
+$("reset").onclick=()=>{$("q").value="";["f-dog","f-fit","f-type","f-eff","f-len","f-up","f-dif","f-zone"].forEach(id=>$(id).value="all");S.act=null;S.feat=[];S.near=null;S.limit=20;$("place-row").hidden=true;renderList()};
 syncLayersMenu();
 
 const onList=()=>(location.hash.slice(1)||"esplora")==="esplora";
@@ -4400,7 +4470,7 @@ function viewChanged(){
 // Con i filtri e pochi risultati nella zona inquadrata: allargo da solo il cerchio (30, 60, fino a 100 km) e allontano la mappa
 let widening=false;
 // "firma" dei filtri: si allarga da solo UNA volta per ogni scelta di filtri; se poi sposti la mappa tu, resta libera dove la metti
-const fsig=()=>JSON.stringify([$("q").value.trim(),S.act,S.feat,["f-dog","f-fit","f-eff","f-len","f-up","f-dif","f-zone","f-type"].map(id=>$(id)?$(id).value:"")]);
+const fsig=()=>JSON.stringify([$("q").value.trim(),S.act,S.feat,["f-dog","f-fit","f-eff","f-len","f-up","f-dif","f-zone"].map(id=>$(id)?$(id).value:"")]);
 async function widen(){
   if(widening||!IDX)return;widening=true;S.widenSig=fsig();const c=S.view.c.slice();
   try{
