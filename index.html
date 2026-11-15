@@ -812,6 +812,8 @@ body{font-size:17px;line-height:1.5}
 .phstrip img{display:block;width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:12px;background:var(--accent-soft)}
 .phstrip figcaption{font-size:12.5px;margin-top:4px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .phstrip figcaption a{color:inherit}
+.srow .si.ph{padding:0;overflow:hidden;background:var(--accent-soft)}
+.srow .si.ph img{width:100%;height:100%;object-fit:cover;display:block}
 </style>
 </head>
 <body>
@@ -4446,7 +4448,7 @@ function trailHits(q,max){
 }
 const RECENT_K="alldogs-recent";
 function addRecent(x){const L=(store.get(RECENT_K)||[]).filter(y=>!(y.k===x.k&&y.id===x.id&&y.name===x.name));L.unshift(x);store.set(RECENT_K,L.slice(0,8))}
-const sRow=(attr,ic,title,sub)=>`<button class="srow" type="button" ${attr}><span class="si">${icon(ic)}</span><span><b>${title}</b>${sub?`<small>${sub}</small>`:""}</span></button>`;
+const sRow=(attr,ic,title,sub,img)=>`<button class="srow" type="button" ${attr}><span class="si${img?" ph":""}">${img?`<img src="${esc(img)}" alt="" loading="lazy" onerror="this.parentNode.classList.remove('ph');this.outerHTML=icon('${ic}')">`:icon(ic)}</span><span><b>${title}</b>${sub?`<small>${sub}</small>`:""}</span></button>`;
 function openSearch(){
   $("srch").hidden=false;document.body.classList.add("noscroll");$("sq").value="";geoPlaces=[];sTab="all";paintSearch();
   setTimeout(()=>$("sq").focus(),30);loadNames().catch(()=>{});
@@ -4463,7 +4465,7 @@ function paintSearch(){
     B.innerHTML=`<div class="srch-chips">${[["fit","Adatti a "+nm+" qui vicino"],["short","Giri brevi, fino a 5 km"],["easy","Facili per "+nm],["water","Con fontanelle"],["shade","Nel bosco, all'ombra"]].map(c=>`<button type="button" data-qf="${c[0]}">${c[1]}</button>`).join("")}</div>
       ${sRow('data-me="1"',"nav","Posizione attuale","Mostra i sentieri intorno a te")}
       ${sRow('data-crea="1"',"dogface","Crea un giro per "+nm,"Un percorso su misura, partendo da dove vuoi")}
-      ${R.length?`<h4>Ricerche recenti</h4>`+R.map((x,i)=>sRow(`data-rc="${i}"`,x.k==="t"?"sign":x.k==="p"?"pin":"recent",esc(x.name),x.sub||"")).join(""):""}`;
+      ${R.length?`<h4>Ricerche recenti</h4>`+R.map((x,i)=>sRow(`data-rc="${i}"`,x.k==="t"?"sign":x.k==="p"?"pin":"recent",esc(x.name),x.sub||"",x.k==="t"&&PH[x.id]&&PH[x.id][0]?PH[x.id][0].u:"")).join(""):""}`;
     B.querySelectorAll("[data-qf]").forEach(b=>b.onclick=()=>{const k=b.dataset.qf;quickFilter(()=>{
       if(k==="fit")$("f-fit").value="0";else if(k==="short")$("f-len").value="0-5";else if(k==="easy")$("f-eff").value="0";
       else{S.feat=[k==="water"?"fontanelle":"bosco"];renderPills()}})});
@@ -4481,7 +4483,11 @@ function paintSearch(){
   let gp=sTab==="trail"?[]:geoPlaces.filter(x=>{const pn=" "+norm(x.place_name);return qw.every(w=>pn.includes(" "+w))});
   if(!gp.length&&!th.length&&sTab!=="trail")gp=geoPlaces;
   let h=`<div class="srch-chips tabs">${[["all","Tutto"],["trail","Sentieri"],["place","Luoghi"]].map(t=>`<button type="button" data-tab="${t[0]}" aria-pressed="${sTab===t[0]}">${t[1]}</button>`).join("")}</div>`;
-  const rowsT=th.map(x=>sRow(`data-t="${x.r.id}"`,"sign",esc(x.r.name||"Sentiero "+x.r.ref),trailSub(x.r)));
+  // fotina del sentiero, se c'è (le foto dei riquadri si caricano al volo)
+  const phOfT=id=>PH[id]&&PH[id][0]&&PH[id][0].u;
+  const needPh=[...new Set(th.slice(0,15).map(x=>x.r.cell).filter(k=>k&&!phState[k]))];
+  if(needPh.length)Promise.all(needPh.map(loadPhotos)).then(r=>{if(r.some(Boolean)&&$("sq").value.trim()===q)paintSearch()});
+  const rowsT=th.map(x=>sRow(`data-t="${x.r.id}"`,"sign",esc(x.r.name||"Sentiero "+x.r.ref),trailSub(x.r),phOfT(x.r.id)));
   const rowsP=gp.map(x=>sRow(`data-i="${geoPlaces.indexOf(x)}"`,x.place_type&&x.place_type[0]==="poi"?"pin":"map",esc(x.text||x.place_name),(sb=>sb===x.text?"Posto in Italia":esc(sb))(x.place_name.replace(/, Italia$/,""))));
   // con "Tutto": i primi sentieri, poi i luoghi, poi gli altri sentieri
   const placeFirst=gp.some(x=>norm(x.text)===nq)&&!(th[0]&&th[0].r.n===nq); // "roma": prima la città
