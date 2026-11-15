@@ -1496,37 +1496,38 @@ function loadPlaces(k){
   return plState[k]=getJSON(`data/p/${k}.json?v=${IDX?IDX.t:0}`).then(d=>{PL[k]=d;poiData()}).catch(()=>{delete plState[k]});
 }
 function allPoi(){const o=[];for(const k in PL)for(const p of PL[k].poi)o.push(p);return o}
-// Veterinari in più dalla ricerca di Mapbox: OpenStreetMap non li ha tutti. Si chiedono solo guardando la mappa da vicino
-// (zoom 12 o più) con i Veterinari accesi; ogni riquadro di 0,05° resta salvato sul telefono 30 giorni, così le richieste sono poche.
-const VX={},vxState={},VXK="alldogs-vx",VX_S=.05,VX_NO=/ordine dei|order of|associazion|eukanuba|farmacia|toelettatura|pet shop|negozio|mangimi/i;
-let vxCache=store.get(VXK)||{},vxT=null;
-async function vxTile(k,b){
-  const c=vxCache[k];if(c&&Date.now()-c.t<30*864e5){VX[k]=c.v;poiData();return}
-  if(vxState[k])return;vxState[k]=1;
-  const q=async bb=>(await getJSON(`https://api.mapbox.com/search/searchbox/v1/category/veterinary?language=it&limit=25&bbox=${bb[1]},${bb[0]},${bb[3]},${bb[2]}&access_token=${MAPBOX_TOKEN}`)).features||[];
+// Veterinari e aree cani in più dalla ricerca di Mapbox: OpenStreetMap non li ha tutti. Si chiedono solo guardando la mappa da vicino
+// (zoom 12 o più) con il tipo acceso; ogni riquadro di 0,05° resta salvato sul telefono 30 giorni, così le richieste sono poche.
+const VX_S=.05,MXC={v:{cat:"veterinary",sk:"alldogs-vx",no:/ordine dei|order of|associazion|eukanuba|farmacia|toelettatura|pet shop|negozio|mangimi/i},
+  a:{cat:"dog_park",sk:"alldogs-ax",no:/negozio|pet shop|toelettatura|veterinar|pensione|allevamento|asilo/i}};
+const MX={v:{},a:{}},mxState={v:{},a:{}},mxCache={v:store.get("alldogs-vx")||{},a:store.get("alldogs-ax")||{}};let vxT=null;
+async function vxTile(t,k,b){
+  const C=MXC[t],cache=mxCache[t],c=cache[k];if(c&&Date.now()-c.t<30*864e5){MX[t][k]=c.v;poiData();return}
+  if(mxState[t][k])return;mxState[t][k]=1;
+  const q=async bb=>(await getJSON(`https://api.mapbox.com/search/searchbox/v1/category/${C.cat}?language=it&limit=25&bbox=${bb[1]},${bb[0]},${bb[3]},${bb[2]}&access_token=${MAPBOX_TOKEN}`)).features||[];
   try{
     let f=await q(b);
     if(f.length>=25){const a=(b[0]+b[2])/2,o=(b[1]+b[3])/2;f=(await Promise.all([[b[0],b[1],a,o],[b[0],o,a,b[3]],[a,b[1],b[2],o],[a,o,b[2],b[3]]].map(q))).flat()}
     const seen=new Set(),v=[];
     for(const x of f){const pr=x.properties||{},n=(pr.name||"").trim(),g=x.geometry&&x.geometry.coordinates,id=pr.mapbox_id||n+g;
-      if(!g||!n||seen.has(id)||VX_NO.test(n))continue;seen.add(id);
+      if(!g||!n||seen.has(id)||C.no.test(n))continue;seen.add(id);
       v.push([+g[1].toFixed(5),+g[0].toFixed(5),n.slice(0,70),(pr.full_address||pr.address||"").replace(/, Italia$/,"").slice(0,90),String(pr.metadata&&pr.metadata.phone||"").replace(/[^+0-9]/g,"")])}
-    VX[k]=v;vxCache[k]={t:Date.now(),v};
-    const ks=Object.keys(vxCache);if(ks.length>120)ks.sort((x,y)=>vxCache[x].t-vxCache[y].t).slice(0,ks.length-120).forEach(x=>delete vxCache[x]);
-    store.set(VXK,vxCache);poiData();
-  }catch(e){console.warn("Veterinari Mapbox:",e);delete vxState[k]}
+    MX[t][k]=v;cache[k]={t:Date.now(),v};
+    const ks=Object.keys(cache);if(ks.length>120)ks.sort((x,y)=>cache[x].t-cache[y].t).slice(0,ks.length-120).forEach(x=>delete cache[x]);
+    store.set(C.sk,cache);poiData();
+  }catch(e){console.warn("Mapbox "+C.cat+":",e);delete mxState[t][k]}
 }
 function vxView(){
-  if(!M||!poiK.v||M.getZoom()<12)return;
+  if(!M||M.getZoom()<12)return;
   const b=M.getBounds(),i0=Math.floor(b.getSouth()/VX_S),i1=Math.floor(b.getNorth()/VX_S),j0=Math.floor(b.getWest()/VX_S),j1=Math.floor(b.getEast()/VX_S);
   if((i1-i0+1)*(j1-j0+1)>12)return;
-  for(let i=i0;i<=i1;i++)for(let j=j0;j<=j1;j++){const k=i+"_"+j;if(!VX[k])vxTile(k,[i*VX_S,j*VX_S,(i+1)*VX_S,(j+1)*VX_S])}
+  for(const t of ["v","a"])if(poiK[t])for(let i=i0;i<=i1;i++)for(let j=j0;j<=j1;j++){const k=i+"_"+j;if(!MX[t][k])vxTile(t,k,[i*VX_S,j*VX_S,(i+1)*VX_S,(j+1)*VX_S])}
 }
 function poiData(){if(!M||!styleOK||!M.getSource("poi"))return;
   const P=allPoi().filter(p=>poiK[p[0]]),F=P.map(p=>({type:"Feature",properties:{k:p[0],n:p[3]||"",tel:p[4]||"",h:p[5]||"",dog:p[7]||"",col:POI_T[p[0]][1]},geometry:{type:"Point",coordinates:[p[2],p[1]]}}));
-  if(poiK.v){const ov=P.filter(p=>p[0]==="v");
-    for(const k in VX)for(const x of VX[k]){if(ov.some(p=>Math.abs(p[1]-x[0])<.0008&&Math.abs(p[2]-x[1])<.001&&hav([p[1],p[2]],x)<70))continue;
-      F.push({type:"Feature",properties:{k:"v",n:x[2],adr:x[3],tel:x[4],h:"",src:"m",col:POI_T.v[1]},geometry:{type:"Point",coordinates:[x[1],x[0]]}})}}
+  for(const t of ["v","a"])if(poiK[t]){const ov=P.filter(p=>p[0]===t),near=t==="a"?150:70;
+    for(const k in MX[t])for(const x of MX[t][k]){if(ov.some(p=>Math.abs(p[1]-x[0])<.002&&Math.abs(p[2]-x[1])<.0025&&hav([p[1],p[2]],x)<near))continue;
+      F.push({type:"Feature",properties:{k:t,n:x[2],adr:x[3],tel:x[4],h:"",src:"m",col:POI_T[t][1]},geometry:{type:"Point",coordinates:[x[1],x[0]]}})}}
   setData("poi",fc(F))}
 function poiSheet(pr,c){
   const g=`${c[1].toFixed(5)},${c[0].toFixed(5)}`,dogTxt={no:"Secondo OpenStreetMap i cani qui non sono ammessi: controlla i cartelli.",leashed:"Cani ammessi al guinzaglio.",yes:"Cani ammessi."}[pr.dog]||"";
@@ -1914,7 +1915,7 @@ function setStyleKind(k){
   else if(k==="hill"){hillOn=!hillOn;store.set("alldogs-hill",hillOn);overlays()}
   else if(OVNAME[k]){wxOv=wxOv===k?null:k;if(M){overlays();if(wxOv&&M.getZoom()>(k==="ndvi"?11:9.5))M.easeTo({zoom:k==="ndvi"?10.5:k==="rain"?7.5:9})}if(wxOv)toast(OVNAME[k])}
   else if(k==="trails"){trailsOn=!trailsOn;store.set("alldogs-trailson",trailsOn);applyScene();toast(trailsOn?"Sentieri sulla mappa":"Sentieri nascosti: restano nell'elenco qui sotto")}
-  else if(k.startsWith("poi-")){const t=k.slice(4);poiK[t]=!poiK[t];store.set("alldogs-poik",poiK);poiData();if(t==="v")vxView();if(t==="w"){wtData();wtView();applyScene()}
+  else if(k.startsWith("poi-")){const t=k.slice(4);poiK[t]=!poiK[t];store.set("alldogs-poik",poiK);poiData();if(t==="v"||t==="a")vxView();if(t==="w"){wtData();wtView();applyScene()}
     toast((poiK[t]?"":"Nascosti: ")+({a:"Aree cani",v:"Veterinari",s:"Spiagge per cani",g:"Ville comunali e parchi",w:"Fontanelle e punti acqua"})[t]+(poiK[t]?(t==="g"||t==="w"?": avvicinati alla mappa per vederle":" sulla mappa"):""))}
   else if(k==="legend"){$("layers").hidden=true;showLegend()}
   else if(k!==mapStyle&&STYLES[k]){mapStyle=k;store.set("alldogs-mapstyle",k);syncStyle();if(styleNow!==k&&isNight()&&styleNow!=="topo")toast("Dopo il tramonto la mappa diventa scura da sola: all'alba torna chiara");else if(styleNow!==k)toast(navigator.onLine?"Durante la navigazione di un sentiero scaricato uso la mappa topografica salvata":"Senza internet uso la mappa topografica dei sentieri scaricati")}
