@@ -802,6 +802,16 @@ body{font-size:17px;line-height:1.5}
 .disc{margin-top:22px;padding-top:12px;border-top:1px solid var(--line)}
 
 .small{font-size:14.5px}
+
+/* foto vere dei sentieri */
+.tcard .phc{position:absolute;right:6px;bottom:6px;max-width:70%;font-size:11px;line-height:1.2;color:#fff;background:rgba(0,0,0,.45);padding:2px 6px;border-radius:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.phstrip{display:flex;gap:10px;overflow-x:auto;margin:16px -16px 4px;padding:0 16px 4px;scroll-snap-type:x mandatory;scrollbar-width:none}
+.phstrip::-webkit-scrollbar{display:none}
+.phstrip figure{margin:0;flex:0 0 86%;max-width:420px;scroll-snap-align:start}
+.phstrip figure:only-child{flex-basis:100%}
+.phstrip img{display:block;width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:12px;background:var(--accent-soft)}
+.phstrip figcaption{font-size:12.5px;margin-top:4px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.phstrip figcaption a{color:inherit}
 </style>
 </head>
 <body>
@@ -1475,14 +1485,22 @@ const item=tr=>({len:totLen(tr),one:tr.len,ret:tr.ret,shape:tr.shape,up:totUp(tr
 const cellKey=(la,lo)=>(Math.floor(la/CELL)*CELL).toFixed(1)+"_"+(Math.floor(lo/CELL)*CELL).toFixed(1);
 const cellOf=store.get("alldogs-cellof")||{}; // in quale riquadro sta ogni sentiero aperto o salvato (per ritrovarlo dopo)
 function rememberCell(tr){if(tr&&tr.cell&&cellOf[tr.id]!==tr.cell){cellOf[tr.id]=tr.cell;store.set("alldogs-cellof",cellOf)}}
-async function loadIndex(){if(!IDX)IDX=await getJSON("data/index.json?t="+Math.floor(Date.now()/6e5),{cache:"no-cache"});return IDX}
+async function loadIndex(){if(!IDX)IDX=await getJSON("data/index.json?t="+Math.floor(Date.now()/6e5),{cache:"no-cache"});
+  if(!PHX)PHX=getJSON("data/ph/index.json?t="+Math.floor(Date.now()/6e5),{cache:"no-cache"}).catch(()=>({cells:{}}));
+  if(FAMPH===null){FAMPH={};getJSON("data/ph/famous.json?t="+Math.floor(Date.now()/6e5)).then(d=>{FAMPH=d||{};if(S.ready&&curScr==="esplora")renderList()}).catch(()=>{})}return IDX}
+// Foto vere dei sentieri: Wikimedia Commons, licenze libere (tools/build_photos.py). PH[id] = [{u,w,h,a,l,p}]
+const PH={},phState={};let PHX=null,FAMPH=null;
+function loadPhotos(k){if(phState[k])return phState[k];
+  return phState[k]=Promise.resolve(PHX).then(x=>x&&x.cells&&x.cells[k]?getJSON(`data/ph/${k}.json?v=${x.t}`):{}).then(d=>{Object.assign(PH,d);return 1}).catch(()=>{delete phState[k];return 0})}
+const phA=a=>{let s=String(a||"").trim();const m=s.match(/taken by ([^.,;]+)/i);if(m)s=m[1];s=s.split(/\s*[.;(]\s/)[0].replace(/^(photo|foto)\s+(by|di)\s+/i,"");return s.length>40?s.slice(0,38).trim()+"…":s||"autore su Commons"};
+const phCredit=f=>`Foto ${esc(phA(f.a))}, ${esc(f.l)}`;
 // ?v= nei file dei riquadri: quando i dati cambiano, il telefono non usa la copia vecchia
 function loadCell(k){
   if(cellState[k])return cellState[k];
   if(!IDX||!IDX.cells[k])return cellState[k]=Promise.resolve(0);
   return cellState[k]=getJSON(`data/c/${k}.json?v=${IDX.t}`).then(d=>{
     for(const t of d.trails){if(TR.has(t.id))continue;elev[t.id]=t.e;FT[t.id]=t.f||{f:[],w:[],wood:0};delete t.e;delete t.f;t.cell=k;hydrate(t);TR.set(t.id,t)}
-    S.trails=[...TR.values()];return d.trails.length;
+    S.trails=[...TR.values()];loadPhotos(k).then(n=>{if(n&&S.ready&&curScr==="esplora")renderList()});return d.trails.length;
   }).catch(e=>{delete cellState[k];throw e});
 }
 // Luoghi utili per il cane (aree cani, veterinari, spiagge per cani) e parchi: data/p/<riquadro>.json, creati da tools/build_city.py
@@ -2208,13 +2226,15 @@ function featLine(tr){const f=FT[tr.id];if(!f||!f.f.length)return "";return `<p 
 function cardHTML(tr,res,title){
   const sv=S.saved.includes(tr.id),e=elev[tr.id];
   const badge=res.v<0?`<span class="badge vw">Sto valutando…</span>`:`<span class="badge v${res.v}">${VLABEL[res.v]}${res.short?` <small>(${res.short})</small>`:""}</span>`;
-  return `<article class="tcard" data-id="${tr.id}"><div class="img">${svgThumb(tr.path)}<img loading="lazy" alt="" src="${staticImg(tr.path)}" onerror="this.remove()">${badge}
+  const ph=PH[tr.id]&&PH[tr.id][0];
+  return `<article class="tcard" data-id="${tr.id}"><div class="img">${svgThumb(tr.path)}<img loading="lazy" alt="" src="${ph?esc(ph.u):staticImg(tr.path)}" onerror="this.remove()">${badge}${ph?`<span class="phc">${phCredit(ph)}</span>`:""}
     <button class="round ${sv?"saved":""}" data-save="${tr.id}" aria-label="${sv?"Togli dai salvati":"Salva"}">${icon("heart")}</button></div>
     <h3>${esc(title||tr.name)}</h3><p class="sub">${[title?esc(tr.name):"",esc(tr.zone),tr.ref?"sentiero "+esc(tr.ref):"",tr.scale?"CAI "+tr.scale:""].filter(Boolean).join(", ")}</p>
     <p class="meta"><span class="sign">${fmtH(res.hours)} con ${dn()}</span>${tr.dg&&tr.dg[0]!=="ok"?`<span class="${DGC[tr.dg[0]]}"><b>${DGS[tr.dg[0]]}</b></span>`:""}<span>${km(totLen(tr))} km${tr.shape==="line"?" a/r":""}</span>${e?`<span>↑ ${totUp(tr)} m</span>`:""}${res.v>=0?`<span class="c${res.effort}"><b>${EFFORT[res.effort]}</b> per lui</span>`:""}</p>${featLine(tr)}</article>`;
 }
 function placeCard(f,i){
-  return `<article class="tcard" data-place="${i}"><div class="img"><img loading="lazy" alt="" src="${staticPlace(f.c)}" onerror="this.remove()"><span class="badge vw">Sentieri vicini</span></div>
+  const ph=FAMPH&&FAMPH[f.n]&&FAMPH[f.n][0];
+  return `<article class="tcard" data-place="${i}"><div class="img"><img loading="lazy" alt="" src="${ph?esc(ph.u):staticPlace(f.c)}" onerror="this.remove()">${ph?`<span class="phc">${phCredit(ph)}</span>`:""}<span class="badge vw">Sentieri vicini</span></div>
     <h3>${esc(f.n)}</h3><p class="sub">Luogo famoso</p><p class="meta">Tocca per vedere i sentieri nei dintorni</p></article>`;
 }
 function bindCards(root){
@@ -2369,7 +2389,8 @@ function weatherHTML(res){
 function detailHTML(o){
   const d=dog(),res=verdict(o.it,d,S.day),st=steps(o.it.len,d);
   const vb=res.v<0?`<span class="verdict vw">Sto valutando…</span>`:`<span class="verdict v${res.v}">${VLABEL[res.v]} per ${dn()}${res.short?` <small>(${res.short})</small>`:""}</span>`;
-  return `<h1>${esc(o.title)}</h1><p class="muted" style="margin-top:6px">${o.sub}</p>${vb}
+  const pics=(o.photos||[]).length?`<div class="phstrip">${o.photos.map(f=>`<figure><img loading="lazy" alt="Foto del posto" src="${esc(f.u)}" onerror="this.closest('figure').remove()"><figcaption><a href="${esc(f.p)}" target="_blank" rel="noopener">${phCredit(f)}</a></figcaption></figure>`).join("")}</div>`:"";
+  return `<h1>${esc(o.title)}</h1><p class="muted" style="margin-top:6px">${o.sub}</p>${vb}${pics}
     <div class="stats"><div><b>${km(o.it.len)} km</b><span>${o.it.shape==="lolli"?"Giro completo":o.it.loop===false?"Andata e ritorno":"Lunghezza"}</span></div><div><b>${o.it.up!=null?o.it.up+" m":"…"}</b><span>${o.it.shape==="lolli"?"Salita in tutto":o.it.loop===false?"Salita a/r":"Dislivello"}</span></div><div class="dg"><b>${fmtH(res.hours)}</b><span>Con ${dn()}</span></div><div class="dg"><b class="${res.v>=0?"c"+res.effort:""}">${res.v>=0?EFFORT[res.effort]:"…"}</b><span>Per ${dn()}</span></div></div>
     <p class="small muted">${o.it.shape==="lolli"?`Anello con un tratto di andata e ritorno: dalla partenza ${km(o.it.ret)} km fino all'anello, il giro dell'anello e poi di nuovo lo stesso tratto fino alla partenza. Km, salita, tempo e acqua contano tutto il giro`:o.it.loop===false?`Percorso di andata e ritorno: ${km(o.it.one||o.it.len/2)} km all'andata, poi si torna indietro alla partenza. Km, salita, tempo e acqua contano andata e ritorno`:"Percorso ad anello"}. Tutte le valutazioni sono fatte sui limiti di ${dn()}, non su quelli di una persona.</p>
     ${o.tools||""}
@@ -2545,7 +2566,7 @@ async function showTrail(id){
     const water=!f?"…":f.w.length?`Sì: ${f.w.length===1?"1 fontanella":f.w.length+" fontanelle"}`:"Nessuna segnata";
     const shade=!f?"…":f.wood>=.7?`Tanta (${Math.round(f.wood*100)}%)`:f.wood>=.35?`A tratti (${Math.round(f.wood*100)}%)`:`Poca (${Math.round(f.wood*100)}%)`;
     const sh=surfShare(tr),dom=sh&&SFK.slice().sort((a,b)=>sh[b]-sh[a])[0];
-    $("det").innerHTML=detailHTML({title:tr.name,ft:f,prof:elev[id]&&elev[id].p,
+    $("det").innerHTML=detailHTML({title:tr.name,ft:f,prof:elev[id]&&elev[id].p,photos:PH[id]||[],
       tools:`<div class="tools">${toolB("data-3d","layers","Anteprima 3D")}${sh?toolB("data-surf","surf","Colora il fondo"):""}${toolB("data-pack","bag","Zaino")}${toolB("data-edit","edit","Modifica")}${offButton(navObjTrail(tr))}</div>`,sub:[tr.type==="walk"?"Giro in città ad anello":"",esc(tr.zone),tr.ref?"sentiero n. "+esc(tr.ref):"",tr.cai?"CAI":"",tr.scale?"difficoltà "+tr.scale:""].filter(Boolean).join(" · "),it:item(tr),
       sections:`${dogBlock(tr)}${tr.d?`<div class="block"><h2>Descrizione</h2><p>${esc(tr.d)}</p></div>`:""}${(hz=>hz.length?`<div class="block"><h2>Attenzione in questo periodo</h2><div class="tags">${hz.map(h=>`<span class="tag">${h.t}</span>`).join("")}</div><button class="btn sm" data-haz style="margin-top:10px">Leggi i consigli</button></div>`:"")(trailHaz(tr))}${sh?`<div class="block"><h2>Fondo del percorso</h2>${surfBlock(sh,dog())}</div>`:""}<div class="block"><h2>Particolarità</h2>${tags}<p class="small muted" style="margin-top:8px">Ricavate in automatico da OpenStreetMap: fiumi e torrenti che il sentiero costeggia, laghi e spiagge che raggiunge, cascate, cime, panorami e luoghi storici che si incontrano lungo il tracciato.</p></div>
       <div class="block"><h2>Scheda per il cane</h2><div class="tiles"><div class="tile"><span>Acqua lungo il percorso</span><b>${water}</b></div><div class="tile"><span>Ombra (stima)</span><b>${shade}</b></div><div class="tile"><span>Fondo prevalente</span><b>${sh?SFL[dom]:"Da verificare"}</b></div>${tr.type==="walk"?`<div class="tile"><span>Nel verde</span><b>${Math.round((tr.green||0)*100)}% del giro</b></div>`:`<div class="tile"><span>Punti critici</span><b>${(q=>q?esc(q):"Da verificare")(qSummary(((store.get("alldogs-reviews")||{})[tr.id]||{}).q))}</b></div>`}</div>
@@ -2560,6 +2581,7 @@ async function showTrail(id){
     $("det").querySelectorAll("[data-pack]").forEach(b=>b.onclick=()=>{const f2=FT[id]||{f:[],w:[]},e2=elev[id];packSheet({km:totLen(tr)/1000,p:tr.start,day:S.day,title:tr.name,water:(f2.w||[]).length,mount:!!((e2&&(e2.up>=300||e2.max>=900))||f2.f.includes("vette")),beach:f2.f.includes("spiaggia"),lake:f2.f.includes("laghi")||f2.f.includes("fiumi")})});
   };
   paint();
+  if(!PH[id]&&tr.cell)loadPhotos(tr.cell).then(()=>{if(PH[id]&&S.sel===id&&location.hash==="#s-"+id)paint()});
   $("bar-go").href=`https://www.google.com/maps/dir/?api=1&destination=${tr.start[0]},${tr.start[1]}`;
   if(!wx[wxKey(tr.start)])loadWeather([tr.start]).then(()=>{if(S.sel===id&&location.hash==="#s-"+id)paint()}).catch(()=>{});
 }
