@@ -45,6 +45,8 @@ RULES = [
     (r"parco (naturale |regionale )*(della )?maremma", "no", "Parco della Maremma: i cani non sono ammessi.", "regolamento del parco"),
     (r"asinara", "no", "Parco Nazionale dell'Asinara: i cani non sono ammessi.", "regolamento del parco"),
     (r"crava.?morozzo", "no", "Riserva di Crava Morozzo: i cani non possono entrare.", "areeprotettealpimarittime.it"),
+    (r"adesione|adh[eé]sion", "lea", "Zona vicina a un parco nazionale (area di adesione): tieni il cane al guinzaglio. Nel cuore del parco i cani possono essere vietati.", "regolamento del parco"),
+    (r"astroni", "no", "Oasi WWF Cratere degli Astroni: i cani non sono ammessi.", "regole delle Oasi WWF"),
     (r"mercantour", "no", "Parc national du Mercantour (Francia): i cani sono vietati, multa di 135 euro.", "areeprotettealpimarittime.it"),
     (r"\boasi\b.*\bwwf\b|\bwwf\b.*\boasi\b", "no", "Oasi WWF: di solito i cani non sono ammessi. Verifica all'ingresso.", "regole delle Oasi WWF"),
     (r"integrale", "no", "Riserva integrale: l'accesso è vietato o molto limitato, i cani non sono ammessi.", "legge 394/1991"),
@@ -327,6 +329,11 @@ def import_dg():
     import gzip, time as _t
     src = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dg.json.gz")
     m = json.load(gzip.open(src, "rt", encoding="utf-8"))
+    # regole aggiunte dopo l'export: valgono sul nome dell'area già trovato
+    for k, g in m.items():
+        r = rule_for(g[2]) if g[2] else None
+        if r and r[0] != g[0] and (re.search(r"adesione|adh[eé]sion|astroni", g[2].lower())):
+            m[k] = [r[0], r[1], g[2]]
     tot = {}
     for f in sorted(os.listdir(DATA)):
         if not f.endswith(".json"):
