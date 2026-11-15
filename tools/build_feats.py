@@ -407,8 +407,9 @@ def describe(tr, path=None):
     L = tr.get("len", 0) / 1000
     up = e.get("up")
     path = path or bd.chain(tr.get("ways") or [])
-    loop = tr.get("loop") or (len(path) > 2 and bd.hav(path[0], path[-1]) < 500) or (tr.get("from") and tr.get("from") == tr.get("to"))
     walk = tr.get("type") == "walk"
+    ret = 0 if walk else bd.ret_info(path, tr.get("len", 0)) / 1000
+    loop = ret == 0
     S = []
     fr, to = place(tr.get("from")), place(tr.get("to"))
     # 1. che cos'è e dove
@@ -424,7 +425,10 @@ def describe(tr, path=None):
         s += f", nella zona di {tr['zone']}"
     S.append(s + ".")
     if not walk and not loop:
-        S.append(f"Non è un anello: per tornare alla partenza si rifà la stessa strada, quindi in tutto sono {km(2 * L)} km.")
+        if ret < L:
+            S.append(f"È un anello con un tratto iniziale di {km(ret)} km da rifare al ritorno: in tutto sono {km(L + ret)} km.")
+        else:
+            S.append(f"Non è un anello: per tornare alla partenza si rifà la stessa strada, quindi in tutto sono {km(L + ret)} km.")
     # 2. fatica
     if up is not None and not walk:
         if up < 100:

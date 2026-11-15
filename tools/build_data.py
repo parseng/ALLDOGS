@@ -26,6 +26,22 @@ def hav(a, b):
     return 2 * R * math.asin(math.sqrt(x))
 
 
+def ret_info(path, ln):
+    """Metri da rifare per tornare alla partenza (uguale a retInfo in index.html), riportati alla lunghezza ufficiale ln.
+    0 = anello; meno di 3/4 di ln = anello con un tratto di andata e ritorno; ln = andata e ritorno."""
+    if len(path) < 2 or hav(path[0], path[-1]) < 300:
+        return 0
+    end, c, tot, r = path[-1], 0.0, 0.0, None
+    for i, q in enumerate(path):
+        if i:
+            tot += hav(path[i - 1], q)
+        if r is None and hav(q, end) < 80:
+            r = tot
+    r = r if r is not None else tot
+    f = r / (tot or 1)
+    return ln if f >= 0.75 else 0 if r < 300 else f * ln
+
+
 def thin(w, mn):
     o = [w[0]]
     for i in range(1, len(w) - 1):

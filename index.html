@@ -1423,7 +1423,7 @@ function chain(ways){const rest=ways.slice(1);let path=ways[0].slice();
   return path}
 function sample(path,n){if(path.length<2)return path.slice();const cum=[0];for(let i=1;i<path.length;i++)cum.push(cum[i-1]+hav(path[i-1],path[i]));
   const tot=cum[cum.length-1],out=[];let j=0;for(let k=0;k<n;k++){const d=tot*k/(n-1);while(j<cum.length-2&&cum[j+1]<d)j++;out.push(path[j])}return out}
-function hydrate(t){t.path=chain(t.ways);t.start=t.path[0];{const r=retInfo(t.path);t.ret=r.ret;t.loop=r.ret<300;t.shape=t.loop?"loop":r.ret<t.len*.75?"lolli":"line"}{const z=zoneOf(t.path[Math.floor(t.path.length/2)]);t.zone=z!=="Campania"?z:(t.zone||"")}
+function hydrate(t){t.path=chain(t.ways);t.start=t.path[0];{const r=t.type==="walk"?{ret:0,f:0}:retInfo(t.path);t.ret=retLen(r,t.len);t.loop=t.ret===0;t.shape=t.loop?"loop":t.ret<t.len?"lolli":"line"}{const z=zoneOf(t.path[Math.floor(t.path.length/2)]);t.zone=z!=="Campania"?z:(t.zone||"")}
   let a=90,b=-90,c=180,e=-180;for(const w of t.ways)for(const p of w){a=Math.min(a,p[0]);b=Math.max(b,p[0]);c=Math.min(c,p[1]);e=Math.max(e,p[1])}t.bb=[[c,a],[e,b]];return t}
 async function overpass(q){
   let err;
@@ -1440,8 +1440,10 @@ const CELL=.5,TR=new Map(),cellState={},elev={};let FT={},IDX=null;
 // Tre forme: anello (si torna alla partenza da soli), "anello con un tratto da rifare" (dalla partenza si sale a un anello, lo si gira e si torna
 // per lo stesso tratto, come il Lago d'Averno da Lucrino) e andata e ritorno (si rifà tutto al contrario).
 // ret = metri da rifare per tornare alla partenza: la distanza lungo il percorso fino al primo punto che passa vicino all'arrivo.
-function retInfo(path){const L=path.length;if(L<2)return {ret:0,k:0};const end=path[L-1];if(hav(path[0],end)<300)return {ret:0,k:0};let c=0;
-  for(let i=0;i<L;i++){if(i)c+=hav(path[i-1],path[i]);if(hav(path[i],end)<80)return {ret:c,k:i}}return {ret:c,k:L-1}}
+function retInfo(path){const L=path.length;if(L<2)return {ret:0,k:0,f:0};const end=path[L-1];if(hav(path[0],end)<300)return {ret:0,k:0,f:0};let c=0,tot=0,r=null,k=L-1;
+  for(let i=0;i<L;i++){if(i)tot+=hav(path[i-1],path[i]);if(r==null&&hav(path[i],end)<80){r=tot;k=i}}if(r==null)r=tot;return {ret:r,k,f:r/(tot||1)}}
+// metri da rifare riportati alla lunghezza ufficiale del sentiero (come ret_info in tools/build_data.py)
+const retLen=(r,len)=>r.ret<300&&r.f<.75?0:r.f>=.75?len:r.f*len;
 const SHAPE={loop:"Ad anello",lolli:"Anello con tratto di andata e ritorno",line:"Andata e ritorno"};
 function dnOf(tr,frac){const e=elev[tr.id];if(!e)return null;if(!e.p||e.p.length<3)return Math.round(e.up*(frac??1));const n=Math.max(1,Math.round((e.p.length-1)*(frac??1)));let upA=0,up=0,dw=0;for(let i=1;i<e.p.length;i++){const x=e.p[i]-e.p[i-1];if(x>0)upA+=x;if(i<=n){if(x<0)dw-=x}}return Math.round(dw*(upA?e.up/upA:1))}
 const totLen=tr=>tr.loop===false?tr.len+(tr.ret??tr.len):tr.len;
@@ -3820,7 +3822,7 @@ const fmtM=m=>m>=1000?km(m)+" km":Math.max(10,Math.round(m/10)*10)+" m";
 function clock(ms){const t=Math.floor(ms/1000),h=Math.floor(t/3600),m=Math.floor(t%3600/60),ss=String(t%60).padStart(2,"0");return h?`${h}:${String(m).padStart(2,"0")}:${ss}`:`${m}:${ss}`}
 function dense(path,step){const o=[path[0]];for(let i=1;i<path.length;i++){const a=path[i-1],b=path[i],d=hav(a,b),n=Math.floor(d/step);for(let j=1;j<=n;j++){const f=j*step/d;if(f<1)o.push([a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f])}o.push(b)}return o}
 const oTot=o=>o.loop===false?o.len+(o.ret??o.len):o.len;
-function navPrep(){const P=dense(nav.o.path,20),C=[0];for(let i=1;i<P.length;i++)C.push(C[i-1]+hav(P[i-1],P[i]));nav.P=P;nav.C=C;nav.total=C[C.length-1];{const r=retInfo(P);nav.retK=nav.o.loop===false?r.k:0;nav.retC=C[nav.retK]||0}
+function navPrep(){const P=dense(nav.o.path,20),C=[0];for(let i=1;i<P.length;i++)C.push(C[i-1]+hav(P[i-1],P[i]));nav.P=P;nav.C=C;nav.total=C[C.length-1];{const r=retInfo(P);nav.retK=nav.o.loop===false?(nav.o.shape==="lolli"?r.k:P.length-1):0;nav.retC=C[nav.retK]||0}
   nav.turns=nav.o.turns&&nav.o.turns.length?nav.o.turns:geoTurns(P,C,nav.o.id);nav.said={}}
 // Impostazioni di navigazione (restano salvate)
 const NS=Object.assign({turns:true,voice:false,autopause:false,wake:true},store.get("alldogs-navset")||{});
