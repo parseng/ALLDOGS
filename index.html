@@ -1324,7 +1324,7 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
 // ================= Stato =================
 const S={dog:store.get("alldogs-dog"),saved:store.get("alldogs-saved")||[],routes:store.get("alldogs-routes")||[],trails:[],day:0,limit:20,sel:null,wxFail:false,
-  mins:40,start:store.get("alldogs-start")||[40.8359,14.2488],gen:null,genIdx:0,ready:false,featReady:false,act:null,feat:[],near:null,
+  mins:40,start:store.get("alldogs-start")||[40.8359,14.2488],pick:store.get("alldogs-pick"),gen:null,genIdx:0,ready:false,featReady:false,act:null,feat:[],near:null,
   mode:(m=>!m||m==="chat"?"auto":m)(store.get("alldogs-creamode")),chat:[],busy:false,acts:store.get("alldogs-acts")||[],
   manKind:store.get("alldogs-mankind")||"auto",draw:{pts:[],route:null,busy:false,msg:"",req:0},
   // zona della mappa che si sta guardando: c = centro, z = zoom, b = [[sud,ovest],[nord,est]]
@@ -1565,7 +1565,7 @@ function poiSheet(pr,c){
     ${pr.k==="g"?`<button class="btn pri wide" id="poi-giro">Crea un giro qui</button>`:""}
     <a class="btn wide" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${g}">Portami lì</a></div>
     <p class="small muted" style="margin-top:10px">${pr.src==="m"?"Dato della ricerca di Mapbox":"Dato di OpenStreetMap"}: orari, telefono e regole vanno verificati${pr.k==="v"?" prima di andare":" sul posto"}.</p>`);
-  const gb=$("poi-giro");if(gb)gb.onclick=()=>{$("sheet").hidden=true;S.start=[c[1],c[0]];store.set("alldogs-start",S.start);S.gen=null;$("gen-out").innerHTML="";S.mode="auto";store.set("alldogs-creamode","auto");location.hash="crea";toast("Partenza nel parco: tocca Crea il giro")};
+  const gb=$("poi-giro");if(gb)gb.onclick=()=>{$("sheet").hidden=true;const q=[c[1],c[0]];startAtPlace(q,pr.n,parkNear(q,pr.n))};
 }
 function viewCells(b){const out=[];for(let la=Math.floor(b[0][0]/CELL)*CELL;la<b[1][0];la+=CELL)for(let lo=Math.floor(b[0][1]/CELL)*CELL;lo<b[1][1];lo+=CELL)out.push(cellKey(la+.01,lo+.01));return out}
 async function findTrail(id){ // per aprire un sentiero salvato o un indirizzo diretto
@@ -2188,7 +2188,7 @@ function showMe(p){if(!M)return;
 function meDir(){if(!meM||!M)return;const el=meM.getElement(),on=scene.mode==="nav"&&nav&&nav.hd!=null;el.classList.toggle("dir",on);if(on)el.querySelector(".hd").style.transform=`rotate(${nav.hd-M.getBearing()}deg)`}
 $("m-loc").onclick=async()=>{
   if(scene.mode==="nav"&&nav){navFollow=true;if(nav.pos)navCam(500);else toast("Cerco il segnale GPS…");return}
-  try{const p=await getPos();showMe(p);if(scene.mode==="crea")setStart(p);else if(M)M.flyTo({center:ll(p),zoom:Math.max(M.getZoom(),13)})}catch(e){toast("Non riesco a leggere la posizione")}};
+  try{const p=await getPos();showMe(p);if(scene.mode==="crea")setStart(p,false,"gps");else if(M)M.flyTo({center:ll(p),zoom:Math.max(M.getZoom(),13)})}catch(e){toast("Non riesco a leggere la posizione")}};
 
 // ================= Navigazione =================
 var curScr="esplora";
@@ -2323,7 +2323,7 @@ function renderParks(){
   $("parks-box").hidden=!top.length;
   $("parks").innerHTML=top.map((p,i)=>`<article class="tcard" data-pk="${i}"><div class="img"><img loading="lazy" alt="" src="${staticPlace(p.c)}" onerror="this.remove()"><span class="badge v0">Parco</span></div>
     <h3>${esc(p.n)}</h3><p class="sub">${p.dog==="no"?"Secondo OpenStreetMap i cani non sono ammessi":p.dog==="leashed"?"Cani al guinzaglio":"Verifica sul posto le regole per i cani"}</p><p class="meta">Tocca per creare un giro su misura per ${dn()}</p></article>`).join("");
-  $("parks").querySelectorAll(".tcard").forEach(c=>c.onclick=()=>{const p=top[+c.dataset.pk];S.start=p.c;store.set("alldogs-start",p.c);S.gen=null;$("gen-out").innerHTML="";S.mode="auto";store.set("alldogs-creamode","auto");lastList=window.scrollY;location.hash="crea";toast("Partenza nel parco: tocca Crea il giro")});
+  $("parks").querySelectorAll(".tcard").forEach(c=>c.onclick=()=>{const p=top[+c.dataset.pk];lastList=window.scrollY;startAtPlace(p.c,p.n,p)});
 }
 // Attività e particolarità: due menu a tendina con i disegnini. L'attività è una sola, le particolarità anche più di una.
 let ddOpen=null;
@@ -2630,13 +2630,24 @@ $("det-save").onclick=()=>{if(cur&&cur.type==="trail"){toggleSave(cur.tr.id);syn
 const SURF_HARD=[1,3,4,5,14];
 const SUB={chat:"Chiedi all'assistente un consiglio tra i sentieri della mappa, oppure un giro nuovo su misura che parte dal segnaposto.",auto:"Un tocco: uso la tua posizione, il profilo del cane e il meteo di adesso.",man:"Fai creare un anello all'app, oppure disegna tu il percorso mettendo i segnaposti sulla mappa."};
 const drawing=()=>S.mode==="man"&&S.manKind==="draw"&&!S.gen;
-function setStart(p,fromDrag){S.start=p;store.set("alldogs-start",p);if(pinM&&!fromDrag)pinM.setLngLat(ll(p));if(M&&!fromDrag)M.easeTo({center:ll(p),zoom:Math.max(M.getZoom(),14)});
+// Da dove parte il giro. how: "gps" (posizione del telefono), "map" (tocco o segnaposto spostato), "park" (parco scelto).
+// Se la partenza è in un parco ricordo anche quanto è grande, per tenere il giro lì dentro.
+function pickStart(p,how,area){S.pick={how,area:area||null,t:Date.now()};store.set("alldogs-pick",S.pick);if($("crea-sub")&&S.mode==="auto")$("crea-sub").textContent=subAuto()}
+function chosenStart(){const k=S.pick;return k&&k.how!=="gps"&&Date.now()-k.t<6*36e5?k:null} // scelta valida per 6 ore
+const curArea=()=>{const k=chosenStart();return k&&k.area&&hav(S.start,k.area.c)<=k.area.r*1.3?k.area:null};
+function parkNear(p,name){let best=null,bd=Infinity;const nm=(name||"").toLowerCase().trim();
+  for(const k in PL)for(const x of PL[k].parks){const dd=hav(p,x.c);if(dd<bd&&(dd<Math.max(250,x.d/2)||nm&&x.n.toLowerCase()===nm&&dd<3000)){bd=dd;best=x}}return best}
+const areaOf=(x,c,n)=>x?{c:x.c,r:Math.max(150,Math.round(x.d/2)),n:x.n}:{c,r:300,n:n||"il parco"};
+function startAtPlace(c,name,park){const a=areaOf(park,c,name);S.start=c;store.set("alldogs-start",c);pickStart(c,"park",a);S.gen=null;$("gen-out").innerHTML="";S.mode="auto";store.set("alldogs-creamode","auto");location.hash="crea";toast(`Partenza: ${a.n}. Tocca «Crea il giro»`)}
+function subAuto(){const k=chosenStart();return k?`Un tocco: parto da ${k.area?k.area.n:"il segnaposto sulla mappa"} e uso il profilo del cane e il meteo di adesso. Per partire da dove sei, tocca «Parto da dove sono».`:SUB.auto}
+function setStart(p,fromDrag,how){S.start=p;store.set("alldogs-start",p);
+  if(how==="gps")pickStart(p,"gps");else{const a=S.pick&&S.pick.area&&hav(p,S.pick.area.c)<=S.pick.area.r*1.3?S.pick.area:null;pickStart(p,a?"park":"map",a)}if(pinM&&!fromDrag)pinM.setLngLat(ll(p));if(M&&!fromDrag)M.easeTo({center:ll(p),zoom:Math.max(M.getZoom(),14)});
   loadWeather([p]).then(()=>{rules();autoWhy()}).catch(()=>{})}
 function showCrea(){
   mountMap($("hostCrea"),true);
   setScene({mode:"crea"},true);
   document.querySelectorAll("#crea-mode button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.mode===S.mode));
-  $("crea-sub").textContent=SUB[S.mode];
+  $("crea-sub").textContent=S.mode==="auto"?subAuto():SUB[S.mode];
   $("start-hint").textContent=S.mode==="man"&&S.manKind==="draw"?"oppure tocca la mappa per aggiungere i punti, uno dopo l'altro":"oppure tocca la mappa per spostare la partenza";
   if(S.mode==="chat")S.mode="auto";
   ["auto","man"].forEach(m=>$("p-"+m).hidden=S.mode!==m);
@@ -2644,7 +2655,7 @@ function showCrea(){
   if(S.mode==="man")showMan();if(S.mode==="auto")autoWhy();
 }
 document.querySelectorAll("#crea-mode button").forEach(b=>b.onclick=()=>{S.mode=b.dataset.mode;store.set("alldogs-creamode",S.mode);showCrea()});
-$("new-loc").onclick=async()=>{try{const p=await getPos();showMe(p);if(drawing()){M&&M.easeTo({center:ll(p),zoom:Math.max(M.getZoom(),15)});addPt(p)}else setStart(p)}catch(e){toast("Non riesco a leggere la posizione: tocca la mappa")}};
+$("new-loc").onclick=async()=>{try{const p=await getPos();showMe(p);if(drawing()){M&&M.easeTo({center:ll(p),zoom:Math.max(M.getZoom(),15)});addPt(p)}else setStart(p,false,"gps")}catch(e){toast("Non riesco a leggere la posizione: tocca la mappa")}};
 function targetKm(mins){const cap=capacity(dog()),want=mins/pace();return {want,k:Math.min(want,cap.km),cap}}
 function clearGen(){S.gen=null;S.genIdx=0;$("gen-out").innerHTML="";setScene({mode:"crea"},true);paintDraw();toast("Percorso rimosso")}
 // ---- Percorso disegnato a mano: l'utente mette i segnaposti, l'app li unisce seguendo strade e sentieri (OpenRouteService) ----
@@ -2741,15 +2752,15 @@ function autoPlan(){
   const {k}=targetKm(m);
   return {mins:m,km:k,why,prefs:{green:true,avoidSteps:cap.agil==="bassa"}};
 }
-function autoWhy(){if(S.mode!=="auto")return;const p=autoPlan();$("auto-why").innerHTML=`<h2>Cosa farei adesso</h2><ul class="plain">${p.why.map(x=>`<li>${x}</li>`).join("")}<li>Giro ad anello di circa <b>${p.km.toFixed(1).replace(".",",")} km</b> (${p.mins} minuti), preferendo il verde.</li></ul>`}
+function autoWhy(){if(S.mode!=="auto")return;const p=autoPlan();$("auto-why").innerHTML=`<h2>Cosa farei adesso</h2><ul class="plain">${p.why.map(x=>`<li>${x}</li>`).join("")}<li>Giro ad anello di circa <b>${p.km.toFixed(1).replace(".",",")} km</b> (${p.mins} minuti), ${curArea()?"restando il più possibile dentro "+esc(curArea().n):"preferendo il verde"}.</li></ul>`}
 $("auto-go").onclick=async()=>{
-  const b=$("auto-go");b.disabled=true;b.textContent="Cerco la tua posizione…";
-  try{const p=await getPos();showMe(p);setStart(p)}catch(e){toast("Posizione non disponibile: parto dal segnaposto")}
+  const b=$("auto-go");b.disabled=true;
+  if(!chosenStart()){b.textContent="Cerco la tua posizione…";try{const p=await getPos();showMe(p);setStart(p,false,"gps")}catch(e){toast("Posizione non disponibile: parto dal segnaposto")}}
   try{await loadWeather([S.start])}catch(e){}
   const p=autoPlan();autoWhy();b.innerHTML=icon("bolt")+"Crea il giro con un tocco";b.disabled=false;
-  generate({mins:p.mins,prefs:p.prefs,source:"auto"});
+  generate({mins:p.mins,prefs:p.prefs,source:"auto",area:curArea()});
 };
-$("gen").onclick=()=>generate({mins:S.mins,prefs:{green:true,avoidSteps:capacity(dog()).agil==="bassa"},source:"man"});
+$("gen").onclick=()=>generate({mins:S.mins,prefs:{green:true,avoidSteps:capacity(dog()).agil==="bassa"},source:"man",area:curArea()});
 function parseRoute(f){
   const co=f.geometry.coordinates,c=co.map(p=>[p[1],p[0]]),pr=f.properties,ex=pr.extras||{};
   // tipo di fondo tratto per tratto (per colorare la mappa): superficie + gradini
@@ -2786,29 +2797,42 @@ async function generate(o){
   const key=store.get("alldogs-ors"),out=$("gen-out");
   if(!key){out.innerHTML=`<div class="note"><b>Manca un passaggio.</b> Per disegnare i giri serve la chiave gratuita di OpenRouteService. Incollala qui sotto (resta solo su questo telefono).<input class="field" id="ors-inline" placeholder="Chiave OpenRouteService" autocomplete="off" autocapitalize="off" spellcheck="false" style="margin-top:10px"><button class="btn pri wide" id="ors-inline-save" style="margin-top:8px">Salva e crea il giro</button><p class="small" style="margin-top:8px">La chiave si crea su <a href="https://openrouteservice.org/dev/#/signup" target="_blank" rel="noopener">openrouteservice.org</a>.</p></div>`;
     $("ors-inline-save").onclick=()=>{const v=$("ors-inline").value.trim();if(!v){toast("Incolla la chiave");return}store.set("alldogs-ors",v);generate(o)};return}
-  const d=dog(),cap=capacity(d),{k}=targetKm(o.mins),target=k*1000;
-  out.innerHTML=`<div class="note">Sto disegnando il giro (circa ${k.toFixed(1).replace(".",",")} km)…</div>`;$("gen").disabled=true;
-  const body=seed=>{const b={language:"it",coordinates:[[S.start[1],S.start[0]]],options:{round_trip:{length:Math.round(target),points:4,seed}},elevation:true,extra_info:["surface","green","waytype"]};
+  const d=dog(),cap=capacity(d),{k,want}=targetKm(o.mins),target=k*1000,area=o.area||null;
+  out.innerHTML=`<div class="note">Sto disegnando il giro (circa ${k.toFixed(1).replace(".",",")} km)${area?" dentro "+esc(area.n):""}…</div>`;$("gen").disabled=true;
+  // Giro dentro un parco: oltre ai giri della lunghezza giusta provo anelli più corti, che ci stanno dentro; poi scelgo quello che esce meno dal parco
+  const small=area?Math.max(400,Math.min(target*.9,area.r*2*Math.PI*.75)):0;
+  const tries=area&&small<target*.9?[[1,target],[2,target],[3,small],[4,small],[5,small*.7]]:area?[[1,target],[2,target],[3,target],[4,target*.8]]:[[1,target],[2,target],[3,target]];
+  const body=(seed,len=target)=>{const b={language:"it",coordinates:[[S.start[1],S.start[0]]],options:{round_trip:{length:Math.round(len),points:area?3:4,seed}},elevation:true,extra_info:["surface","green","waytype"]};
     b.options.avoid_features=o.prefs&&o.prefs.avoidSteps?["ferries","steps"]:["ferries"]; // mai traghetti: vicino al porto uscivano "giri" di centinaia di km
     if(o.prefs&&(o.prefs.green||o.prefs.quiet))b.options.profile_params={weightings:{green:o.prefs.green?.8:0,quiet:o.prefs.quiet?.6:0}};
     return b};
   const base=Math.floor(Math.random()*1000);
   const call=b=>getJSON("https://api.openrouteservice.org/v2/directions/foot-walking/geojson",{method:"POST",headers:{"Authorization":key,"Content-Type":"application/json"},body:JSON.stringify(b)});
-  let rs=await Promise.allSettled([1,2,3].map(i=>call(body(base+i))));
+  let rs=await Promise.allSettled(tries.map(([i,L])=>call(body(base+i,L))));
   // se le preferenze non sono accettate, riprovo senza
   if(!rs.some(r=>r.status==="fulfilled")&&rs.some(r=>r.reason&&r.reason.status===400)&&(o.prefs&&(o.prefs.green||o.prefs.avoidSteps))){
-    rs=await Promise.allSettled([1,2,3].map(i=>{const b=body(base+i);delete b.options.profile_params;delete b.options.avoid_features;return call(b)}))}
+    rs=await Promise.allSettled(tries.map(([i,L])=>{const b=body(base+i,L);delete b.options.profile_params;delete b.options.avoid_features;return call(b)}))}
   $("gen").disabled=false;
   const ok=rs.filter(r=>r.status==="fulfilled"&&r.value.features&&r.value.features.length).map(r=>parseRoute(r.value.features[0]));
   if(!ok.length){const e=(rs.find(r=>r.status==="rejected")||{}).reason||{};
     out.innerHTML=`<div class="err">${e.status===401||e.status===403?"La chiave di OpenRouteService non è valida. Controllala nella pagina del cane, in Impostazioni.":e.status===429?"Hai raggiunto il limite gratuito di oggi di OpenRouteService. Riprova domani.":e.status===404||e.status===400?"Da questo punto non riesco a creare un giro. Sposta il segnaposto su una strada o un sentiero.":"Non riesco a creare il giro. Controlla la connessione e che la chiave di OpenRouteService sia giusta (pagina del cane, in Impostazioni)."}</div>`;return}
   const sane=ok.filter(r=>r.len<=target*1.8+300);if(sane.length)ok.splice(0,ok.length,...sane); // scarta i giri assurdamente lunghi
   const n=nowWx(),hot=n&&n.t>=25;
-  ok.forEach(r=>r.score=(r.hard??.5)*(hot?2:1)-(r.green??5)/10*(o.prefs&&o.prefs.green?1:.5)+Math.abs(r.len-target)/target*.5);
+  ok.forEach(r=>{r.score=(r.hard??.5)*(hot?2:1)-(r.green??5)/10*(o.prefs&&o.prefs.green?1:.5)+Math.abs(r.len-target)/target*.5;
+    if(area){r.inside=insideShare(r.path,area);r.score=(1-r.inside)*4+(r.hard??.5)*(hot?1:.5)+Math.abs(r.len-target)/target*.6}});
   ok.sort((a,b)=>a.score-b.score);
-  ok.forEach(r=>{r.stops=stopsFor(r,d,o.aiStops);r.cmds=o.aiCmds||null;r.note=o.note||"";r.source=o.source});
+  const notes=[];
+  if(want>k+.05)notes.push(`Per ${dn()} ho tenuto il giro a circa ${k.toFixed(1).replace(".",",")} km: ${Math.round(o.mins)} minuti sarebbero oltre il suo limite consigliato.`);
+  ok.forEach(r=>{r.stops=stopsFor(r,d,o.aiStops);r.cmds=o.aiCmds||null;r.source=o.source;const nn=notes.slice();
+    if(area){r.name=`Giro ad anello in ${area.n}`;
+      if(r.inside<.6)nn.push(`${area.n} è piccolo o ha pochi sentieri segnati sulla mappa: una parte del giro passa fuori dal parco.`);
+      const laps=Math.round(target/r.len);if(laps>=2&&r.inside>=.6){r.laps=laps;nn.push(`${area.n} è piccolo: l'anello più lungo che ci sta dentro è di ${km(r.len)} km. Per arrivare a circa ${Math.round(o.mins)} minuti fatelo ${laps} volte.`)}
+      else if(r.inside>=.6&&r.len<target*.85)nn.push(`È l'anello più lungo che resta dentro ${area.n} (${km(r.len)} km). Per arrivare a circa ${Math.round(o.mins)} minuti potete rifare un pezzo del giro.`)}
+    r.note=[o.note,...nn].filter(Boolean).join(" ")});
   S.gen=ok;S.genIdx=0;showGen();
 }
+// quanta parte del percorso (in metri) resta dentro il parco (cerchio intorno al centro, un po' più largo per i bordi)
+function insideShare(path,a){let tot=0,ins=0;for(let i=1;i<path.length;i++){const l=hav(path[i-1],path[i]);tot+=l;if(hav(path[i],a.c)<=a.r*1.25)ins+=l}return tot?ins/tot:0}
 function genItem(r){const lin=r.loop===false;return {len:lin?r.len*2:r.len,one:r.len,up:lin&&r.up!=null?r.up+(r.dn??r.up):r.up,scale:"CITY",start:r.path[0],loop:!lin}}
 function showGen(){
   const r=S.gen[S.genIdx],d=dog(),res=verdict(genItem(r),d,0),sp=steps(r.len,d);
@@ -2820,6 +2844,7 @@ function showGen(){
   const cmds=r.cmds&&r.cmds.length?`<div class="block"><h2>Comandi da provare</h2><ul class="plain">${r.cmds.map(c=>`<li><b>${esc(c.command)}</b>${c.how?": "+esc(c.how):""}</li>`).join("")}</ul></div>`:"";
   $("gen-out").innerHTML=`<div class="box"><h2>${esc(r.name||"Giro di "+km(r.len)+" km")}</h2>
     <span class="verdict v${Math.max(0,res.v)}">${VLABEL[Math.max(0,res.v)]} per ${dn()}</span>
+    ${r.note?`<p class="note" style="margin-top:10px">${esc(r.note)}</p>`:""}
     <div class="stats"><div><b>${km(r.len)} km</b><span>Lunghezza</span></div><div><b>${r.up} m</b><span>Dislivello</span></div><div><b>${fmtH(res.hours)}</b><span>Col cane</span></div><div><b class="c${res.effort}">${EFFORT[res.effort]}</b><span>Per ${dn()}</span></div></div>
     <ul class="why" style="margin-top:12px">${res.why.map(x=>`<li><i class="dot ${x.lvl<0?"bw":"b"+x.lvl}"></i><span>${x.txt}</span></li>`).join("")}</ul>
     <p class="small muted" style="margin-top:10px">Passi stimati: ${dn()} circa ${sp.dog.toLocaleString("it-IT")}, tu circa ${sp.me.toLocaleString("it-IT")}.</p>
@@ -2847,7 +2872,8 @@ let gemGood=null;
 const GEM_SCHEMA={type:"OBJECT",properties:{
   reply:{type:"STRING",description:"Risposta breve all'utente, in italiano semplice"},
   create:{type:"BOOLEAN",description:"true quando hai abbastanza informazioni per creare il giro adesso"},
-  minutes:{type:"INTEGER",description:"Durata del giro in minuti"},
+  minutes:{type:"INTEGER",description:"Durata del giro in minuti: esattamente quella chiesta dall'utente, se l'ha detta"},
+  loop_in_place:{type:"BOOLEAN",description:"true se l'utente vuole un giro ad anello DENTRO un posto (parco, villa, bosco, lungomare): destination è quel posto"},
   prefer_green:{type:"BOOLEAN"},prefer_quiet:{type:"BOOLEAN"},avoid_steps:{type:"BOOLEAN"},
   stops:{type:"ARRAY",items:{type:"OBJECT",properties:{title:{type:"STRING"},text:{type:"STRING"}},required:["title","text"]}},
   commands:{type:"ARRAY",items:{type:"OBJECT",properties:{command:{type:"STRING"},how:{type:"STRING"}},required:["command","how"]}},
@@ -2882,6 +2908,10 @@ ${S.cand&&S.cand.length?S.cand.map(c=>c.line).join("\n"):"nessuno caricato"}
 - Non inventare sentieri: solo quelli della lista, con il loro id esatto. Se nessuno è adatto, dillo e proponi di creare un giro nuovo.
 - Usa create=true quando l'utente vuole un giro nuovo che parte dal segnaposto (per esempio "un giro di mezz'ora qui vicino").
 - PERCORSI CON UNA META: se l'utente vuole arrivare a un posto preciso (una villa comunale, un parco, una piazza, un lago, una spiaggia, un bar, un indirizzo) e tornare, NON dire che non puoi: metti create=true, destination con il nome del posto e il comune, e via con eventuali posti intermedi. L'app trova il posto sulla mappa e calcola strade e sentieri per andare e tornare alla partenza (one_way=true solo se l'utente non vuole tornare).
+- GIRO DENTRO UN POSTO: se l'utente vuole un giro ad anello "nel", "dentro", "al" o "all'interno" di un parco, una villa, un bosco (es. "giro di 30 minuti ad anello nel Parco Virgiliano"), metti create=true, loop_in_place=true, destination con il nome del posto e il comune, minutes con la durata chiesta. NON è un andata e ritorno verso il posto: l'app sposta la partenza lì e disegna l'anello dentro.
+- Se l'utente chiede un giro "ad anello" non trasformarlo mai in un andata e ritorno.
+- DURATA: se l'utente dice quanto tempo vuole camminare, minutes deve essere esattamente quel numero (mezz'ora = 30, un'ora = 60). Riducila solo se supera i limiti del cane o se fa troppo caldo, e in reply spiega perché. Non promettere una durata diversa da minutes.
+- In reply non dire che il percorso è già pronto né quanti km fa: lo calcola e lo mostra l'app.
 - Se dice "da dove mi trovo", "dalla mia posizione", "qui" metti from_my_position=true.
 - Se il comune non è detto, usa quello più probabile vicino alla partenza. In reply di' che stai creando il percorso e, se la distanza può essere troppa per il cane, avvisalo.`;
 }
@@ -2951,11 +2981,13 @@ async function chatSend(text){
     const o=await gemini(key);S.busy=false;
     const ok=new Set((S.cand||[]).map(c=>c.id)),sug=[...new Set((o.suggest||[]).map(Number))].filter(id=>ok.has(id)&&TR.has(id)).slice(0,3); // solo sentieri veri della lista
     S.chat.push({r:"a",t:o.reply||"…",raw:JSON.stringify(o),sug});renderChat();
-    if(o.create&&o.destination&&String(o.destination).trim()){toRoute(o);return}
-    if(o.create&&!sug.length){closeAI();
-      const mins=Math.max(10,Math.min(180,+o.minutes||40));
-      generate({mins,prefs:{green:!!o.prefer_green,quiet:!!o.prefer_quiet,avoidSteps:!!o.avoid_steps||capacity(dog()).agil==="bassa"},aiStops:o.stops,aiCmds:(o.commands||[]).slice(0,6),source:"chat"});
-    }
+    const mins=Math.max(10,Math.min(180,+o.minutes||askedMins(text)||40)),gopt={mins,prefs:{green:!!o.prefer_green,quiet:!!o.prefer_quiet,avoidSteps:!!o.avoid_steps||capacity(dog()).agil==="bassa"},aiStops:o.stops,aiCmds:(o.commands||[]).slice(0,6),source:"chat"};
+    const dest=o.create&&o.destination?String(o.destination).trim():"";
+    // "ad anello nel/dentro il parco X": anello dentro il posto, non andata e ritorno (anche se il modello si dimentica loop_in_place)
+    const inPlace=dest&&!o.one_way&&(o.loop_in_place||/\banell|\bgir[oi] (?:nel|nella|dentro|all'interno|al|alla|in)\b|\b(?:dentro|all'interno)\b/i.test(text)&&!/\b(?:fino a|verso|arrivare)\b/i.test(text));
+    if(inPlace){placeLoop(dest,gopt);return}
+    if(dest){toRoute(o);return}
+    if(o.create&&!sug.length){closeAI();generate(Object.assign(gopt,{area:curArea()}))}
   }catch(e){
     S.busy=false;const st=e.status,msg=e.body&&e.body.error&&e.body.error.message||"",seen=e.seen||[];console.warn("Gemini:",seen,e);
     S.chat.push({r:"a",err:true,t:st===400&&/key/i.test(msg)||st===401||st===403?"La chiave Gemini non è valida. Controllala nella pagina del cane, in Impostazioni.":seen.some(x=>x===503||x===500||x==="lento")?"L'assistente di Google è molto occupato in questo momento (succede con il servizio gratuito). Riprova tra un minuto, oppure usa il modo Automatico: quello funziona sempre.":seen.includes(429)||st===429?"Hai raggiunto il limite gratuito di Gemini per adesso. Riprova tra un po', oppure usa il modo Automatico.":"Non riesco a parlare con l'assistente. Controlla la connessione e riprova."});
@@ -2963,6 +2995,25 @@ async function chatSend(text){
   }
 }
 $("chat-form").onsubmit=e=>{e.preventDefault();chatSend($("chat-in").value)};
+// minuti scritti dall'utente ("30 min", "mezz'ora", "un'ora e mezza"), se il modello non li riporta
+function askedMins(t){t=t.toLowerCase();if(/un'?ora e mezz/.test(t))return 90;if(/mezz'?ora/.test(t))return 30;if(/\bun'?ora\b/.test(t))return 60;
+  const m=t.match(/(\d+(?:[.,]\d)?)\s*(min|minuti|m\b|ore|ora|h\b)/);if(!m)return 0;const v=parseFloat(m[1].replace(",","."));return /^(ore|ora|h)/.test(m[2])?Math.round(v*60):Math.round(v)}
+// Giro ad anello dentro un posto chiesto all'assistente: trovo il posto, sposto lì la partenza e disegno l'anello che esce meno dal parco
+async function placeLoop(q,gopt){
+  const say=t=>{S.chat.push({r:"a",t,local:true});renderChat()},cur=curArea(),norm=x=>x.toLowerCase().split(",")[0].replace(/^(il|lo|la|l'|i|gli|le)\s*/,"").trim();
+  let area=cur&&(norm(q).includes(norm(cur.n))||norm(cur.n).includes(norm(q)))?cur:null;
+  if(!area){S.busy=true;renderChat();
+    const g=await geoFind(q,S.start).catch(()=>null);
+    if(!g){S.busy=false;say(`Non trovo «${q}» sulla mappa. Prova a scriverlo con il nome del comune.`);return}
+    if(hav(S.start,g.p)>80000){S.busy=false;say(`«${g.name}» è a ${km(hav(S.start,g.p))} km da qui: sposta prima la mappa da quelle parti.`);return}
+    try{await loadIndex();await loadPlaces(cellKey(g.p[0],g.p[1]))}catch(e){}
+    S.busy=false;const pk=parkNear(g.p,g.name);area=areaOf(pk,g.p,g.name);
+    S.start=pk?pk.c:g.p;store.set("alldogs-start",S.start);pickStart(S.start,"park",area)}
+  else pickStart(S.start,"park",area);
+  say(`Disegno un anello di circa ${gopt.mins} minuti dentro ${area.n}, partendo da lì.`);
+  closeAI();S.mode="auto";store.set("alldogs-creamode","auto");S.gen=null;location.hash="crea";
+  setTimeout(()=>{if(pinM)pinM.setLngLat(ll(S.start));if(M)M.jumpTo({center:ll(S.start),zoom:15});generate(Object.assign(gopt,{area}))},300);
+}
 // Percorso verso una meta chiesta all'assistente: trovo il posto con la ricerca di Mapbox (vicino alla partenza), poi OpenRouteService
 // calcola strade e sentieri partenza → (posti intermedi) → meta → partenza.
 async function geoFind(q,near){
@@ -2977,7 +3028,7 @@ async function toRoute(o){
   const key=store.get("alldogs-ors");if(!key){say("Per calcolare il percorso serve la chiave gratuita di OpenRouteService: incollala nella pagina del cane, in Impostazioni.");return}
   S.busy=true;renderChat();
   try{
-    if(o.from_my_position){try{const p=await getPos();showMe(p);setStart(p)}catch(e){}}
+    if(o.from_my_position){try{const p=await getPos();showMe(p);setStart(p,false,"gps")}catch(e){}}
     const st=S.start,names=[...(o.via||[]).slice(0,4),String(o.destination)].map(x=>String(x).trim()).filter(Boolean),found=[];
     for(const q of names){const g=await geoFind(q,st).catch(()=>null);if(!g){S.busy=false;say(`Non trovo «${q}» sulla mappa. Prova a scriverlo con il nome del comune o l'indirizzo.`);return}found.push(g)}
     const dest=found[found.length-1],far=hav(st,dest.p);
