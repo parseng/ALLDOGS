@@ -13,12 +13,12 @@ import { foglioMappe } from "./fogli";
 
 const W = Dimensions.get("window").width, H = Dimensions.get("window").height;
 
-export function MappaGalleggiante({ attiva, y, slotY, altezza, margine = 0, raggio = 0, piena, onPiena, conPiena = true, sopra, sotto, bottoniExtra, onVolo, legendaSu, scala, proponi }: {
+export function MappaGalleggiante({ attiva, y, slotY, altezza, margine = 0, raggio = 0, piena, onPiena, conPiena = true, sopra, sotto, bottoniExtra, onVolo, legendaSu, scala, proponi, nascosta }: {
   attiva: boolean; y: SharedValue<number>; slotY: SharedValue<number>; altezza: number; margine?: number; raggio?: number;
   piena: boolean; onPiena: (on: boolean) => void; conPiena?: boolean;
   /** cose disegnate sopra la mappa (anteprima del sentiero, barra del volo…) */
   sopra?: (piena: boolean) => React.ReactNode; sotto?: React.ReactNode; bottoniExtra?: (piena: boolean) => React.ReactNode;
-  onVolo?: (s: StatoVolo) => void; legendaSu?: number; scala?: "su" | "giu" | "no"; proponi?: () => void;
+  onVolo?: (s: StatoVolo) => void; legendaSu?: number; scala?: "su" | "giu" | "no"; proponi?: () => void; nascosta?: boolean;
 }) {
   const ins = useSafeAreaInsets(), M = motore();
   const s = useAnimatedStyle(() => (piena
@@ -26,7 +26,7 @@ export function MappaGalleggiante({ attiva, y, slotY, altezza, margine = 0, ragg
     : { transform: [{ translateY: slotY.value - y.value }], left: margine, width: W - margine * 2, height: altezza, borderRadius: raggio }), [piena, altezza, margine, raggio]);
   useEffect(() => { if (!attiva && piena) onPiena(false); }, [attiva]);
   return (
-    <Animated.View style={[{ position: "absolute", top: 0, overflow: "hidden", backgroundColor: C.sage2, zIndex: piena ? 30 : 1 }, s]}>
+    <Animated.View pointerEvents={nascosta ? "none" : "auto"} style={[{ position: "absolute", top: 0, overflow: "hidden", backgroundColor: C.sage2, zIndex: piena ? 30 : 1, opacity: nascosta ? 0 : 1 }, s]}>
       <Mappa attiva={attiva} style={{ flex: 1 }} legendaSu={legendaSu} scala={scala} onVolo={onVolo} />
       <View style={{ position: "absolute", right: 10, top: piena ? ins.top + 10 : 10, gap: 8 }}>
         {conPiena ? <BottoneTondo icona={piena ? "shrink" : "expand"} ombra onPress={() => onPiena(!piena)} accessibilityLabel={piena ? "Riduci la mappa" : "Mappa a tutto schermo"} /> : null}

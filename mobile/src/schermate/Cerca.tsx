@@ -30,7 +30,7 @@ export function Cerca({ attiva }: { attiva: boolean }) {
   const M = motore(), nome = nomeCane();
   const [q, setQ] = useState("");
   const [scheda, setScheda] = useState<"all" | "trail" | "place">("all");
-  const t = useRef<any>(0), campo = useRef<TextInput>(null);
+  const t = useRef<any>(0), campo = useRef<any>(null);
   useEffect(() => { M.loadNames().catch(() => {}); const x = setTimeout(() => campo.current?.focus(), 250); return () => clearTimeout(x); }, []);
   const scrivi = (v: string) => {
     setQ(v);

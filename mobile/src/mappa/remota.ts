@@ -116,6 +116,19 @@ class MappaRemota {
   querySourceFeatures() { return []; }
 }
 
+// domande alla pagina della mappa che hanno bisogno di una risposta (es. la forma di un parco)
+const attese = new Map<number, (d: any) => void>();
+let nDomande = 0;
+function chiedi(cmd: string, arg: any[], ms: number): Promise<any> {
+  return new Promise((ok) => {
+    if (!st.bersaglio) return ok(null);
+    const id = ++nDomande;
+    attese.set(id, ok);
+    manda([cmd, id, ...arg]);
+    setTimeout(() => { if (attese.has(id)) { attese.delete(id); ok(null); } }, ms);
+  });
+}
+
 export const mapboxFinto = {
   Map: MappaRemota,
   Marker: Segnaposto,
@@ -137,6 +150,8 @@ export function collegaMotore(M: any) {
   // queste parti nel sito lavorano sulla pagina: qui le fa la pagina della mappa da sola
   for (const n of ["itLabels", "fixSatellite", "detailMap", "kmScale", "gridLoad", "gridMoved", "ovLegend", "syncLayersMenu", "syncFullBtn", "sizeSels"]) { try { M[n] = () => {}; } catch {} }
   M.overlays = () => { manda(["ov", { wxOv: M.wxOv, hillOn: M.hillOn }]); };
+  // la forma del parco e i suoi vialetti li conosce solo la mappa vera: lo chiedo alla pagina
+  M.parkShape = (area: any, start: any) => chiedi("park", [area, start, M.capacity(M.dog()).agil], 14000);
   M.meDir = () => {
     const me = M.meM, nav = M.nav;
     if (!me) return;
@@ -207,6 +222,7 @@ export const mappaRemota = {
         else (s.ascolti[m.n] || []).slice().forEach((f) => { try { f(); } catch (x) { console.warn("mappa:", x); } });
         break;
       }
+      case "risposta": { const f = attese.get(m.id); if (f) { attese.delete(m.id); f(m.d); } break; }
       case "ov": if (M) { try { M.wxOv = m.wxOv; M.hillOn = m.hillOn; } catch {} } break;
     }
   },

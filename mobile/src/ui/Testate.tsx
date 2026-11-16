@@ -5,7 +5,7 @@
 // - PaginaSemplice: testata a colore pieno con freccia indietro, titolo e una riga. Senza mascotte.
 import React, { useCallback, useEffect, useRef } from "react";
 import { RefreshControlProps, StyleProp, Text, View, ViewStyle } from "react-native";
-import Animated, { Extrapolation, interpolate, runOnJS, useAnimatedReaction, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
+import Animated, { SharedValue, Extrapolation, interpolate, runOnJS, useAnimatedReaction, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BARRA_H, C, F, MARGINE, MOLLA } from "../theme";
 import { BottoneTondo, Testo, movimentoRidotto } from "./base";
@@ -31,14 +31,16 @@ type GrandeProps = {
   fondo?: number;
   children: React.ReactNode;
   /** contenuto fisso sotto la testata (es. i segmenti) */
+  /** se la pagina ha una mappa che galleggia: lo scorrimento condiviso e la mappa stessa (sta sotto la testata) */
+  y?: SharedValue<number>; sotto?: React.ReactNode; fermo?: boolean; pienaSopra?: boolean;
   refresh?: React.ReactElement<RefreshControlProps>;
   scrollRef?: React.RefObject<Animated.ScrollView | null>;
 };
 
-export function PaginaGrande({ colore, titolo, frase, posa, attiva, sbuca, consigli, fondo = 0, children, refresh, scrollRef }: GrandeProps) {
+export function PaginaGrande({ colore, titolo, frase, posa, attiva, sbuca, consigli, fondo = 0, children, refresh, scrollRef, y: yFuori, sotto, fermo, pienaSopra }: GrandeProps) {
   const ins = useSafeAreaInsets();
-  const APERTA = 150 + ins.top + 16, CHIUSA = ins.top + 52, CORSA = APERTA - CHIUSA;
-  const y = useSharedValue(0), inFondo = useSharedValue(0), entra = useSharedValue(0);
+  const APERTA = 162 + Math.max(ins.top, 26) + 16, CHIUSA = ins.top + 52, CORSA = APERTA - CHIUSA;
+  const yMio = useSharedValue(0), y = yFuori || yMio, inFondo = useSharedValue(0), entra = useSharedValue(0);
   const aperto = useStratoAperto();
 
   useEffect(() => { if (attiva) { entra.value = 0; entra.value = movimentoRidotto() ? 1 : withSpring(1, MOLLA); } }, [attiva]);
@@ -68,6 +70,7 @@ export function PaginaGrande({ colore, titolo, frase, posa, attiva, sbuca, consi
         ref={scrollRef as any}
         onScroll={onScroll}
         scrollEventThrottle={16}
+        scrollEnabled={!fermo}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         refreshControl={refresh}
@@ -75,6 +78,7 @@ export function PaginaGrande({ colore, titolo, frase, posa, attiva, sbuca, consi
       >
         {children}
       </Animated.ScrollView>
+      {pienaSopra ? null : sotto}
       <Animated.View style={[{ position: "absolute", left: 0, right: 0, top: 0, backgroundColor: colore, overflow: "hidden", paddingHorizontal: MARGINE, paddingTop: ins.top, justifyContent: "flex-start" }, sTesta]}>
         <View style={{ paddingRight: 140 }}>
           <Animated.Text accessibilityRole="header" numberOfLines={2} style={[{ fontFamily: F.titolo, color: C.ink, letterSpacing: -0.9 }, sTitolo]}>{titolo}</Animated.Text>
@@ -87,6 +91,7 @@ export function PaginaGrande({ colore, titolo, frase, posa, attiva, sbuca, consi
       <Animated.View pointerEvents="none" style={[{ position: "absolute", left: 0, right: 0, top: CHIUSA, height: 8 }, sOmbra]}>
         <View style={{ height: 1, backgroundColor: "rgba(23,28,20,0.12)" }} />
       </Animated.View>
+      {pienaSopra ? sotto : null}
     </View>
   );
 }

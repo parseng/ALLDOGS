@@ -52,7 +52,8 @@ return {${[...getter, ...setter].join(",\n")}};
 // ---- pezzi del sito che servono DENTRO la pagina della mappa (lì c'è la mappa vera, Mapbox GL JS) ----
 const PER_MAPPA = ["MAPBOX_TOKEN", "STYLES", "DEM_TILES", "SFC", "SAT_TILES", "OVC", "ovDate", "ndviDate", "gibs", "rasterOv", "ovRemove", "overlays", "gridStep", "gridLoad",
   "hex2rgba", "rampColor", "gridDraw", "gridPaint", "gridMoved", "ovLegend", "kmScale", "ksRaf", "itLabels", "fixSatellite", "detailMap", "fc", "getJSON", "bearing", "hav",
-  "km", "dense", "flyStep", "boundsOf", "ll", "retInfo", "wxOv", "gridMem", "romeT", "sunTimes"];
+  "km", "dense", "flyStep", "boundsOf", "ll", "retInfo", "wxOv", "gridMem", "romeT", "sunTimes",
+  "parkShape", "mapIdle", "PARK_T", "inRing", "inPoly", "polyBox", "edgeDist"];
 const presi = new Set(), pezzi = [];
 for (const n of ast.body) {
   const qui = [];
