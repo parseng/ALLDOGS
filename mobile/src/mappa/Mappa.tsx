@@ -10,6 +10,10 @@ import { paginaMappa } from "./pagina";
 import { mappaRemota } from "./remota";
 
 let prossimo = 0;
+// due caratteri speciali che dentro uno script andrebbero a capo
+// le opzioni valgono un po' per iPhone e un po' per Android: i tipi non le accettano insieme
+const Vista = WebView as any;
+const LS = String.fromCharCode(0x2028), PS = String.fromCharCode(0x2029);
 export type StatoVolo = { fr: number; km: number; tot: number; back: boolean; quota: number | null; playing: boolean; started: boolean; fine: boolean };
 
 export function Mappa({ attiva, style, scala, legendaSu, onVolo, onTocco }: { attiva: boolean; style?: StyleProp<ViewStyle>; scala?: "su" | "giu" | "no"; legendaSu?: number; onVolo?: (s: StatoVolo) => void; onTocco?: (on: boolean) => void }) {
@@ -23,7 +27,7 @@ export function Mappa({ attiva, style, scala, legendaSu, onVolo, onTocco }: { at
     try { stile = M.wantStyle(); } catch {}
     return paginaMappa({ c: v.c, z: v.z, stile, map3d: !!M.map3d, hillOn: !!M.hillOn, wxOv: M.wxOv || null, scala, legendaSu });
   }, []);
-  const bersaglio = useMemo(() => ({ id, manda: (cmds: any[]) => web.current?.injectJavaScript(`window.AD&&AD(${JSON.stringify(cmds).replace(/ | /g, " ")});true;`) }), []);
+  const bersaglio = useMemo(() => ({ id, manda: (cmds: any[]) => web.current?.injectJavaScript(`window.AD&&AD(${JSON.stringify(cmds).split(LS).join(" ").split(PS).join(" ")});true;`) }), []);
 
   useEffect(() => {
     if (attiva && pronta) mappaRemota.attiva(bersaglio);
@@ -45,7 +49,7 @@ export function Mappa({ attiva, style, scala, legendaSu, onVolo, onTocco }: { at
 
   return (
     <View style={[{ backgroundColor: C.sage2, overflow: "hidden" }, style]} onTouchStart={() => onTocco && onTocco(true)} onTouchEnd={() => onTocco && onTocco(false)} onTouchCancel={() => onTocco && onTocco(false)}>
-      <WebView
+      <Vista
         ref={web}
         source={{ html, baseUrl: SITO }}
         originWhitelist={["*"]}
@@ -63,7 +67,7 @@ export function Mappa({ attiva, style, scala, legendaSu, onVolo, onTocco }: { at
         textZoom={100}
         onError={() => setErrore("La mappa non si carica. Controlla la connessione.")}
         onContentProcessDidTerminate={() => web.current?.reload()}
-        onShouldStartLoadWithRequest={(r) => r.url.startsWith(SITO) || r.url === "about:blank" || r.url.startsWith("data:")}
+        onShouldStartLoadWithRequest={(r: any) => r.url.startsWith(SITO) || r.url === "about:blank" || r.url.startsWith("data:")}
         style={{ flex: 1, backgroundColor: C.sage2 }}
         accessibilityLabel="Mappa"
       />

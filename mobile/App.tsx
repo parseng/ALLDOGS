@@ -13,7 +13,7 @@ import { avviaMotore, generazioneMotore, motore, useMotore } from "./src/motore"
 import { C } from "./src/theme";
 import { PIENE, cima, nav, useNav } from "./src/nav";
 import { BarraMenu } from "./src/ui/BarraMenu";
-import { Strati, strati } from "./src/ui/strati";
+import { Strati, strati, useBarra } from "./src/ui/strati";
 import { PrimoAvvio } from "./src/schermate/PrimoAvvio";
 import { SEZIONI, SCHERMATE } from "./src/schermate";
 
@@ -27,7 +27,7 @@ function Radice() {
     const s = BackHandler.addEventListener("hardwareBackPress", () => strati.indietro() || nav.indietro());
     return () => s.remove();
   }, []);
-  const c = cima();
+  const c = cima(), barra = useBarra();
   useEffect(() => { strati.barra(!PIENE.has(c.nome)); }, [c.nome]);
   if (!M.S.dog) return <PrimoAvvio />;
   return (
@@ -46,7 +46,7 @@ function Radice() {
           </Animated.View>
         );
       })}
-      <BarraMenu visibile={!PIENE.has(c.nome)} />
+      <BarraMenu visibile={barra && !PIENE.has(c.nome)} />
       <Strati />
     </View>
   );

@@ -24,6 +24,10 @@ const pagine = new Set<(hash: string) => void>();
 const avvisi = new Set<(testo: string) => void>();
 let supabaseLib: any = null;
 
+const ganci: ((M: any) => void)[] = [];
+/** cose da fare ogni volta che il motore viene creato (anche dopo un cambio di cane) */
+export const aOgniAvvio = (f: (M: any) => void) => { ganci.push(f); if (M) f(M); };
+
 /** avvisa le schermate che qualcosa è cambiato (più avvisi ravvicinati diventano uno solo) */
 export function notifica() {
   if (inCoda) return;
@@ -99,7 +103,7 @@ const fetchApp = ((u: any, o?: any) => {
 const COLORI = { "--ok": "#3E8E41", "--warn": "#D99A1C", "--no": "#D4503C", "--wait": "#8C9486", "--accent": C.forest, "--dog": C.copper, "--line": C.sage2, "--surface": C.cream, "--accent-soft": C.okSoft, "--steep": C.copper };
 
 // funzioni del motore dopo le quali le schermate vanno ridisegnate
-const ALTRE = new Set(["setFull", "setScene", "peek", "hidePeek", "end3d", "setStyleKind", "toggleSave", "setNear", "clearGen", "setStart", "drawRoute", "closeAI", "homeExtra", "syncSave", "applyScene"]);
+const ALTRE = new Set(["setFull", "setScene", "peek", "hidePeek", "end3d", "setStyleKind", "toggleSave", "setNear", "clearGen", "setStart", "drawRoute", "closeAI", "homeExtra", "syncSave", "applyScene", "loadWeather", "loadPhotos", "loadCell", "loadPlaces", "findTrail", "loadNames", "geoSuggest", "refreshView", "startNav", "endNav"]);
 
 export function avviaMotore() {
   if (M) return M;
@@ -137,6 +141,7 @@ export function avviaMotore() {
       M[k] = function (this: any, ...a: any[]) {
         const r = f.apply(this, a);
         notifica();
+        if (r && typeof r.then === "function") r.then(notifica, notifica);
         return r;
       };
     } catch {}
@@ -145,6 +150,7 @@ export function avviaMotore() {
   s.set = function (k: string, v: any) { const r = set.call(s, k, v); notifica(); return r; };
   s.del = function (k: string) { del.call(s, k); notifica(); };
   generazione++;
+  ganci.forEach((f) => { try { f(M); } catch (e) { console.warn("motore: gancio", e); } });
   return M;
 }
 

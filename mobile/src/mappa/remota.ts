@@ -19,6 +19,9 @@ const st = {
   motore: null as any,
   stileSpedito: "",
   nMk: 0,
+  ultimaCam: null as any[] | null,
+  camDopoCambio: false,
+  daRipetere: null as any[] | null,
 };
 
 function manda(c: any[]) {
@@ -77,10 +80,12 @@ class MappaRemota {
   getCanvas() { return { style: {} }; }
   getStyle() { return { layers: [] }; }
   // ---- movimenti ----
-  jumpTo(o: any) { this._vista(o); manda(["m", "jumpTo", [o]]); return this; }
-  easeTo(o: any) { this._vista(o); manda(["m", "easeTo", [o]]); return this; }
-  flyTo(o: any) { this._vista(o); manda(["m", "flyTo", [o]]); return this; }
-  fitBounds(b: any, o: any) { manda(["m", "fitBounds", [b, o || {}]]); return this; }
+  jumpTo(o: any) { this._vista(o); this._cam(["m", "jumpTo", [o]]); return this; }
+  easeTo(o: any) { this._vista(o); this._cam(["m", "easeTo", [o]]); return this; }
+  flyTo(o: any) { this._vista(o); this._cam(["m", "flyTo", [o]]); return this; }
+  fitBounds(b: any, o: any) { this._cam(["m", "fitBounds", [b, o || {}]]); return this; }
+  // l'ultima inquadratura chiesta si ricorda: se la mappa della schermata non era ancora pronta, la riceve appena lo è
+  _cam(c: any[]) { st.ultimaCam = c; st.camDopoCambio = true; manda(c); }
   resize() { manda(["resize"]); return this; }
   _vista(o: any) { if (o.center) st.vista.c = [o.center[1], o.center[0]]; if (o.zoom != null) st.vista.z = o.zoom; if (o.bearing != null) st.vista.bearing = o.bearing; if (o.pitch != null) st.vista.pitch = o.pitch; }
   // ---- stile, livelli, dati ----
@@ -148,6 +153,7 @@ export const mappaRemota = {
     if (st.bersaglio) st.bersaglio.manda([["mkclear"]]);
     st.bersaglio = b;
     st.coda = [];
+    st.daRipetere = st.camDopoCambio ? st.ultimaCam : null;
     st.strati.clear(); st.fonti.clear();
     const M = st.motore;
     if (!M) return;
@@ -157,7 +163,9 @@ export const mappaRemota = {
     st.stileSpedito = k;
     manda(["style", k]); // la pagina risponde "style" e il motore rimanda livelli e dati
   },
-  disattiva(id: number) { if (st.bersaglio && st.bersaglio.id === id) st.bersaglio = null; },
+  /** si sta cambiando schermata: da qui i comandi aspettano la mappa della schermata nuova */
+  stacca(tieniInquadratura = false) { st.bersaglio = null; st.coda = []; if (!tieniInquadratura) st.camDopoCambio = false; },
+  disattiva(id: number) { if (st.bersaglio && st.bersaglio.id === id) { st.bersaglio = null; st.camDopoCambio = false; } },
   manda,
   /** messaggi che arrivano dalla pagina della mappa */
   daPagina(id: number, m: any) {
@@ -171,9 +179,12 @@ export const mappaRemota = {
         st.stileSpedito = m.k;
         // i segnaposti ancora vivi (posizione, partenza del giro) tornano sulla mappa
         st.segnaposti.forEach((s) => manda(["mk+", s.id, s.dati(), s.ll]));
+        st.ultimaCam = null;
         lancia("style.load");
         lancia("load");
         st.ascolti.load = [];
+        if (st.daRipetere && !st.ultimaCam) manda(st.daRipetere);
+        st.daRipetere = null;
         break;
       case "ev": lancia(m.n, { originalEvent: m.v && m.v.user ? {} : undefined }); break;
       case "click": {

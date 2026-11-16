@@ -44,6 +44,7 @@ export const strati = {
   /** il tasto Indietro di Android chiude prima quello che sta sopra */
   indietro() { if (st.momento) { strati.chiudiMomento(); return true; } if (st.foglio) { strati.chiudiFoglio(); return true; } return false; },
 };
+export const useBarra = () => { usa(); return st.barra; };
 export const useStratoAperto = () => { usa(); return strati.aperto(); };
 
 // ---------- avviso breve ----------

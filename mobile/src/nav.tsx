@@ -2,6 +2,7 @@
 // Resta allineata con il motore: il motore ragiona a "pagine" come il sito (#esplora, #s-123, #vai…).
 import { useSyncExternalStore } from "react";
 import { motore, pagina, quandoCambiaPagina } from "./motore";
+import { mappaRemota } from "./mappa/remota";
 
 export type Sezione = "esplora" | "attivita" | "crea" | "allenati" | "cane";
 export type Schermata = { nome: string; arg?: any };
@@ -29,6 +30,7 @@ function hashDi(s: Schermata): string | null {
   }
 }
 function allinea() {
+  mappaRemota.stacca();
   const h = hashDi(cima()) || hashDi({ nome: st.sezione });
   try { if (h && motore() && motore().S.dog) pagina().vaiA(h); } catch (e) { console.warn("nav:", e); }
 }
@@ -57,6 +59,7 @@ export const nav = {
     else if (["esplora", "crea", "attivita", "cane"].includes(h)) { st.sezione = h as Sezione; st.pila = []; }
     else if (["salute", "zaino", "soccorso", "regole"].includes(h)) { st.sezione = "cane"; st.pila = [{ nome: h }]; }
     else return;
+    mappaRemota.stacca(true);
     cambia();
   },
 };
