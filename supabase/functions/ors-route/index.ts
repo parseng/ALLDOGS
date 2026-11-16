@@ -36,5 +36,12 @@ Deno.serve(async (req) => {
     signal: AbortSignal.timeout(25_000),
   }).catch(() => null);
   if (!r) return risposta({ error: { message: "il servizio non ha risposto in tempo" } }, 504, h);
-  return risposta(await r.text(), r.status, h);
+  if (r.ok) return risposta(await r.text(), 200, h);
+  // 400/404: punto non raggiungibile a piedi (l'app lo spiega); il resto senza dettagli
+  if (r.status === 400 || r.status === 404) {
+    let code = 0;
+    try { code = (await r.json())?.error?.code || 0; } catch { /* niente */ }
+    return risposta({ error: { message: "percorso non trovato", code } }, r.status, h);
+  }
+  return risposta({ error: { message: r.status === 429 ? "limite del servizio raggiunto" : "servizio non disponibile" } }, r.status === 429 ? 429 : 502, h);
 });

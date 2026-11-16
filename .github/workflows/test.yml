@@ -1,0 +1,21 @@
+# Test della logica di AllDogs a ogni push e pull request.
+# Niente segreti: i test sul database (tests/supabase.test.mjs) si lanciano solo dal PC.
+name: Test
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  logica:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm run test:logica

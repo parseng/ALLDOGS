@@ -1,0 +1,14 @@
+{
+  "name": "alldogs",
+  "private": true,
+  "type": "module",
+  "description": "AllDogs: test automatici (nessuna dipendenza da installare, basta Node 20 o più recente)",
+  "scripts": {
+    "test": "node --test \"tests/*.test.mjs\"",
+    "test:logica": "node --test tests/logica.test.mjs",
+    "test:supabase": "node --test tests/supabase.test.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

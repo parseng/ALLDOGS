@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- protezioni di base (GitHub Pages non permette intestazioni HTTP proprie): niente plugin, niente <base> esterni, indirizzo completo mai inviato ad altri siti -->
+<meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <title>AllDogs</title>
 <meta name="description" content="Sentieri e passeggiate adatti al tuo cane, in tutta Italia.">
 <meta name="theme-color" content="#eef0ec" media="(prefers-color-scheme: light)">
@@ -16,7 +19,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://api.mapbox.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600;6..72,700&family=Albert+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/3.9.4/mapbox-gl.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/3.9.4/mapbox-gl.min.css" integrity="sha384-K3RLsVxqDR/q/OW/YFgbnoEWe6fAQV740zxyL7QSdfDQWmV47gMMZ5nUWbZ7puC9" crossorigin="anonymous">
 <style>
 /* Versione 3: una sola mappa Mapbox che si sposta tra le schermate; barra in basso; schede grandi. */
 :root{
@@ -1226,7 +1229,7 @@ body{font-size:17px;line-height:1.5}
 <div class="toast" id="toast" role="status"></div>
 
 <!-- la libreria della mappa (1,5 MB) si carica in parallelo: elenco, meteo e pulsanti compaiono subito, la mappa appena è pronta -->
-<script id="mbjs" src="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/3.9.4/mapbox-gl.min.js" async onerror="window.__mbErr=1"></script>
+<script id="mbjs" src="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/3.9.4/mapbox-gl.min.js" integrity="sha384-TtrIpMiNQV/5y9Ld7KVGCwp6gcTWhvfQVzCHfxOAdICfqAysTNnWg68XEdEGMROy" crossorigin="anonymous" async onerror="window.__mbErr=1"></script>
 <script id="anjs" src="lezioni-anim.js" defer></script>
 <script>
 "use strict";
@@ -1346,7 +1349,7 @@ function syncDirty(){try{localStorage.setItem("alldogs-sync-dirty","1")}catch(e)
 const sbHas=()=>{try{return !!localStorage.getItem(SB_TOK)}catch(e){return false}};
 function openAcc(){const f=$("fold-acc");if(f){f.open=true;accPaint()}}
 function sbLoad(){if(SY.p)return SY.p;
-  SY.p=new Promise((ok,ko)=>{if(window.supabase)return ok();const s=document.createElement("script");s.src=SB_LIB;s.async=true;s.onload=ok;s.onerror=()=>ko(new Error("offline"));document.head.appendChild(s)})
+  SY.p=new Promise((ok,ko)=>{if(window.supabase)return ok();const s=document.createElement("script");s.src=SB_LIB;s.integrity="sha384-2zrRDgDHSYB/GN3nFW3fsZXoxEhKIr3N2h63Tc6DEOB9JJdFIu8xMJT2Cph/gBil";s.crossOrigin="anonymous";s.async=true;s.onload=ok;s.onerror=()=>ko(new Error("offline"));document.head.appendChild(s)})
   .then(async()=>{const sb=SY.sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
     if(SY.hash){const h=new URLSearchParams(SY.hash);SY.hash=null;
       if(h.get("access_token")){const {error}=await sb.auth.setSession({access_token:h.get("access_token"),refresh_token:h.get("refresh_token")||""});
@@ -1378,6 +1381,21 @@ async function syncNow(){
     clearTimeout(syncDirty.t);syncDirty.t=setTimeout(()=>syncNow(),60000)}
   finally{SY.busy=false;accPaint();if(SY.again){SY.again=false;syncNow()}}
 }
+// Progressi di ogni giorno per cane: strada fatta, minuti, passi (veri o stimati col passo), uscite, lezioni viste/imparate,
+// e se il programma di allenamento del giorno è stato rispettato. Funzione pura: chiave "idCane|AAAA-MM-GG".
+function progressiGiornalieri(acts,dogIds,getTrain,getGoal,today,stride,first){
+  const days={},ok=new Set(dogIds),caniOf=x=>(x.dogs&&x.dogs.length?x.dogs:[first]).filter(Boolean);
+  const add=(dl,g)=>days[dl+"|"+g]||(days[dl+"|"+g]={dl,g,passi:0,m:0,min:0,ob:{uscite:0}});
+  for(const x of acts||[]){if(!x||!x.t)continue;const g=dKey(x.t);for(const dl of caniOf(x)){if(!ok.has(dl))continue;const a=add(dl,g);
+    a.passi+=x.steps||Math.round((x.dist||0)/(stride||.75));a.m+=x.dist||0;a.min+=Math.round((x.dur||0)/60000);a.ob.uscite++}}
+  for(const id of dogIds){
+    const tr=getTrain(id);
+    if(tr&&tr.st)for(const [lid,s] of Object.entries(tr.st)){if(!s||!s.s||s.s>today)continue;const a=add(id,s.s);(a.ob.lezioni_viste=a.ob.lezioni_viste||[]).push(lid);if(s.ok)(a.ob.lezioni_imparate=a.ob.lezioni_imparate||[]).push(lid)}
+    if(tr&&tr.day&&tr.day.d&&tr.day.d<=today)add(id,tr.day.d).ob.lezione_del_giorno=tr.day.id;
+    const go=getGoal(id);
+    if(go&&go.from&&go.target)try{for(const p of buildCal(go,go.r||.1).days){const g=dKey(p.t);if(g>today)break;
+      const a=add(id,g),fatto=Math.round(a.m)/1000;a.ob.programma={tipo:p.kd,km_previsti:p.km,raggiunto:p.kd==="riposo"?fatto<=p.km*1.5:fatto>=p.km*.9}}}catch(e){}}
+  return days}
 // manda nel database lo stato del telefono; solo le righe cambiate dall'ultima volta
 async function syncPush(sb,uid,st){
   const DL=(store.get("alldogs-dogs")||{}).list||[],acts=store.get("alldogs-acts")||[],revs=store.get("alldogs-reviews")||{};
@@ -1386,7 +1404,7 @@ async function syncPush(sb,uid,st){
   const del=async(t,col,ids,own="user_id")=>{for(let i=0;i<ids.length;i+=100){const {error}=await sb.from(t).delete().eq(own,uid).in(col,ids.slice(i,i+100));if(error)throw error}};
   // cani
   const map={};
-  const dRows=DL.map(d=>({owner_id:uid,local_id:d.id,nome:d.name||"",razza:d.breed||null,eta_anni:syNum(d.age),data_nascita:d.birth||null,peso_kg:syNum(d.weight),energia:d.energy||null,allenamento:d.train||null,orari_liberi:d.orari?{fasce:d.orari,slots:d.orariSlots||orariSlots(d.orari)}:{},durata_preferita:syNum(d.durata),obiettivo:d.obiettivo||null,soffre_caldo:!!d.caldo,agilita:d.agil||null,mantello:d.coat||null,
+  const dRows=DL.map(d=>({owner_id:uid,local_id:d.id,nome:String(d.name||"").slice(0,80),razza:d.breed||null,eta_anni:syNum(d.age),data_nascita:d.birth||null,peso_kg:syNum(d.weight),energia:d.energy||null,allenamento:d.train||null,orari_liberi:d.orari?{fasce:d.orari,slots:d.orariSlots||orariSlots(d.orari)}:{},durata_preferita:syNum(d.durata),obiettivo:d.obiettivo||null,soffre_caldo:!!d.caldo,agilita:d.agil||null,mantello:d.coat||null,
     brachicefalo:!!d.brachy,patologie:d.pat||{},patologie_note:d.patOther||null,
     dati:{profilo:d,obiettivo:store.get(syK("alldogs-goal",d.id)),lezioni:store.get(syK("alldogs-train",d.id)),salute:store.get(syK("alldogs-salute",d.id))}}));
   if(dRows.length){const {data,error}=await sb.from("dogs").upsert(dRows,{onConflict:"owner_id,local_id"}).select("id,local_id");if(error)throw error;data.forEach(r=>map[r.local_id]=r.id)}
@@ -1402,18 +1420,9 @@ async function syncPush(sb,uid,st){
     wNow[r.local_id]=1;if(chg(wh,r.local_id,r))wRows.push(r)}
   await up("walks",wRows,"user_id,local_id");
   const goneW=Object.keys(wh).filter(k=>!wNow[k]);await del("walks","local_id",goneW);goneW.forEach(k=>delete wh[k]);st.wh=wh;
-  // progressi di ogni giorno, per cane: strada fatta, minuti, passi, lezioni, programma di allenamento
-  const days={},stride=(()=>{try{return myStride()}catch(e){return .75}})(),today=dKey(Date.now());
-  const add=(dl,g)=>days[dl+"|"+g]||(days[dl+"|"+g]={dl,g,passi:0,m:0,min:0,ob:{uscite:0}});
-  for(const x of acts){if(!x||!x.t)continue;const g=dKey(x.t);for(const dl of caniOf(x)){if(!map[dl])continue;const a=add(dl,g);
-    a.passi+=x.steps||Math.round((x.dist||0)/stride);a.m+=x.dist||0;a.min+=Math.round((x.dur||0)/60000);a.ob.uscite++}}
-  for(const d of DL){if(!map[d.id])continue;
-    const tr=store.get(syK("alldogs-train",d.id));
-    if(tr&&tr.st)for(const [lid,s] of Object.entries(tr.st)){if(!s||!s.s||s.s>today)continue;const a=add(d.id,s.s);(a.ob.lezioni_viste=a.ob.lezioni_viste||[]).push(lid);if(s.ok)(a.ob.lezioni_imparate=a.ob.lezioni_imparate||[]).push(lid)}
-    if(tr&&tr.day&&tr.day.d&&tr.day.d<=today)add(d.id,tr.day.d).ob.lezione_del_giorno=tr.day.id;
-    const go=store.get(syK("alldogs-goal",d.id));
-    if(go&&go.from&&go.target)try{for(const p of buildCal(go,go.r||.1).days){const g=dKey(p.t);if(g>today)break;
-      const a=add(d.id,g),fatto=Math.round(a.m)/1000;a.ob.programma={tipo:p.kd,km_previsti:p.km,raggiunto:p.kd==="riposo"?fatto<=p.km*1.5:fatto>=p.km*.9}}}catch(e){}}
+  // progressi di ogni giorno, per cane (calcolo in progressiGiornalieri, provato dai test)
+  const days=progressiGiornalieri(acts,DL.map(d=>d.id).filter(id=>map[id]),id=>store.get(syK("alldogs-train",id)),id=>store.get(syK("alldogs-goal",id)),
+    dKey(Date.now()),(()=>{try{return myStride()}catch(e){return .75}})(),first);
   const dh=st.dh||{},dNow={},pRows=[];
   for(const [k,a] of Object.entries(days)){dNow[k]=1;const r={user_id:uid,dog_id:map[a.dl],giorno:a.g,passi:a.passi,km:Math.round(a.m)/1000,minuti:a.min,obiettivi_raggiunti:a.ob};if(chg(dh,k,r))pRows.push(r)}
   for(const k of Object.keys(dh))if(!dNow[k]){const [dl,g]=k.split("|");delete dh[k];if(map[dl])pRows.push({user_id:uid,dog_id:map[dl],giorno:g,passi:0,km:0,minuti:0,obiettivi_raggiunti:{}})}
@@ -1421,7 +1430,7 @@ async function syncPush(sb,uid,st){
   // recensioni (le foto per ora restano sul telefono)
   const rh=st.rh||{},rNow={},rRows=[];
   for(const [id,r] of Object.entries(revs)){if(!r||!(r.stars||r.note||(r.tags&&r.tags.length)||(r.q&&Object.keys(r.q).length)))continue;const q=r.q||{};
-    const row={user_id:uid,trail_id:String(id),voto:r.stars>=1&&r.stars<=5?r.stars:null,testo:r.note||null,tag:r.tags||[],domande:q,cani_ammessi:q.divieto===1?false:q.divieto===0?true:null};
+    const row={user_id:uid,trail_id:String(id),voto:r.stars>=1&&r.stars<=5?r.stars:null,testo:r.note?String(r.note).slice(0,2000):null,tag:(r.tags||[]).slice(0,20),domande:q,cani_ammessi:q.divieto===1?false:q.divieto===0?true:null};
     rNow[id]=1;if(chg(rh,id,row))rRows.push(row)}
   await up("reviews",rRows,"user_id,trail_id");
   const goneR=Object.keys(rh).filter(k=>!rNow[k]);await del("reviews","trail_id",goneR);goneR.forEach(k=>delete rh[k]);st.rh=rh;
@@ -3143,7 +3152,7 @@ function showGen(){
     ${r.straight?`<p class="small muted" style="margin-top:10px">Percorso unito con linee dritte: distanza approssimativa, dislivello non calcolato.</p>`:""}
     ${r.prof?`<div class="block"><h2>Dislivello lungo il percorso</h2>${elevChart(r.prof,r.len,d)}</div>`:""}
     ${surf}${gsh&&gsh.g>=.01?`<p class="small" style="margin-top:6px"><i class="sw" style="background:${SFC.g}"></i>Gradini: circa ${Math.max(1,Math.round(gsh.g*100))}% del percorso.</p>`:""}
-    <div class="block"><h2>Tappe e giochi</h2><ol class="stops">${r.stops.map(s=>`<li><div><b>${s.t}</b> <span class="muted small">· km ${km(s.km)}</span><br>${s.d}</div></li>`).join("")}</ol>
+    <div class="block"><h2>Tappe e giochi</h2><ol class="stops">${r.stops.map(s=>`<li><div><b>${esc(s.t)}</b> <span class="muted small">· km ${km(s.km)}</span><br>${esc(s.d)}</div></li>`).join("")}</ol>
       <p class="small muted" style="margin-top:10px">${r.source==="chat"?"Tappe proposte dall'assistente AI, distribuite lungo il giro.":"Tappe proposte con regole fisse."} I numeri corrispondono a quelli sulla mappa.</p></div>
     ${cmds}
     <div class="row" style="margin-top:16px;flex-wrap:wrap"><button class="btn pri" id="gen-start">${icon("play")}Avvia percorso</button><button class="btn" id="gen-save">${icon("heart")}Salva il giro</button>${S.gen.length>1?`<button class="btn" id="gen-next">Prova un altro giro</button>`:""}<a class="btn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${r.path[0][0]},${r.path[0][1]}">${icon("nav")}Portami alla partenza</a><button class="btn" data-3d>${icon("layers")}Anteprima 3D</button>${gsh?`<button class="btn" data-surf>${icon("surf")}Colora il fondo</button>`:""}<button class="btn" id="gen-pack">${icon("bag")}Zaino pronto</button><button class="btn" id="gen-clear"><svg><use href="#i-x"/></svg>Rimuovi percorso</button></div></div>`;
@@ -4955,7 +4964,7 @@ function paintSearch(){
     B.innerHTML=`<div class="srch-chips">${[["fit","Adatti a "+nm+" qui vicino"],["short","Giri brevi, fino a 5 km"],["easy","Facili per "+nm],["water","Con fontanelle"],["shade","Nel bosco, all'ombra"]].map(c=>`<button type="button" data-qf="${c[0]}">${c[1]}</button>`).join("")}</div>
       ${sRow('data-me="1"',"nav","Posizione attuale","Mostra i sentieri intorno a te")}
       ${sRow('data-crea="1"',"dogface","Crea un giro per "+nm,"Un percorso su misura, partendo da dove vuoi")}
-      ${R.length?`<h4>Ricerche recenti</h4>`+R.map((x,i)=>sRow(`data-rc="${i}"`,x.k==="t"?"sign":x.k==="p"?"pin":"recent",esc(x.name),x.sub||"",x.k==="t"&&PH[x.id]&&PH[x.id][0]?PH[x.id][0].u:"")).join(""):""}`;
+      ${R.length?`<h4>Ricerche recenti</h4>`+R.map((x,i)=>sRow(`data-rc="${i}"`,x.k==="t"?"sign":x.k==="p"?"pin":"recent",esc(x.name),esc(x.sub||""),x.k==="t"&&PH[x.id]&&PH[x.id][0]?PH[x.id][0].u:"")).join(""):""}`;
     B.querySelectorAll("[data-qf]").forEach(b=>b.onclick=()=>{const k=b.dataset.qf;quickFilter(()=>{
       if(k==="fit")$("f-fit").value="0";else if(k==="short")$("f-len").value="0-5";else if(k==="easy")$("f-eff").value="0";
       else{S.feat=[k==="water"?"fontanelle":"bosco"];renderPills()}})});
