@@ -12,7 +12,23 @@ Si apre da https://parseng.github.io/ALLDOGS/ e si può aggiungere alla schermat
 - **Allenati**: obiettivi con calendario e 42 lezioni di addestramento.
 - **Pagina del cane**: più cani, salute, libretto, promemoria, pronto soccorso, zaino, regole del posto.
 
-Tutti i dati restano sul telefono (non ci sono ancora account). Le chiavi di OpenRouteService e Gemini si incollano nell'app (Impostazioni). Il token Mapbox nel codice è quello pubblico (`pk.`).
+Senza account i dati restano sul telefono; con l'account (Supabase, email e password) si salvano anche nel database, protetti in modo che ognuno veda solo i propri. Le chiavi di OpenRouteService e Gemini stanno solo sul server (funzioni Supabase `ai-chat` e `ors-route`, con limiti d'uso). Il token Mapbox nel codice è quello pubblico (`pk.`).
+
+## Database e funzioni (`supabase/`)
+
+- `supabase/migrations/`: tabelle, regole di accesso (RLS), limiti. Si applicano con `supabase db query --remote=<ref> -f <file>`.
+- `supabase/functions/`: `ai-chat` (Gemini) e `ors-route` (OpenRouteService). Deploy: `supabase functions deploy ai-chat ors-route --project-ref <ref> --use-api --no-verify-jwt`.
+- Mai nel repo: password del database, chiave `secret`/`service_role`, chiavi Gemini e OpenRouteService.
+
+## Test
+
+Nessuna dipendenza da installare: basta Node 20 o più recente.
+
+| Comando | Cosa prova |
+|---|---|
+| `npm run test:logica` | Calcoli dell'app: quanta strada può fare il cane, verdetto dei sentieri (distanza, andata e ritorno, salita, difficoltà, caldo), progressi giornalieri, orari liberi, testi resi innocui. Gira anche su GitHub a ogni push. |
+| `npm run test:supabase` | Sul progetto vero: regole di accesso con due utenti di prova (poi cancellati), limiti sui testi, funzioni sul server (siti ammessi, richieste non valide o troppo grandi). Serve la variabile `SUPABASE_SECRET_KEY` (chiave `secret` del progetto, solo in memoria): senza, i test sul database vengono saltati. |
+| `npm test` | Tutti e due. |
 
 Pagine legali: `privacy.html` e `termini.html` (bozze, da completare con i dati del titolare).
 

@@ -2,7 +2,7 @@
 // - L'app (pagina, script, icone, libreria della mappa, caratteri) resta salvata nel telefono.
 // - I file dei sentieri già aperti restano disponibili offline.
 // - Le mappe dei sentieri scaricati (cache "ad-off-...") vengono servite dal telefono.
-const V = "alldogs-v19";
+const V = "alldogs-v21";
 const SHELL = "ad-shell-" + V, DATA = "ad-data", RUN = "ad-run";
 const CORE = ["./", "index.html", "lezioni-anim.js", "manifest.json", "icon-192.png", "icon-512.png", "img/aussie/chiedi.jpg", "privacy.html", "termini.html", "legal.css",
   "https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/3.9.4/mapbox-gl.min.js",
@@ -51,7 +51,8 @@ async function versioned(req, u) {
 }
 async function cacheFirst(req, cacheName, key) {
   const hit = await caches.match(key);
-  if (hit) return hit;
+  // le librerie con controllo di integrità vogliono una risposta leggibile (cors), non una "opaca" salvata in passato
+  if (hit && !(hit.type === "opaque" && req.mode === "cors")) return hit;
   const r = await fetch(req);
   if (r && (r.ok || r.type === "opaque") && cacheName) (await caches.open(cacheName)).put(key, r.clone()).catch(() => 0);
   return r;
