@@ -1,27 +1,51 @@
 {
   "name": "alldogs-mobile",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --test --test-force-exit \"test/*.test.mjs\""
   },
   "dependencies": {
+    "@expo-google-fonts/bricolage-grotesque": "^0.4.1",
+    "@expo-google-fonts/urbanist": "^0.4.2",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@supabase/supabase-js": "^2.119.0",
     "expo": "~58.0.25",
+    "expo-asset": "~58.0.21",
+    "expo-clipboard": "~58.0.4",
+    "expo-constants": "~58.0.16",
+    "expo-file-system": "~58.0.13",
+    "expo-font": "~58.0.12",
+    "expo-haptics": "~58.0.8",
+    "expo-image": "~58.0.18",
+    "expo-image-picker": "~58.0.10",
+    "expo-keep-awake": "~58.0.4",
+    "expo-linear-gradient": "~58.0.4",
+    "expo-linking": "~58.0.17",
     "expo-location": "~58.0.22",
     "expo-notifications": "~58.1.9",
+    "expo-sensors": "~58.0.5",
+    "expo-sharing": "~58.0.23",
+    "expo-speech": "~58.0.4",
     "expo-status-bar": "~58.0.5",
     "expo-task-manager": "~58.0.14",
     "react": "19.3.0",
     "react-native": "0.88.1",
+    "react-native-gesture-handler": "~3.3.0",
+    "react-native-reanimated": "4.7.1",
     "react-native-safe-area-context": "~5.11.1",
-    "react-native-webview": "14.0.1"
+    "react-native-svg": "15.16.0",
+    "react-native-webview": "14.0.1",
+    "react-native-worklets": "0.13.0"
   },
   "devDependencies": {
     "@types/react": "~19.3.0",
+    "acorn": "^8.19.0",
     "typescript": "~6.0.3"
   }
 }

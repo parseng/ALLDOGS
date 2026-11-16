@@ -16,7 +16,9 @@
       "bundleIdentifier": "it.alldogs.app",
       "supportsTablet": false,
       "infoPlist": {
-        "UIBackgroundModes": ["location"],
+        "UIBackgroundModes": [
+          "location"
+        ],
         "ITSAppUsesNonExemptEncryption": false
       }
     },
@@ -54,7 +56,11 @@
         {
           "color": "#1d4f3c"
         }
-      ]
+      ],
+      "expo-font",
+      "expo-image",
+      "expo-asset",
+      "expo-sharing"
     ]
   }
 }
