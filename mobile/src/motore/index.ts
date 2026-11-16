@@ -8,6 +8,7 @@ import * as Clipboard from "expo-clipboard";
 import { archivio } from "../archivio";
 import { C } from "../theme";
 import { creaAmbiente } from "./ambiente";
+import { azzeraMappa, collegaMotore, mapboxFinto, mappaRemota } from "../mappa/remota";
 // @ts-ignore: file generato da tools/genera-motore.mjs
 import { creaMotore } from "./web.generated";
 
@@ -97,6 +98,9 @@ const fetchApp = ((u: any, o?: any) => {
 // colori che il motore chiede "alla pagina" (verdetti sulla mappa)
 const COLORI = { "--ok": "#3E8E41", "--warn": "#D99A1C", "--no": "#D4503C", "--wait": "#8C9486", "--accent": C.forest, "--dog": C.copper, "--line": C.sage2, "--surface": C.cream, "--accent-soft": C.okSoft, "--steep": C.copper };
 
+// funzioni del motore dopo le quali le schermate vanno ridisegnate
+const ALTRE = new Set(["setFull", "setScene", "peek", "hidePeek", "end3d", "setStyleKind", "toggleSave", "setNear", "clearGen", "setStart", "drawRoute", "closeAI", "homeExtra", "syncSave", "applyScene"]);
+
 export function avviaMotore() {
   if (M) return M;
   A = creaAmbiente({
@@ -104,25 +108,29 @@ export function avviaMotore() {
     sito: SITO,
     fetch: fetchApp,
     posizione,
-    parla: (t, o) => Speech.speak(t, { language: "it-IT", rate: o.rate || 1 }),
+    parla: (t: string, o: any) => Speech.speak(t, { language: "it-IT", rate: o.rate || 1 }),
     zitto: () => void Speech.stop(),
-    vibra: (p) => Vibration.vibrate(p as any),
-    condividi: async (d) => void (await Share.share({ title: d.title, message: [d.text, d.url].filter(Boolean).join(" ") })),
-    copia: async (t) => void (await Clipboard.setStringAsync(t)),
-    apri: (u) => void Linking.openURL(u).catch(() => {}),
-    avviso: (t) => Alert.alert("AllDogs", t),
-    cambioPagina: (h) => pagine.forEach((f) => f(h)),
+    vibra: (p: any) => Vibration.vibrate(p as any),
+    condividi: async (d: any) => void (await Share.share({ title: d.title, message: [d.text, d.url].filter(Boolean).join(" ") })),
+    copia: async (t: string) => void (await Clipboard.setStringAsync(t)),
+    apri: (u: string) => void Linking.openURL(u).catch(() => {}),
+    avviso: (t: string) => Alert.alert("AllDogs", t),
+    cambioPagina: (h: string) => pagine.forEach((f) => f(h)),
     ricarica: () => setTimeout(riavviaMotore, 0),
     get supabase() { return supabaseLib; },
     colori: COLORI,
+    mapboxgl: mapboxFinto,
   } as any);
+  azzeraMappa();
   M = creaMotore(A.amb);
+  collegaMotore(M);
+  M.setInteractive = (on: boolean) => mappaRemota.manda(["inter", !!on]);
   // gli avvisi brevi del sito diventano gli avvisi dell'app
   M.toast = (t: string) => avvisa(String(t).replace(/<[^>]+>/g, ""));
   // nel sito i nomi finiscono dentro l'HTML e vengono "protetti"; qui il testo è già sicuro
   // ogni volta che il motore "ridisegna" qualcosa, le schermate native si aggiornano
   for (const k of Object.getOwnPropertyNames(M)) {
-    if (!/^(render|show|paint)[A-Z]/.test(k)) continue;
+    if (!/^(render|show|paint)[A-Z]/.test(k) && !ALTRE.has(k)) continue;
     const f = M[k];
     if (typeof f !== "function") continue;
     try {

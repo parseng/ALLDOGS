@@ -49,6 +49,27 @@ ${src}
 return {${[...getter, ...setter].join(",\n")}};
 }
 `;
+// ---- pezzi del sito che servono DENTRO la pagina della mappa (lì c'è la mappa vera, Mapbox GL JS) ----
+const PER_MAPPA = ["MAPBOX_TOKEN", "STYLES", "DEM_TILES", "SFC", "SAT_TILES", "OVC", "ovDate", "ndviDate", "gibs", "rasterOv", "ovRemove", "overlays", "gridStep", "gridLoad",
+  "hex2rgba", "rampColor", "gridDraw", "gridPaint", "gridMoved", "ovLegend", "kmScale", "ksRaf", "itLabels", "fixSatellite", "detailMap", "fc", "getJSON", "bearing", "hav",
+  "km", "dense", "flyStep", "boundsOf", "ll", "retInfo", "wxOv", "gridMem", "romeT", "sunTimes"];
+const presi = new Set(), pezzi = [];
+for (const n of ast.body) {
+  const qui = [];
+  if (n.type === "FunctionDeclaration") qui.push(n.id.name);
+  else if (n.type === "VariableDeclaration") for (const d of n.declarations) nomi(d.id, qui);
+  if (n.type === "ExpressionStatement" && src.slice(n.start, n.start + 7) === "STYLES.") { pezzi.push(src.slice(n.start, n.end)); continue; }
+  if (!qui.some((x) => PER_MAPPA.includes(x))) continue;
+  qui.forEach((x) => presi.add(x));
+  let t = src.slice(n.start, n.end);
+  if (n.type === "VariableDeclaration" && n.kind === "const") t = "var" + t.slice(5); // nella pagina alcune si ridefiniscono
+  pezzi.push(t);
+}
+const mancano = PER_MAPPA.filter((x) => !presi.has(x));
+if (mancano.length) throw new Error("pezzi della mappa non trovati nel sito: " + mancano.join(", "));
+mkdirSync(QUI + "../src/mappa", { recursive: true });
+writeFileSync(QUI + "../src/mappa/web-mappa.generated.ts", "// GENERATO da tools/genera-motore.mjs a partire da index.html: non modificare a mano.\nexport const CODICE_SITO = " + JSON.stringify(pezzi.join("\n")) + ";\n");
+
 mkdirSync(QUI + "../src/motore", { recursive: true });
 writeFileSync(QUI + "../src/motore/web.generated.js", out);
 console.log(`motore creato: ${funzioni.length} funzioni, ${variabili.length + costanti.length} valori, ${(out.length / 1024).toFixed(0)} KB`);

@@ -1,114 +1,73 @@
-// ALLDOGS, prototipo opzione A: la web app pubblicata dentro una WebView a tutto schermo,
-// con GPS nativo (anche in background durante la passeggiata) e promemoria agli orari liberi del cane.
-import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, BackHandler, Linking, Platform, Pressable, StyleSheet, Text, View } from "react-native";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+// ALLDOGS: app nativa con il nuovo design. Le regole (verdetti, limiti del cane, meteo…) sono quelle del sito,
+// eseguite dal "motore" (src/motore); le schermate sono tutte native (src/schermate).
+import React, { useEffect, useState } from "react";
+import { BackHandler, Text, View } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
-import { WebView, type WebViewMessageEvent } from "react-native-webview";
-import * as Notifications from "expo-notifications";
-import { INJECT_BEFORE, posScript, type FromWeb } from "./src/bridge";
-import { currentPosition, onPosition, startBackground, startWatch, stopBackground, stopWatch } from "./src/location";
-import { scheduleWalkReminders, type DogInfo } from "./src/notifications";
+import { useFonts } from "expo-font";
+import { BricolageGrotesque_800ExtraBold } from "@expo-google-fonts/bricolage-grotesque";
+import { Urbanist_500Medium, Urbanist_600SemiBold, Urbanist_700Bold, Urbanist_800ExtraBold } from "@expo-google-fonts/urbanist";
+import Animated, { FadeIn } from "react-native-reanimated";
+import { caricaArchivio } from "./src/archivio";
+import { avviaMotore, generazioneMotore, motore, useMotore } from "./src/motore";
+import { C } from "./src/theme";
+import { PIENE, cima, nav, useNav } from "./src/nav";
+import { BarraMenu } from "./src/ui/BarraMenu";
+import { Strati, strati } from "./src/ui/strati";
+import { PrimoAvvio } from "./src/schermate/PrimoAvvio";
+import { SEZIONI, SCHERMATE } from "./src/schermate";
 
-const APP_URL = "https://parseng.github.io/ALLDOGS/";
-const COLORE = "#1d4f3c";
-
-export default function App() {
-  const web = useRef<WebView>(null);
-  const [errore, setErrore] = useState(false);
-  const [indietro, setIndietro] = useState(false);
-  const inCammino = useRef(false);
-
-  // posizioni native -> web app
-  useEffect(() => onPosition((p) => web.current?.injectJavaScript(posScript(p))), []);
-
-  // tasto Indietro di Android: torna indietro nella web app
+function Radice() {
+  useMotore();
+  const st = useNav();
+  const M = motore();
+  const [viste, setViste] = useState<Record<string, boolean>>({ esplora: true });
+  useEffect(() => { if (!viste[st.sezione]) setViste((v) => ({ ...v, [st.sezione]: true })); }, [st.sezione]);
   useEffect(() => {
-    if (Platform.OS !== "android") return;
-    const s = BackHandler.addEventListener("hardwareBackPress", () => {
-      if (indietro) { web.current?.goBack(); return true; }
-      return false;
-    });
-    return () => s.remove();
-  }, [indietro]);
-
-  // tocco su un promemoria: apre la pagina giusta della web app
-  useEffect(() => {
-    const s = Notifications.addNotificationResponseReceivedListener((r) => {
-      const url = r.notification.request.content.data?.url;
-      if (typeof url === "string") web.current?.injectJavaScript(`location.hash=${JSON.stringify(url)};true;`);
-    });
+    const s = BackHandler.addEventListener("hardwareBackPress", () => strati.indietro() || nav.indietro());
     return () => s.remove();
   }, []);
-
-  async function onMessage(e: WebViewMessageEvent) {
-    let m: FromWeb;
-    try { m = JSON.parse(e.nativeEvent.data); } catch { return; }
-    switch (m.t) {
-      case "geo-start": await startWatch(); break;
-      case "geo-once": await currentPosition(); break;
-      case "geo-stop": if (!inCammino.current) stopWatch(); break;
-      case "walk":
-        inCammino.current = m.on;
-        if (m.on) await startBackground(); else { await stopBackground(); }
-        break;
-      case "dog": if (m.dog && typeof m.dog === "object") await scheduleWalkReminders(m.dog as DogInfo); break;
-    }
-  }
-
+  const c = cima();
+  useEffect(() => { strati.barra(!PIENE.has(c.nome)); }, [c.nome]);
+  if (!M.S.dog) return <PrimoAvvio />;
   return (
-    <SafeAreaProvider>
-      <SafeAreaView style={styles.box} edges={["top", "bottom"]}>
-        <StatusBar style="auto" />
-        {errore ? (
-          <View style={styles.centro}>
-            <Text style={styles.titolo}>Non riesco ad aprire AllDogs</Text>
-            <Text style={styles.testo}>Controlla la connessione a internet e riprova.</Text>
-            <Pressable style={styles.btn} onPress={() => { setErrore(false); web.current?.reload(); }}>
-              <Text style={styles.btnTxt}>Riprova</Text>
-            </Pressable>
-          </View>
-        ) : null}
-        <WebView
-          ref={web}
-          source={{ uri: APP_URL }}
-          style={[styles.box, errore && { display: "none" }]}
-          injectedJavaScriptBeforeContentLoaded={INJECT_BEFORE}
-          onMessage={onMessage}
-          onNavigationStateChange={(s) => setIndietro(s.canGoBack)}
-          onError={() => setErrore(true)}
-          javaScriptEnabled
-          domStorageEnabled
-          geolocationEnabled={false}
-          allowsBackForwardNavigationGestures
-          allowsInlineMediaPlayback
-          mediaPlaybackRequiresUserAction
-          setSupportMultipleWindows={false}
-          pullToRefreshEnabled={false}
-          startInLoadingState
-          renderLoading={() => (
-            <View style={[styles.centro, StyleSheet.absoluteFill]}>
-              <ActivityIndicator size="large" color={COLORE} />
-            </View>
-          )}
-          // i link esterni (Google Maps, privacy dei servizi...) si aprono fuori dall'app
-          onShouldStartLoadWithRequest={(r) => {
-            if (r.url.startsWith(APP_URL) || r.url.startsWith("about:") || r.url.startsWith("blob:") || r.url.startsWith("data:")) return true;
-            if (!r.isTopFrame) return true;
-            Linking.openURL(r.url).catch(() => {});
-            return false;
-          }}
-        />
-      </SafeAreaView>
-    </SafeAreaProvider>
+    <View style={{ flex: 1, backgroundColor: C.sage }}>
+      {Object.entries(SEZIONI).map(([k, Comp]) => (viste[k] || st.sezione === k ? (
+        <View key={k} style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0, display: st.sezione === k ? "flex" : "none" }}>
+          <Comp attiva={st.sezione === k && !st.pila.length} />
+        </View>
+      ) : null))}
+      {st.pila.map((s, i) => {
+        const Comp = SCHERMATE[s.nome];
+        if (!Comp) return null;
+        return (
+          <Animated.View key={s.nome + ":" + (s.arg ?? "") + ":" + i} entering={FadeIn.duration(220)} style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0, backgroundColor: C.sage, display: i === st.pila.length - 1 ? "flex" : "none" }}>
+            <Comp arg={s.arg} attiva={i === st.pila.length - 1} />
+          </Animated.View>
+        );
+      })}
+      <BarraMenu visibile={!PIENE.has(c.nome)} />
+      <Strati />
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  box: { flex: 1, backgroundColor: "#eef0ec" },
-  centro: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24, backgroundColor: "#eef0ec" },
-  titolo: { fontSize: 22, fontWeight: "600", color: "#18201c", textAlign: "center" },
-  testo: { fontSize: 17, color: "#5a6660", marginTop: 8, textAlign: "center" },
-  btn: { marginTop: 20, backgroundColor: COLORE, borderRadius: 14, paddingHorizontal: 22, paddingVertical: 13 },
-  btnTxt: { color: "#fff", fontSize: 17, fontWeight: "600" },
-});
+export default function App() {
+  const [font] = useFonts({ BricolageGrotesque_800ExtraBold, Urbanist_500Medium, Urbanist_600SemiBold, Urbanist_700Bold, Urbanist_800ExtraBold });
+  const [pronto, setPronto] = useState(false);
+  const [errore, setErrore] = useState("");
+  useEffect(() => {
+    caricaArchivio().then(() => { avviaMotore(); setPronto(true); }).catch((e) => setErrore(String(e && e.message || e)));
+  }, []);
+  useMotore();
+  return (
+    <SafeAreaProvider>
+      <StatusBar style="dark" />
+      {font && pronto ? <Radice key={generazioneMotore()} /> : (
+        <View style={{ flex: 1, backgroundColor: C.sage, alignItems: "center", justifyContent: "center", padding: 24 }}>
+          {errore ? <Text style={{ color: C.ink, textAlign: "center" }}>L'app non riesce a partire: {errore}</Text> : null}
+        </View>
+      )}
+    </SafeAreaProvider>
+  );
+}

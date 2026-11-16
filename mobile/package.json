@@ -46,6 +46,7 @@
   "devDependencies": {
     "@types/react": "~19.3.0",
     "acorn": "^8.19.0",
+    "playwright-core": "^1.65.1",
     "typescript": "~6.0.3"
   }
 }

@@ -4,6 +4,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { StyleProp, View, ViewStyle } from "react-native";
 import { Image } from "expo-image";
+import { Asset } from "expo-asset";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { useMovimentoRidotto } from "./base";
 
@@ -41,7 +42,7 @@ export const fermaDi = (p: Posa) => FERME[p] || FERME.ciao;
 
 /** precarica le animazioni usate per prime (Esplora e i momenti) */
 export function precaricaMascotte(pose: Posa[] = ["esplora", "sbuca", "ciao", "felice"]) {
-  try { Image.prefetch && pose.forEach(() => {}); } catch {}
+  return Asset.loadAsync(pose.map((p) => VIVE[p])).catch(() => {});
 }
 
 function Livello({ posa, visibile, attiva, ferma, allinea, quandoPronto }: { posa: Posa; visibile: boolean; attiva: boolean; ferma: boolean; allinea: "bottom" | "bottom right"; quandoPronto?: () => void }) {

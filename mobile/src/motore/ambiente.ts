@@ -21,6 +21,7 @@ export type Servizi = {
   cambioPagina?: (hash: string) => void;
   ricarica?: () => void;
   supabase?: { createClient: (...a: any[]) => any };
+  mapboxgl?: any;
   colori?: Record<string, string>;
   online?: () => boolean;
 };
@@ -63,7 +64,7 @@ export function creaElemento(id?: string): any {
     id: id || "", value: (id && VALORI_INIZIALI[id]) || "", hidden: false, checked: false, disabled: false, open: false,
     innerHTML: "", textContent: "", className: "", scrollTop: 0, selectedIndex: 0, files: [], children: [], childNodes: [],
     parentNode: tuttofare(), parentElement: tuttofare(), firstChild: null, offsetHeight: 0, offsetWidth: 0, clientHeight: 0, clientWidth: 0, scrollHeight: 0,
-    style: {}, dataset: {}, _ev: {} as Record<string, Function[]>, _attr: {} as Record<string, string>, _cl: new Set<string>(),
+    style: { setProperty(k: string, v: string) { (this as any)[k] = v; }, removeProperty(k: string) { delete (this as any)[k]; }, getPropertyValue(k: string) { return (this as any)[k] || ""; } }, dataset: {}, _ev: {} as Record<string, Function[]>, _attr: {} as Record<string, string>, _cl: new Set<string>(),
   };
   const evento = (type: string, extra?: any) => Object.assign({ type, target: el, currentTarget: el, preventDefault() {}, stopPropagation() {} }, extra);
   const metodi: Record<string, Function> = {
@@ -235,13 +236,13 @@ export function creaAmbiente(s: Servizi) {
     scrollTo() {}, Image: Immagine, Event: Evento,
     IntersectionObserver: Osservatore, ResizeObserver: Osservatore, MutationObserver: Osservatore,
     innerWidth: 390, innerHeight: 844, devicePixelRatio: 2,
-    mapboxgl: undefined,
+    mapboxgl: s.mapboxgl,
     Blob: (globalThis as any).Blob, URL: (globalThis as any).URL, console,
   };
   amb.window = {
     get supabase() { return s.supabase; },
     speechSynthesis, scrollY: 0, scrollTo() {}, addEventListener: ascolta, removeEventListener: smetti,
-    mapboxgl: undefined, __mbErr: 0, AllDogsAnim: undefined, ResizeObserver: undefined,
+    mapboxgl: s.mapboxgl, __mbErr: 0, AllDogsAnim: undefined, ResizeObserver: undefined,
     location, document, navigator, localStorage: s.archivio,
   };
 

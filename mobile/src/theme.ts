@@ -1,6 +1,5 @@
 // Tutti i colori, i caratteri e le misure del nuovo design (repo/design/DESIGN-NUOVO.md).
 // Nessun colore va scritto a mano nelle schermate: si prende da qui.
-import { Easing } from "react-native-reanimated";
 
 export const C = {
   ink: "#171C14",
@@ -66,5 +65,5 @@ export const OMBRA = {
 
 // molla per i rimbalzi, arrivo morbido per il resto
 export const MOLLA = { damping: 12, stiffness: 180, mass: 0.9 } as const;
-export const MORBIDO = { duration: 280, easing: Easing.bezier(0.16, 1, 0.3, 1) } as const;
+export const MORBIDO = { duration: 280 } as const;
 export const BREVE = { duration: 120 } as const;
