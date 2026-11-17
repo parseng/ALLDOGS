@@ -13,7 +13,7 @@ import { Mascotte } from "../ui/Mascotte";
 import { Nuvoletta } from "../ui/Testate";
 import { BannerMeteo, oggiPerIlCane } from "../ui/meteo";
 import { InvitoFoto } from "../ui/FotoAvatar";
-import { TIPO_PARCO, apriParco, chiudiParco, elencoParchi, parcoAttivo, parchiVicini } from "../parchi";
+import { TIPO_PARCO, apriParco, chiudiParco, elencoParchi, fotoParco, parcoAttivo, parchiVicini } from "../parchi";
 import { CartaSentiero, Foto, Vuoto, impegnoTesto, verdettoTesto } from "../ui/sentieri";
 import { PastiglieMomento, strati, useStratoAperto } from "../ui/strati";
 import { Mappa } from "../mappa/Mappa";
@@ -183,7 +183,7 @@ export function Esplora({ attiva }: { attiva: boolean }) {
         <View style={{ height: MAPPA_H, marginTop: 12 }} />
 
         <View style={{ paddingHorizontal: MARGINE }}>
-          {famosi.length ? (
+          {famosi.length && !parcoAttivo() ? (
             <>
               <Sezione titolo={`Consigliati per ${nome}`} />
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -MARGINE }} contentContainerStyle={{ paddingHorizontal: MARGINE, gap: 12 }}>
@@ -197,11 +197,11 @@ export function Esplora({ attiva }: { attiva: boolean }) {
             <>
               <Sezione titolo="Parchi e riserve qui intorno" />
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -MARGINE }} contentContainerStyle={{ paddingHorizontal: MARGINE, gap: 12 }}>
-                {aree.map((p) => <CartaLuogo key={p.id} nome={p.n} riga={TIPO_PARCO[p.k]} sotto={`${p.s.length} ${p.s.length === 1 ? "sentiero" : "sentieri"} nel parco · tocca per vederli`} img={M.staticPlace(p.c)} etichetta={TIPO_PARCO[p.k]} onPress={() => { apriParco(p); scroller.current?.scrollTo({ y: 0, animated: true }); }} />)}
+                {aree.map((p) => <CartaLuogo key={p.id} nome={p.n} riga={TIPO_PARCO[p.k]} sotto={`${p.s.length} ${p.s.length === 1 ? "sentiero" : "sentieri"} nel parco · tocca per vederli`} img={fotoParco(p) || M.staticPlace(p.c)} etichetta={TIPO_PARCO[p.k]} onPress={() => { apriParco(p); scroller.current?.scrollTo({ y: 0, animated: true }); }} />)}
               </ScrollView>
             </>
           ) : null}
-          {parchi.length ? (
+          {parchi.length && !parcoAttivo() ? (
             <>
               <Sezione titolo="Parchi per una passeggiata" />
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -MARGINE }} contentContainerStyle={{ paddingHorizontal: MARGINE, gap: 12 }}>

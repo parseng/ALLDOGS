@@ -30,6 +30,13 @@ export function parchiVicini(c: number[], r = 70, n = 8): Parco[] {
   return PARCHI.map((p) => ({ p, d: M.hav(c, p.c) })).filter((x) => x.d < r * 1000).sort((a, b) => a.d - b.d).slice(0, n).map((x) => x.p);
 }
 
+/** una foto vera di un sentiero del parco, se c'è già (le foto arrivano con i sentieri della zona) */
+export function fotoParco(p: Parco): string | null {
+  const M = motore();
+  for (const id of p.s) { const f = M.PH && M.PH[id]; if (f && f[0] && f[0].u) return f[0].u; }
+  return null;
+}
+
 /** parchi che si chiamano come quello che scrivi nella ricerca */
 export function cercaParchi(q: string): Parco[] {
   const M = motore(), nq = M.norm(q);
