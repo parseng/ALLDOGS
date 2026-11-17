@@ -5,6 +5,8 @@ import { Sentiero } from "./Sentiero";
 import { Cerca } from "./Cerca";
 import { Filtri } from "./Filtri";
 import { CreaGiro } from "./CreaGiro";
+import { Attivita } from "./Attivita";
+import { Uscita, Vai } from "./Vai";
 
 export type PropsSezione = { attiva: boolean };
 export type PropsSchermata = { attiva: boolean; arg?: any };
@@ -12,9 +14,12 @@ export type PropsSchermata = { attiva: boolean; arg?: any };
 export const SEZIONI: Record<string, React.ComponentType<PropsSezione>> = {
   esplora: Esplora,
   crea: CreaGiro,
+  attivita: Attivita,
 };
 export const SCHERMATE: Record<string, React.ComponentType<PropsSchermata>> = {
   sentiero: Sentiero,
   cerca: Cerca,
   filtri: Filtri,
+  vai: Vai,
+  uscita: Uscita,
 };

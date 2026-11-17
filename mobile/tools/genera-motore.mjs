@@ -18,7 +18,7 @@ const AMB = ["window", "document", "localStorage", "sessionStorage", "navigator"
   "addEventListener", "removeEventListener", "dispatchEvent", "matchMedia", "getComputedStyle", "indexedDB", "caches",
   "speechSynthesis", "SpeechSynthesisUtterance", "alert", "confirm", "prompt", "open", "scrollTo", "Image", "Event",
   "IntersectionObserver", "ResizeObserver", "MutationObserver", "innerWidth", "innerHeight", "devicePixelRatio",
-  "mapboxgl", "Blob", "URL", "console"];
+  "mapboxgl", "Blob", "URL", "console", "crypto"];
 
 const ast = acorn.parse(src, { ecmaVersion: "latest", sourceType: "script" });
 const funzioni = [], variabili = [], costanti = [];

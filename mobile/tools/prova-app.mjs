@@ -27,6 +27,7 @@ if (!passi.includes("nuovo")) {
   await page.addInitScript((c) => {
     if (!localStorage.getItem("alldogs-dog")) {
       localStorage.setItem("alldogs-dog", JSON.stringify(c));
+      localStorage.setItem("alldogs-navset", JSON.stringify({ turns: true, voice: false, autopause: false, wake: true }));
       localStorage.setItem("alldogs-view", JSON.stringify({ c: [40.84, 14.09], z: 11.6, b: [[40.78, 13.98], [40.9, 14.2]] }));
     }
   }, CANE);
@@ -38,6 +39,7 @@ for (const p of passi) {
   try {
     if (k === "shot") await page.screenshot({ path: `${OUT}/${v}.png` });
     else if (k === "click") await page.getByText(v, { exact: false }).first().click({ timeout: 8000 });
+    else if (k === "clickx") await page.getByText(v, { exact: true }).last().click({ timeout: 8000 });
     else if (k === "clicklabel") await page.getByLabel(v, { exact: false }).first().click({ timeout: 8000 });
     else if (k === "wait") await page.waitForTimeout(+v);
     else if (k === "scroll") await page.mouse.wheel(0, +v);

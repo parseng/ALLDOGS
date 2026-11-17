@@ -5,7 +5,9 @@ import { Alert, Linking, Share, Vibration } from "react-native";
 import * as Location from "expo-location";
 import * as Speech from "expo-speech";
 import * as Clipboard from "expo-clipboard";
+import * as Crypto from "expo-crypto";
 import { archivio } from "../archivio";
+import { Pos, onPosition, startWatch, stopWatch } from "../location";
 import { C } from "../theme";
 import { creaAmbiente } from "./ambiente";
 import { azzeraMappa, collegaMotore, mapboxFinto, mappaRemota } from "../mappa/remota";
@@ -52,7 +54,6 @@ export const avvisa = (t: string) => avvisi.forEach((f) => f(t));
 export const usaSupabase = (lib: any) => (supabaseLib = lib);
 
 // ---- posizione ----
-const seguiti = new Map<number, Location.LocationSubscription | null>();
 let nSeguiti = 0;
 const comeBrowser = (l: Location.LocationObject) => ({
   coords: { latitude: l.coords.latitude, longitude: l.coords.longitude, accuracy: l.coords.accuracy ?? 30, altitude: l.coords.altitude, heading: l.coords.heading != null && l.coords.heading >= 0 ? l.coords.heading : null, speed: l.coords.speed != null && l.coords.speed >= 0 ? l.coords.speed : null },
@@ -62,6 +63,10 @@ async function permesso() {
   const p = await Location.requestForegroundPermissionsAsync();
   if (p.status !== "granted") throw Object.assign(new Error("permesso negato"), { code: 1 });
 }
+// il GPS è uno solo (src/location.ts): in primo piano e, durante una passeggiata, anche a schermo spento
+const ascolti = new Map<number, () => void>();
+let ultimoTempo = 0;
+const daPos = (p: Pos) => ({ coords: { latitude: p.latitude, longitude: p.longitude, accuracy: p.accuracy ?? 30, altitude: p.altitude, heading: p.heading != null && p.heading >= 0 ? p.heading : null, speed: p.speed != null && p.speed >= 0 ? p.speed : null }, timestamp: p.timestamp });
 const posizione = {
   una(ok: (p: any) => void, ko: (e: any) => void) {
     (async () => {
@@ -74,21 +79,16 @@ const posizione = {
   },
   segui(ok: (p: any) => void, ko: (e: any) => void) {
     const id = ++nSeguiti;
-    seguiti.set(id, null);
-    (async () => {
-      try {
-        await permesso();
-        const s = await Location.watchPositionAsync({ accuracy: Location.Accuracy.BestForNavigation, timeInterval: 1000, distanceInterval: 1 }, (l) => ok(comeBrowser(l)));
-        if (seguiti.has(id)) seguiti.set(id, s);
-        else s.remove();
-      } catch (e) { if (ko) ko(e); }
-    })();
+    // la stessa posizione può arrivare due volte (primo piano e sottofondo): la seconda si scarta
+    ascolti.set(id, onPosition((p) => { if (p.timestamp <= ultimoTempo) return; ultimoTempo = p.timestamp; ok(daPos(p)); }));
+    startWatch().then((si) => { if (!si && ko) ko({ code: 1 }); }).catch((e) => ko && ko(e));
     return id;
   },
   ferma(id: number) {
-    const s = seguiti.get(id);
-    if (s) s.remove();
-    seguiti.delete(id);
+    const f = ascolti.get(id);
+    if (f) f();
+    ascolti.delete(id);
+    if (!ascolti.size) stopWatch();
   },
 };
 
@@ -124,6 +124,7 @@ export function avviaMotore() {
     get supabase() { return supabaseLib; },
     colori: COLORI,
     mapboxgl: mapboxFinto,
+    casuale: (a: any) => { try { return Crypto.getRandomValues(a); } catch { for (let i = 0; i < a.length; i++) a[i] = Math.floor(Math.random() * 256); return a; } },
   } as any);
   azzeraMappa();
   M = creaMotore(A.amb);
@@ -158,8 +159,9 @@ export function avviaMotore() {
 export function riavviaMotore() {
   const dove = A ? A.hash() : "esplora";
   if (A) A.spegni();
-  seguiti.forEach((s) => s && s.remove());
-  seguiti.clear();
+  ascolti.forEach((f) => f());
+  ascolti.clear();
+  stopWatch();
   M = null;
   avviaMotore();
   if (dove && M.S.dog) A!.vaiA(dove);

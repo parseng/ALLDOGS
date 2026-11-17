@@ -16,6 +16,8 @@ import { BarraMenu } from "./src/ui/BarraMenu";
 import { Strati, strati, useBarra } from "./src/ui/strati";
 import { PrimoAvvio } from "./src/schermate/PrimoAvvio";
 import { SEZIONI, SCHERMATE } from "./src/schermate";
+import "./src/collega";
+import { PastigliaInCammino } from "./src/schermate/Vai";
 
 function Radice() {
   useMotore();
@@ -46,6 +48,7 @@ function Radice() {
           </Animated.View>
         );
       })}
+      {barra && !PIENE.has(c.nome) ? <PastigliaInCammino /> : null}
       <BarraMenu visibile={barra && !PIENE.has(c.nome)} />
       <Strati />
     </View>

@@ -2,7 +2,7 @@
 /* eslint-disable */
 // @ts-nocheck
 export function creaMotore(__amb){
-const {window,document,localStorage,sessionStorage,navigator,location,history,fetch,setTimeout,clearTimeout,setInterval,clearInterval,requestAnimationFrame,cancelAnimationFrame,addEventListener,removeEventListener,dispatchEvent,matchMedia,getComputedStyle,indexedDB,caches,speechSynthesis,SpeechSynthesisUtterance,alert,confirm,prompt,open,scrollTo,Image,Event,IntersectionObserver,ResizeObserver,MutationObserver,innerWidth,innerHeight,devicePixelRatio,mapboxgl,Blob,URL,console}=__amb;
+const {window,document,localStorage,sessionStorage,navigator,location,history,fetch,setTimeout,clearTimeout,setInterval,clearInterval,requestAnimationFrame,cancelAnimationFrame,addEventListener,removeEventListener,dispatchEvent,matchMedia,getComputedStyle,indexedDB,caches,speechSynthesis,SpeechSynthesisUtterance,alert,confirm,prompt,open,scrollTo,Image,Event,IntersectionObserver,ResizeObserver,MutationObserver,innerWidth,innerHeight,devicePixelRatio,mapboxgl,Blob,URL,console,crypto}=__amb;
 
 "use strict";
 // ================= Impostazioni =================

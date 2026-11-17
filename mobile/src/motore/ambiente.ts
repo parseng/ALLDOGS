@@ -22,6 +22,7 @@ export type Servizi = {
   ricarica?: () => void;
   supabase?: { createClient: (...a: any[]) => any };
   mapboxgl?: any;
+  casuale?: (a: any) => any;
   colori?: Record<string, string>;
   online?: () => boolean;
 };
@@ -238,6 +239,7 @@ export function creaAmbiente(s: Servizi) {
     innerWidth: 390, innerHeight: 844, devicePixelRatio: 2,
     mapboxgl: s.mapboxgl,
     Blob: (globalThis as any).Blob, URL: (globalThis as any).URL, console,
+    crypto: { getRandomValues: (a: any) => { if (s.casuale) return s.casuale(a); for (let i = 0; i < a.length; i++) a[i] = Math.floor(Math.random() * 256); return a; } },
   };
   amb.window = {
     get supabase() { return s.supabase; },

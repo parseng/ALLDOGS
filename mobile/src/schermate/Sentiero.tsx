@@ -1,7 +1,7 @@
 // Scheda di un sentiero: verdetto per il cane con il motivo, foto, numeri, dislivello, fondo, ombra, acqua,
 // meteo ora per ora, regole, cosa portare, recensione. Tutti i conti sono quelli del motore.
 import React, { useEffect, useRef, useState } from "react";
-import { Linking, ScrollView, Share, Text, TextInput, View } from "react-native";
+import { Alert, Linking, ScrollView, Share, Text, TextInput, View } from "react-native";
 import { Image } from "expo-image";
 import Animated, { useAnimatedScrollHandler, useSharedValue } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -17,6 +17,7 @@ import { Foto, Verdetto, Vuoto } from "../ui/sentieri";
 import { PastiglieMomento, strati } from "../ui/strati";
 import { MappaGalleggiante, usePiena } from "../mappa/Galleggiante";
 import { StatoVolo, volo } from "../mappa/Mappa";
+import { eScaricata, foglioScarica } from "../offline";
 
 const MAPPA_H = 340;
 const PUNTO = [C.lime, C.yellow, C.coral];
@@ -25,7 +26,10 @@ const CANI_T: Record<string, string> = { no: "Cani vietati", lim: "Cani ammessi 
 /** verdetto di Gohan prima di partire, poi si avvia la passeggiata */
 export function partiCon(o: any, it: any, titolo: string) {
   const M = motore(), d = M.dog(), res = M.verdict(it, d, 0), nome = nomeCane();
-  const vai = () => M.startNav(o);
+  const vai = () => {
+    if (!M.nav) { M.startNav(o); return; }
+    Alert.alert("C'è già una passeggiata in corso", "Vuoi chiuderla senza salvarla e iniziarne una nuova?", [{ text: "No", style: "cancel" }, { text: "Sì, nuova", style: "destructive", onPress: () => { M.stopNav(); M.startNav(o); } }]);
+  };
   const w = res.w, ora = new Date().getHours(), adesso = w && w.H[ora];
   const caldo = adesso && adesso.f > res.cap.heat;
   const brutti = res.why.filter((x: any) => x.lvl === 2).map((x: any) => pulito(x.txt));
@@ -127,7 +131,7 @@ export function Sentiero({ arg, attiva }: { arg?: any; attiva: boolean }) {
   const zaino = () => nav.apri("zaino", { km: M.totLen(tr) / 1000, p: tr.start, day: M.S.day, title: tr.name, water: ((f && f.w) || []).length, mount: !!((e && (e.up >= 300 || e.max >= 900)) || (f && f.f.includes("vette"))), beach: !!(f && f.f.includes("spiaggia")), lake: !!(f && (f.f.includes("laghi") || f.f.includes("fiumi"))) });
   const attrezzi: [string, string, () => void][] = [
     ["cube", "Anteprima 3D", avviaVolo],
-    ["down", "Scarica", () => nav.apri("scarica", id)],
+    ["down", eScaricata("s-" + id) ? "Scaricato" : "Scarica", () => foglioScarica("s-" + id, M.navObjTrail(tr), `${M.km(it.len)} km · ${tr.zone || "sentiero"}`, () => partiCon(M.navObjTrail(tr), M.item(tr), tr.name))],
     ["edit", "Modifica", () => { try { M.editTrail(tr); } catch { strati.avviso("Non riesco ad aprire la modifica."); } }],
     ["bag", "Zaino", zaino],
     ["share", "Condividi", () => { Share.share({ message: `${tr.name}: ${M.km(it.len)} km. Guardalo su AllDogs: ${SITO}#s-${id}` }).catch(() => {}); }],
