@@ -17,6 +17,7 @@ import { strati } from "../ui/strati";
 import { Mappa } from "../mappa/Mappa";
 import { foglioMappe } from "../mappa/fogli";
 import { apriDiario } from "./Attivita";
+import { MedagliaGrande, medaglie } from "./Cane";
 
 const H = Dimensions.get("window").height;
 
@@ -102,6 +103,7 @@ function chiudiAttivita() {
     const [gps, setGps] = useState(n.dist >= 100);
     const [passi, setPassi] = useState("");
     const salva = () => {
+      const prima = medaglie().filter((m) => m.presa).map((m) => m.nome);
       const usaGps = diversa ? gps : true, dist = Math.round(usaGps ? n.dist : piena);
       let tr = n.track.length > 1 ? M.thin(n.track, 15) : [];
       if (tr.length > 400) tr = M.sample(tr, 400);
@@ -120,6 +122,11 @@ function chiudiAttivita() {
         posa: "felice", festa: true, tipo: "Uscita finita", titolo: `Bravi! ${M.km(dist)} km insieme`,
         testo: `${M.fmtDur(durata)} · ${o.name}. ${Math.round(dist / M.dogStep(cane.weight)).toLocaleString("it-IT")} passi per ${nome}. Ora acqua e un po' di riposo.`,
         bottoni: [{ testo: "Chiudi", tinta: "chiaro2" }, { testo: "Com'è andata?", onPress: () => apriDiario(0) }],
+        alChiudere: () => {
+          // una medaglia nuova? festa con Gohan
+          const nuova = medaglie().find((m) => m.presa && !prima.includes(m.nome));
+          if (nuova) strati.momento({ posa: "felice", festa: true, tipo: "Nuova medaglia", titolo: nuova.nome + "!", testo: `Una medaglia nuova per ${nome}. La trovi nella sua pagina.`, medaglia: <MedagliaGrande m={nuova} />, bottoni: [{ testo: "Le medaglie", tinta: "chiaro2", onPress: () => navi.sezione("cane") }, { testo: `Grazie, ${nome}` }] });
+        },
       }), 450);
     };
     return (

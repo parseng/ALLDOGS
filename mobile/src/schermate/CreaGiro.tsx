@@ -98,7 +98,7 @@ function Risultato({ onVolo }: { onVolo: () => void }) {
         {M.S.gen.length > 1 ? <Chip piccolo sfondo={C.sage} icona="loop" testo="Prova un altro giro" onPress={() => el("gen-next").click()} /> : null}
         <Chip piccolo sfondo={C.sage} icona="cube" testo="Volo 3D" onPress={onVolo} />
         {gsh ? <Chip piccolo sfondo={C.sage} testo="Colora il fondo" attivo={!!M.surfOn} onPress={() => M.setSurf(!M.surfOn)} /> : null}
-        <Chip piccolo sfondo={C.sage} icona="bag" testo="Zaino" onPress={() => nav.apri("zaino", { km: r.len / 1000, p: r.path[0], title: titolo, mount: (r.up || 0) >= 300 })} />
+        <Chip piccolo sfondo={C.sage} icona="bag" testo="Zaino" onPress={() => motore().packSheet({ km: r.len / 1000, p: r.path[0], title: titolo, mount: (r.up || 0) >= 300 })} />
         <Chip piccolo sfondo={C.sage} icona="nav" testo="Portami alla partenza" onPress={() => Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${r.path[0][0]},${r.path[0][1]}`)} />
         <Chip piccolo sfondo={C.sage} icona="x" testo="Rimuovi" onPress={() => el("gen-clear").click()} />
       </View>

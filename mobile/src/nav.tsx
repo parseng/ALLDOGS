@@ -8,7 +8,7 @@ export type Sezione = "esplora" | "attivita" | "crea" | "allenati" | "cane";
 export type Schermata = { nome: string; arg?: any };
 
 /** schermate a tutto schermo: senza barra del menu e senza mascotte che sbuca */
-export const PIENE = new Set(["vai", "cerca", "filtri", "volo", "modifica", "primo", "segui", "uscita", "mappa"]);
+export const PIENE = new Set(["vai", "cerca", "filtri", "volo", "modifica", "primo", "segui", "uscita", "mappa", "domande", "nuovocane"]);
 
 const st = { sezione: "esplora" as Sezione, pila: [] as Schermata[], allenati: "obiettivi" as "obiettivi" | "addestramento", attivita: "diary" as "diary" | "saved" | "off", v: 0 };
 const iscritti = new Set<() => void>();

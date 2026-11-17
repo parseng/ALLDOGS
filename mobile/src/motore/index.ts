@@ -10,6 +10,7 @@ import { archivio } from "../archivio";
 import { Pos, onPosition, startWatch, stopWatch } from "../location";
 import { C } from "../theme";
 import { creaAmbiente } from "./ambiente";
+import { CORPO } from "./corpo.generated";
 import { azzeraMappa, collegaMotore, mapboxFinto, mappaRemota } from "../mappa/remota";
 // @ts-ignore: file generato da tools/genera-motore.mjs
 import { creaMotore } from "./web.generated";
@@ -103,7 +104,7 @@ const fetchApp = ((u: any, o?: any) => {
 const COLORI = { "--ok": "#3E8E41", "--warn": "#D99A1C", "--no": "#D4503C", "--wait": "#8C9486", "--accent": C.forest, "--dog": C.copper, "--line": C.sage2, "--surface": C.cream, "--accent-soft": C.okSoft, "--steep": C.copper };
 
 // funzioni del motore dopo le quali le schermate vanno ridisegnate
-const ALTRE = new Set(["setFull", "setScene", "peek", "hidePeek", "end3d", "setStyleKind", "toggleSave", "setNear", "clearGen", "setStart", "drawRoute", "closeAI", "homeExtra", "syncSave", "applyScene", "loadWeather", "loadPhotos", "loadCell", "loadPlaces", "findTrail", "loadNames", "geoSuggest", "refreshView", "startNav", "endNav", "generate", "chatSend", "toRoute", "placeLoop", "setSurf", "mcSend", "syncNow"]);
+const ALTRE = new Set(["setFull", "setScene", "peek", "hidePeek", "end3d", "setStyleKind", "toggleSave", "setNear", "clearGen", "setStart", "drawRoute", "closeAI", "homeExtra", "syncSave", "applyScene", "loadWeather", "loadPhotos", "loadCell", "loadPlaces", "findTrail", "loadNames", "geoSuggest", "refreshView", "startNav", "endNav", "generate", "chatSend", "toRoute", "placeLoop", "setSurf", "mcSend", "syncNow", "miniSend", "miniRender", "miniChat", "openAI", "wzFinish", "accPaint", "sbLoad", "sosSheet"]);
 
 export function avviaMotore() {
   if (M) return M;
@@ -124,6 +125,7 @@ export function avviaMotore() {
     get supabase() { return supabaseLib; },
     colori: COLORI,
     mapboxgl: mapboxFinto,
+    corpo: CORPO,
     casuale: (a: any) => { try { return Crypto.getRandomValues(a); } catch { for (let i = 0; i < a.length; i++) a[i] = Math.floor(Math.random() * 256); return a; } },
   } as any);
   azzeraMappa();

@@ -5,7 +5,10 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import { fileURLToPath } from "node:url";
-import { creaAmbiente } from "../src/motore/ambiente.ts";
+import { registerHooks } from "node:module";
+registerHooks({ resolve(spec, ctx, next) { try { return next(spec, ctx); } catch (e) { if (spec.startsWith(".")) return next(spec + ".ts", ctx); throw e; } } });
+const { creaAmbiente } = await import("../src/motore/ambiente.ts");
+const { CORPO } = await import("../src/motore/corpo.generated.ts");
 
 const QUI = fileURLToPath(new URL(".", import.meta.url));
 process.on("unhandledRejection", () => {});
@@ -28,6 +31,7 @@ export function nuovoMotore({ dati = {}, rete = false } = {}) {
     archivio, sito: "https://parseng.github.io/ALLDOGS/",
     fetch: rete ? fetch : () => Promise.reject(new Error("niente rete nei test")),
     cambioPagina: (h) => pagine.push(h),
+    corpo: CORPO,
   });
   const M = carica()(A.amb);
   return { M, A, mem, pagine };

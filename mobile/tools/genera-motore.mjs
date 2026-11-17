@@ -71,6 +71,12 @@ if (mancano.length) throw new Error("pezzi della mappa non trovati nel sito: " +
 mkdirSync(QUI + "../src/mappa", { recursive: true });
 writeFileSync(QUI + "../src/mappa/web-mappa.generated.ts", "// GENERATO da tools/genera-motore.mjs a partire da index.html: non modificare a mano.\nexport const CODICE_SITO = " + JSON.stringify(pezzi.join("\n")) + ";\n");
 
+// la struttura della pagina del sito (senza script e senza disegni delle icone): la "pagina invisibile" del motore
+let corpo = html.slice(html.indexOf("<body>"), html.lastIndexOf("</body>") + 7)
+  .replace(/<script([^>]*)>[\s\S]*?<\/script>/g, (t, a) => (/\sid=/.test(a) ? `<script${a.replace(/\s(src|integrity|crossorigin|async|defer|onerror)(="[^"]*")?/g, "")}></script>` : ""))
+  .replace(/<svg width="0" height="0"[\s\S]*?<\/svg>/, "")
+  .replace(/<!--[\s\S]*?-->/g, "").replace(/\n\s*/g, "\n");
 mkdirSync(QUI + "../src/motore", { recursive: true });
+writeFileSync(QUI + "../src/motore/corpo.generated.ts", "// GENERATO da tools/genera-motore.mjs: la struttura di index.html. Non modificare a mano.\nexport const CORPO = " + JSON.stringify(corpo) + ";\n");
 writeFileSync(QUI + "../src/motore/web.generated.js", out);
 console.log(`motore creato: ${funzioni.length} funzioni, ${variabili.length + costanti.length} valori, ${(out.length / 1024).toFixed(0)} KB`);

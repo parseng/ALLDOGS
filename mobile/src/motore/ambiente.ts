@@ -1,6 +1,7 @@
 // "Browser finto" per il motore: le regole del sito sono scritte per una pagina web, qui ricevono
 // una pagina che non disegna niente. Le schermate vere sono native: il motore fa solo i conti.
 // Questo file non dipende dal telefono (così si può provare anche con i test sul PC).
+import { creaDom } from "./dom";
 
 export type Servizi = {
   archivio: { getItem(k: string): string | null; setItem(k: string, v: string): void; removeItem(k: string): void; clear(): void; key(i: number): string | null; readonly length: number };
@@ -23,6 +24,7 @@ export type Servizi = {
   supabase?: { createClient: (...a: any[]) => any };
   mapboxgl?: any;
   casuale?: (a: any) => any;
+  corpo?: string;
   colori?: Record<string, string>;
   online?: () => boolean;
 };
@@ -140,7 +142,9 @@ export function creaAmbiente(s: Servizi) {
     try { f(Object.assign({ type: ev }, extra)); } catch (e) { console.warn("motore:", ev, e); }
   });
 
-  const document: any = {
+  // con la struttura del sito: una pagina vera (linkedom); senza, una pagina finta che non fa niente (test semplici)
+  const vero = s.corpo ? creaDom(s.corpo) : null;
+  const document: any = vero ? vero.document : {
     getElementById: (id: string) => elementi[id] || (elementi[id] = creaElemento(id)),
     querySelectorAll: () => [],
     querySelector: () => creaElemento(),
@@ -155,6 +159,19 @@ export function creaAmbiente(s: Servizi) {
     hidden: false,
     title: "AllDogs",
   };
+  if (vero) {
+    const prendi = document.getElementById.bind(document);
+    // un elemento che il sito cerca ma che nella struttura non c'è: lo creo, nascosto, così il codice non si ferma
+    document.getElementById = (id: string) => {
+      const e = prendi(id);
+      if (e) return e;
+      const n = document.createElement("div");
+      n.id = id; n.setAttribute("hidden", "");
+      document.body.appendChild(n);
+      return n;
+    };
+    try { Object.defineProperty(document, "visibilityState", { configurable: true, get: () => "visible" }); } catch {}
+  }
 
   const cambia = (h: string, avvisa = true) => {
     h = String(h).replace(/^.*#/, "");

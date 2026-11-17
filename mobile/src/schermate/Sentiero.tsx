@@ -128,7 +128,7 @@ export function Sentiero({ arg, attiva }: { arg?: any; attiva: boolean }) {
   regole.push("Nei parchi e nelle riserve il guinzaglio è quasi sempre obbligatorio: guarda i cartelli all'ingresso.");
 
   const avviaVolo = () => { if (!piena) tuttoSchermo(true); setTimeout(() => volo.parti({ path: tr.path, prof: e && e.p, len: tr.len, shape: tr.shape || "loop", ret: tr.ret || 0 }), 500); };
-  const zaino = () => nav.apri("zaino", { km: M.totLen(tr) / 1000, p: tr.start, day: M.S.day, title: tr.name, water: ((f && f.w) || []).length, mount: !!((e && (e.up >= 300 || e.max >= 900)) || (f && f.f.includes("vette"))), beach: !!(f && f.f.includes("spiaggia")), lake: !!(f && (f.f.includes("laghi") || f.f.includes("fiumi"))) });
+  const zaino = () => motore().packSheet({ km: M.totLen(tr) / 1000, p: tr.start, day: M.S.day, title: tr.name, water: ((f && f.w) || []).length, mount: !!((e && (e.up >= 300 || e.max >= 900)) || (f && f.f.includes("vette"))), beach: !!(f && f.f.includes("spiaggia")), lake: !!(f && (f.f.includes("laghi") || f.f.includes("fiumi"))) });
   const attrezzi: [string, string, () => void][] = [
     ["cube", "Anteprima 3D", avviaVolo],
     ["down", eScaricata("s-" + id) ? "Scaricato" : "Scarica", () => foglioScarica("s-" + id, M.navObjTrail(tr), `${M.km(it.len)} km · ${tr.zone || "sentiero"}`, () => partiCon(M.navObjTrail(tr), M.item(tr), tr.name))],

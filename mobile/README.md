@@ -1,30 +1,29 @@
-# ALLDOGS per telefono (prototipo, opzione A)
+# ALLDOGS per telefono (app nativa, nuovo design)
 
-L'app è un guscio nativo (Expo, SDK 58, TypeScript) che apre la web app pubblicata
-<https://parseng.github.io/ALLDOGS/> a tutto schermo e aggiunge:
+App Expo (SDK 58, TypeScript) con tutte le schermate native nel nuovo stile (`repo/design/DESIGN-NUOVO.md`).
 
-- **GPS nativo**: sostituisce `navigator.geolocation` della pagina, e durante una passeggiata
-  (`alldogs-nav` nel localStorage) continua a registrare anche a schermo spento (`expo-location` + `expo-task-manager`).
-- **Promemoria**: legge dal profilo del cane (`alldogs-dog`) nome, `orariSlots` e `durata` e programma notifiche
-  settimanali all'inizio di ogni fascia libera (`expo-notifications`). Toccando la notifica si apre «Crea giro».
+## Come è fatta
 
-La web app non va modificata: il ponte è in `src/bridge.ts` (script iniettato prima che la pagina parta).
+- **Motore** (`src/motore/`): le regole del sito (verdetti, limiti del cane, meteo, programma di allenamento,
+  lezioni, giri, navigazione…) sono le **stesse** di `index.html`. `tools/genera-motore.mjs` le copia in
+  `web.generated.js` e la struttura della pagina in `corpo.generated.ts`. Il motore gira in una pagina invisibile
+  (linkedom): l'app la legge e la ridisegna in modo nativo. Dopo ogni modifica del sito: `node tools/genera-motore.mjs`.
+- **Mappa** (`src/mappa/`): la mappa vera del sito (Mapbox GL JS, tutte le mappe, meteo, satellite, 3D, volo)
+  dentro un riquadro; il motore la comanda come nel sito (`remota.ts`).
+- **Schermate** (`src/schermate/`), mattoni grafici (`src/ui/`), colori e misure (`src/theme.ts`).
+- **Mascotte**: WebP animati con sfondo trasparente in `assets/mascotte/` (funzionano su iPhone e Android),
+  più le immagini ferme per "Riduci movimento".
+- GPS anche a schermo spento durante la passeggiata (`src/location.ts`), promemoria (`src/notifications.ts`),
+  foto sul telefono (`src/foto.ts`), account Supabase (stesso del sito).
 
-## Avvio sul PC
+## Provare
 
 ```
 cd mobile
 npm install
-npx expo install --check
 npx expo start
 ```
 
-Poi apri **Expo Go** sull'iPhone e inquadra il QR code.
+Poi apri **Expo Go** e inquadra il QR code. Per il GPS a schermo spento serve una build (EAS Build).
 
-Limiti di Expo Go: la posizione **in background** e alcune notifiche richiedono una "development build"
-(`npx expo run:ios` / EAS Build), che serve comunque per pubblicare sugli store.
-
-## Identità
-
-- Nome: ALLDOGS · bundle id / package: `it.alldogs.app`
-- Icone: `assets/` (prese da `icon-512.png` della web app)
+Prove sul PC: `npm test` (regole), `npx expo start --web` poi `node tools/prova-app.mjs <cartella> ...` (schermate).
