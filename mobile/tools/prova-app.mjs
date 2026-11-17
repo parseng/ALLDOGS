@@ -8,6 +8,7 @@ const require = createRequire(import.meta.url);
 const { chromium } = require("playwright-core");
 const OUT = process.argv[2] || ".prova";
 const passi = process.argv.slice(3);
+const SALUTO = passi.includes("saluto");
 mkdirSync(OUT, { recursive: true });
 const SITO = "https://parseng.github.io/ALLDOGS/";
 const CANE = { id: "d1", name: "Gohan", breed: "Pastore australiano", age: 3, weight: 22, train: "medio", agil: "media", coat: "lungo", brachy: false, pat: {}, patOther: "", health: {}, onb: 1 };
@@ -27,10 +28,11 @@ if (!passi.includes("nuovo")) {
   await page.addInitScript((c) => {
     if (!localStorage.getItem("alldogs-dog")) {
       localStorage.setItem("alldogs-dog", JSON.stringify(c));
+      if (!c.__saluto) localStorage.setItem("alldogs-saluto", JSON.stringify(new Date().toDateString()));
       localStorage.setItem("alldogs-navset", JSON.stringify({ turns: true, voice: false, autopause: false, wake: true }));
       localStorage.setItem("alldogs-view", JSON.stringify({ c: [40.84, 14.09], z: 11.6, b: [[40.78, 13.98], [40.9, 14.2]] }));
     }
-  }, CANE);
+  }, { ...CANE, __saluto: SALUTO });
 }
 await page.goto(FINTO + "/", { waitUntil: "load", timeout: 180000 });
 await page.waitForTimeout(6000);

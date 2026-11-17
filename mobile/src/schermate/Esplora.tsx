@@ -12,7 +12,7 @@ import { Mascotte } from "../ui/Mascotte";
 import { Nuvoletta } from "../ui/Testate";
 import { BannerMeteo, oggiPerIlCane } from "../ui/meteo";
 import { CartaSentiero, Foto, Vuoto, impegnoTesto, verdettoTesto } from "../ui/sentieri";
-import { strati, useStratoAperto } from "../ui/strati";
+import { PastiglieMomento, strati, useStratoAperto } from "../ui/strati";
 import { Mappa } from "../mappa/Mappa";
 import { foglioMappe } from "../mappa/fogli";
 import { usePiena } from "../mappa/Galleggiante";
@@ -228,4 +228,28 @@ function CartaLuogo({ nome, riga, sotto, img, etichetta, onPress }: { nome: stri
       <Text numberOfLines={2} style={{ fontFamily: F.t700, fontSize: 14, color: C.ink, marginTop: 6 }}>{sotto}</Text>
     </Tocco>
   );
+}
+
+/** saluto del giorno: la prima volta che apri l'app in una giornata, Gohan saluta con il meteo per il cane */
+export function salutoDelGiorno() {
+  const M = motore();
+  if (!M || !M.S.dog) return;
+  const oggi = new Date().toDateString();
+  if (M.store.get("alldogs-saluto") === oggi) return;
+  const prova = (n: number) => {
+    const o = oggiPerIlCane();
+    if (!o.w && n < 8) { setTimeout(() => prova(n + 1), 1500); return; }
+    if (strati.aperto()) return;
+    M.store.set("alldogs-saluto", oggi);
+    const nome = nomeCane(), giorno = new Date().toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long" });
+    const voci = o.w ? [{ icona: o.icona, testo: `${Math.round(o.now.f)}° · ${String(o.cielo).toLowerCase()}` }, ...(o.quando ? [{ icona: "clock", testo: o.quando, caldo: o.st > 0 }] : []), ...(o.zampe && o.zampe.lvl ? [{ icona: "paw", testo: "Asfalto caldo", caldo: true }] : [])] : [];
+    strati.momento({
+      posa: "ciao", sole: true, tipo: giorno.charAt(0).toUpperCase() + giorno.slice(1),
+      titolo: `Ciao! Dove andiamo oggi?`,
+      testo: !o.w ? `${nome} è pronto: scegli un sentiero o crea un giro.` : o.st === 2 ? "Adesso fa troppo caldo per me: aspettiamo un'ora più fresca." : o.now.rain >= 60 ? "Mi sa che piove: un giro corto e poi a casa." : `${o.titolo}. ${o.quando ? o.quando + "." : ""}`,
+      extra: voci.length ? () => <PastiglieMomento voci={voci} /> : undefined,
+      bottoni: [{ testo: "Vedi i sentieri", tinta: "lime" }],
+    });
+  };
+  setTimeout(() => prova(0), 1200);
 }

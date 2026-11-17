@@ -64,7 +64,7 @@ function Campo({ n }: { n: any }) {
       keyboardType={ty === "number" || n.getAttribute("inputmode") === "numeric" ? "numeric" : n.getAttribute("inputmode") === "decimal" ? "decimal-pad" : ty === "tel" ? "phone-pad" : ty === "email" ? "email-address" : "default"}
       secureTextEntry={ty === "password"} autoCapitalize={ty === "email" || ty === "password" ? "none" : "sentences"} autoCorrect={false}
       accessibilityLabel={n.getAttribute("aria-label") || undefined}
-      style={{ minHeight: area ? 84 : 48, borderRadius: 14, backgroundColor: C.sage, paddingHorizontal: 14, paddingVertical: area ? 10 : 0, fontFamily: F.t600, fontSize: 16, color: C.ink, textAlignVertical: area ? "top" : "center", marginTop: 6 }}
+      style={{ minHeight: area ? 84 : 48, borderRadius: 14, backgroundColor: C.white, borderWidth: 1.5, borderColor: C.sage2, paddingHorizontal: 14, paddingVertical: area ? 10 : 0, fontFamily: F.t600, fontSize: 16, color: C.ink, textAlignVertical: area ? "top" : "center", marginTop: 6 }}
     />
   );
 }
@@ -75,7 +75,7 @@ function Scelta({ n }: { n: any }) {
   const val = n.value;
   return (
     <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 6 }}>
-      {opz.map((o, i) => { const v = o.hasAttribute("value") ? o.getAttribute("value") : o.textContent; return <Chip key={i} piccolo sfondo={C.sage} testo={pulito(o.textContent)} attivo={v === val} onPress={() => { n.value = v; simulaCambio(n, "change"); notifica(); }} />; })}
+      {opz.map((o, i) => { const v = o.hasAttribute("value") ? o.getAttribute("value") : o.textContent; return <Chip key={i} piccolo sfondo={C.white} testo={pulito(o.textContent)} attivo={v === val} onPress={() => { n.value = v; simulaCambio(n, "change"); notifica(); }} />; })}
     </View>
   );
 }
@@ -116,7 +116,7 @@ export function Nodo({ n, k = "n" }: { n: any; k?: string }): any {
   if (eBottone && !cl(n, "tcard") && !cl(n, "hrow") && !cl(n, "box")) {
     const tx = pulito(testo(n)).trim();
     const fai = () => (t === "a" && n.getAttribute("href") && !n.onclick ? apriLink(n.getAttribute("href")) : tocca(n));
-    if (n.hasAttribute("aria-pressed") || cl(n, "pill") || cl(n, "tag") || cl(n, "whob") || cl(n, "dp")) return <Chip piccolo sfondo={C.sage} testo={tx || "…"} attivo={n.getAttribute("aria-pressed") === "true"} onPress={fai} style={{ marginTop: 6, marginRight: 6 }} />;
+    if (n.hasAttribute("aria-pressed") || cl(n, "pill") || cl(n, "tag") || cl(n, "whob") || cl(n, "dp")) return <Chip piccolo sfondo={C.white} testo={tx || "…"} attivo={n.getAttribute("aria-pressed") === "true"} onPress={fai} style={{ marginTop: 6, marginRight: 6 }} />;
     if (!tx) return cl(n, "round") ? <Tocco onPress={fai} accessibilityLabel={n.getAttribute("aria-label") || "Bottone"} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: C.sage, alignItems: "center", justifyContent: "center", marginTop: 6 }}><Icona nome="x" size={16} /></Tocco> : null;
     return <Bottone testo={tx} piccolo={cl(n, "sm")} largo={cl(n, "wide") || !cl(n, "sm")} tinta={cl(n, "pri") ? "lime" : "chiaro2"} disabled={!!n.disabled} onPress={fai} style={{ marginTop: 8 }} />;
   }

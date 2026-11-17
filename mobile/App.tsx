@@ -18,6 +18,7 @@ import { PrimoAvvio } from "./src/schermate/PrimoAvvio";
 import { SEZIONI, SCHERMATE } from "./src/schermate";
 import "./src/collega";
 import { PastigliaInCammino } from "./src/schermate/Vai";
+import { salutoDelGiorno } from "./src/schermate/Esplora";
 
 function Radice() {
   useMotore();
@@ -30,6 +31,7 @@ function Radice() {
     return () => s.remove();
   }, []);
   const c = cima(), barra = useBarra();
+  useEffect(() => { if (M.S.dog && !M.nav) salutoDelGiorno(); }, [!!M.S.dog]);
   useEffect(() => { strati.barra(!PIENE.has(c.nome)); }, [c.nome]);
   if (!M.S.dog) return <PrimoAvvio />;
   return (
