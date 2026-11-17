@@ -62,7 +62,7 @@ export default function App() {
   const [pronto, setPronto] = useState(false);
   const [errore, setErrore] = useState("");
   useEffect(() => {
-    caricaArchivio().then(() => { avviaMotore(); setPronto(true); }).catch((e) => setErrore(String(e && e.message || e)));
+    caricaArchivio().then(() => { avviaMotore(); setPronto(true); }).catch((e) => setErrore(String((e && (e.stack || e.message)) || e).split(String.fromCharCode(10)).slice(0, 4).join(String.fromCharCode(10))));
   }, []);
   useMotore();
   return (

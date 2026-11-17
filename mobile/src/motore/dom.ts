@@ -1,7 +1,7 @@
 // Una "pagina" vera ma invisibile per il motore: è la stessa struttura del sito (index.html), letta con linkedom.
 // Così le parti del sito che costruiscono elenchi, moduli e bottoni funzionano come nel browser,
 // e l'app li ridisegna in modo nativo con il nuovo stile (ui/HtmlMotore.tsx).
-import { parseHTML } from "linkedom";
+import { DOMParser } from "linkedom";
 
 let sistemato = false;
 function sistemaPrototipi(window: any, document: any) {
@@ -70,7 +70,10 @@ export function simulaCambio(el: any, tipo: "input" | "change") {
 }
 
 export function creaDom(corpo: string) {
-  const { window, document } = parseHTML(`<!doctype html><html lang="it"><head></head>${corpo}</html>`) as any;
+  // si usa solo il documento: la "finestra" di linkedom avvolge l'oggetto globale e sul telefono (Hermes) dà errore
+  const document: any = new (DOMParser as any)().parseFromString(`<!doctype html><html lang="it"><head></head>${corpo}</html>`, "text/html");
+  const window: any = {};
+  try { Object.defineProperty(document, "defaultView", { configurable: true, value: { location: { href: "https://parseng.github.io/ALLDOGS/" } } }); } catch {}
   sistemaPrototipi(window, document);
   // gli ascoltatori aggiunti con addEventListener li tengo anche io, per i tocchi simulati
   const El = Object.getPrototypeOf(Object.getPrototypeOf(document.createElement("div")));

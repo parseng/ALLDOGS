@@ -36,6 +36,9 @@ function tuttofare(): any {
   };
   const p: any = new Proxy(fn, {
     get(t, k) {
+      // regola dei Proxy: le proprietà fisse dell'oggetto vanno restituite come sono (Hermes lo controlla)
+      const fissa = Object.getOwnPropertyDescriptor(t, k);
+      if (fissa && !fissa.configurable) return (t as any)[k];
       if (k === Symbol.toPrimitive) return () => "";
       if (k === Symbol.iterator) return function* () {};
       if (k === "then") return undefined;
