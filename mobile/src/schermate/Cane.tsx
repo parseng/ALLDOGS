@@ -12,6 +12,7 @@ import { scrivi } from "../archivio";
 import { nav } from "../nav";
 import { scegliFoto } from "../foto";
 import { SceltaAvatar } from "../ui/FotoAvatar";
+import { BarraPeso } from "../ui/BarraPeso";
 import { Bottone, Etichetta, Icona, RigaMenu, Sezione, Testo, Tocco } from "../ui/base";
 import { FotoCane, fotoCane, nomeCane } from "../ui/BarraMenu";
 import { PaginaMotore } from "../ui/PaginaMotore";
@@ -203,6 +204,7 @@ export function Salute({ attiva }: { attiva: boolean }) {
       <PaginaGrande colore={TESTATA.salute} titolo="Salute" frase="Il veterinario resta il mio migliore amico, ma i promemoria li tengo io." posa="salute" attiva={attiva}>
         <View style={{ paddingHorizontal: MARGINE }}>
           <Tocco onPress={indietro} style={{ flexDirection: "row", alignItems: "center", gap: 6, minHeight: 44, marginTop: 6 }}><Icona nome="back" size={18} /><Text style={{ fontFamily: F.t800, fontSize: 15, color: C.ink }}>Torna al profilo</Text></Tocco>
+          <BarraPeso />
           <PaginaMotore id="he-rem" />
           <PaginaMotore id="he-main" />
           <Testo tipo="piccolo" style={{ marginTop: 16 }}>Indicazioni prudenti, non una visita: peso, dieta e attività le decide il veterinario.</Testo>

@@ -3,6 +3,7 @@
 // Riceve i comandi dal motore (vedi remota.ts) e gli rimanda tocchi e spostamenti.
 import { C } from "../theme";
 import { CODICE_SITO } from "./web-mappa.generated";
+import { TESTA_GOHAN } from "./testa-gohan";
 
 export type AvvioMappa = { c: [number, number]; z: number; stile: string; map3d: boolean; hillOn: boolean; wxOv: string | null; scala?: "su" | "giu" | "no"; legendaSu?: number };
 
@@ -10,11 +11,11 @@ const CSS = `
 html,body,#map{margin:0;padding:0;height:100%;width:100%;overflow:hidden;background:${C.sage2};font-family:system-ui,sans-serif;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 .mapnote{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:20px;color:${C.ink2};font-size:15px;font-weight:600}
 .mk-stop{width:26px;height:26px;border-radius:50%;background:${C.cream};color:${C.ink};border:2.5px solid ${C.ink};font:800 13.5px/21px system-ui;text-align:center;box-shadow:0 3px 8px rgba(23,28,20,.35);box-sizing:border-box}
-.mk-me{position:relative;width:20px;height:20px}
-.mk-me .face{position:absolute;inset:0;border-radius:50%;background:${C.copper};border:3px solid #fff;box-shadow:0 0 0 6px rgba(210,128,58,.22),0 1px 4px rgba(0,0,0,.35);box-sizing:border-box}
+.mk-me{position:relative;width:34px;height:34px}
+.mk-me .face{position:absolute;inset:0;border-radius:50%;background:#fff url(${TESTA_GOHAN}) center/cover;border:3px solid #fff;box-shadow:0 0 0 5px rgba(66,133,244,.30),0 2px 6px rgba(0,0,0,.4);box-sizing:border-box}
 .mk-me .face svg{display:none}
-.mk-me .hd{display:none;position:absolute;inset:-12px;pointer-events:none}
-.mk-me .hd::before{content:"";position:absolute;left:50%;top:0;margin-left:-6px;border:6px solid transparent;border-top:0;border-bottom:9px solid ${C.copper};filter:drop-shadow(0 0 1.5px #fff)}
+.mk-me .hd{display:none;position:absolute;inset:-22px;pointer-events:none}
+.mk-me .hd::before{content:"";position:absolute;left:50%;top:0;margin-left:-9px;border:9px solid transparent;border-top:0;border-bottom:15px solid #4285F4;filter:drop-shadow(0 0 1.5px #fff)}
 .mk-me.dir .hd{display:block}
 .mk-haz{width:30px;height:27px;position:relative;cursor:pointer;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
 .mk-haz::before{content:"";position:absolute;left:0;top:0;border-left:15px solid transparent;border-right:15px solid transparent;border-bottom:26px solid #1b1f17}
@@ -25,7 +26,8 @@ html,body,#map{margin:0;padding:0;height:100%;width:100%;overflow:hidden;backgro
 .mk-start svg{width:22px;height:22px;transform:rotate(45deg);fill:none;stroke:${C.lime};stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
 .mk-start svg .fl{fill:${C.lime}}
 .mk-start span{order:-1;margin-bottom:4px;background:${C.forest};color:${C.cream};font:800 12px/1 system-ui;padding:5px 9px;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.3);white-space:nowrap}
-.mk-pin{width:30px;height:30px;border-radius:50% 50% 50% 4px;transform:rotate(-45deg);background:${C.copper};border:3px solid ${C.cream};box-shadow:0 4px 10px rgba(23,28,20,.4);box-sizing:border-box}
+.mk-pin{width:34px;height:34px;border-radius:50% 50% 50% 4px;transform:rotate(-45deg);background:${C.forest};border:3px solid #fff;box-shadow:0 4px 10px rgba(23,28,20,.4);box-sizing:border-box;position:relative}
+.mk-pin::after{content:"";position:absolute;left:50%;top:50%;width:11px;height:11px;margin:-5.5px 0 0 -5.5px;border-radius:50%;background:${C.lime}}
 .mk-fly{width:34px;height:34px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}
 .mk-fly svg{width:100%;height:100%;display:block}
 .mk-fly path{fill:${C.copper};stroke:#fff;stroke-width:2;stroke-linejoin:round}
@@ -66,13 +68,35 @@ function vista(user){if(!M)return null;var b=M.getBounds(),c=M.getCenter();retur
 function arrow(){if(M.hasImage("ad-arrow"))return;var c=document.createElement("canvas");c.width=c.height=40;var g=c.getContext("2d");
   g.fillStyle="#fff";g.strokeStyle="#171C14";g.lineWidth=3;g.lineJoin="round";g.beginPath();g.moveTo(8,8);g.lineTo(34,20);g.lineTo(8,32);g.lineTo(14,20);g.closePath();g.stroke();g.fill();
   M.addImage("ad-arrow",g.getImageData(0,0,40,40),{pixelRatio:2})}
+// segnaposto disegnati (al posto dei pallini): goccia colorata con un disegnino bianco che dice cos'è
+var IC={a:"#1f8a4c",v:"#d9483b",s:"#1e88e5",g:"#6a9f2a",w:"#1e88e5",ws:"#0f9d8a"};
+function disegnino(g,k){g.fillStyle="#fff";g.strokeStyle="#fff";g.lineCap="round";g.lineJoin="round";
+  if(k==="v"){g.fillRect(9,4,6,16);g.fillRect(4,9,16,6);return}
+  if(k==="a"){g.beginPath();g.ellipse(12,16.5,5.2,4.2,0,0,7);g.fill();[[5.8,10.5],[9.6,6.6],[14.4,6.6],[18.2,10.5]].forEach(function(t){g.beginPath();g.ellipse(t[0],t[1],2.3,2.7,0,0,7);g.fill()});return}
+  if(k==="s"){g.beginPath();g.moveTo(2.5,12);g.quadraticCurveTo(12,0,21.5,12);g.closePath();g.fill();g.lineWidth=2.2;g.beginPath();g.moveTo(12,11);g.lineTo(12,20.5);g.stroke();g.beginPath();g.moveTo(4,21.5);g.quadraticCurveTo(8,19.5,12,21.5);g.quadraticCurveTo(16,23.5,20,21.5);g.stroke();return}
+  if(k==="g"){g.beginPath();g.arc(12,8,5.5,0,7);g.arc(7.5,12.5,4.2,0,7);g.arc(16.5,12.5,4.2,0,7);g.fill();g.fillRect(10.8,13,2.4,8.5);return}
+  g.beginPath();g.moveTo(12,2.5);g.bezierCurveTo(12,2.5,4.5,11,4.5,15);g.arc(12,15,7.5,Math.PI,0,true);g.bezierCurveTo(19.5,11,12,2.5,12,2.5);g.fill()}
+function icone(){for(var k in IC){var id="ad-ic-"+k;if(M.hasImage(id))continue;var W=64,H=78,c=document.createElement("canvas");c.width=W;c.height=H;var g=c.getContext("2d");
+  g.save();g.shadowColor="rgba(0,0,0,.35)";g.shadowBlur=5;g.shadowOffsetY=2;g.fillStyle=IC[k];g.beginPath();g.arc(32,30,26,Math.PI*.78,Math.PI*.22);g.lineTo(32,73);g.closePath();g.fill();g.restore();
+  g.lineWidth=4;g.strokeStyle="#fff";g.beginPath();g.arc(32,30,26,Math.PI*.78,Math.PI*.22);g.lineTo(32,73);g.closePath();g.stroke();
+  g.save();g.translate(32-12*1.55,30-12*1.55);g.scale(1.55,1.55);disegnino(g,k==="ws"?"w":k);g.restore();
+  M.addImage(id,g.getImageData(0,0,W,H),{pixelRatio:2})}}
+function icona(L,img){var o={id:L.id,type:"symbol",source:L.source};if(L.minzoom!=null)o.minzoom=L.minzoom;if(L.maxzoom!=null)o.maxzoom=L.maxzoom;if(L.filter)o.filter=L.filter;o.layout={"icon-image":img,"icon-size":["interpolate",["linear"],["zoom"],9,.55,15,.85],"icon-anchor":"bottom","icon-allow-overlap":true,"icon-ignore-placement":true};return o}
+/** i livelli a pallini del sito diventano segnaposto disegnati; restituisce i livelli da aggiungere */
+function aDisegni(L){
+  if(L.id==="ad-poi-l")return [];
+  if(L.id==="ad-poi"||L.id==="ad-poi-g")return [icona(L,["concat","ad-ic-",["get","k"]])];
+  if(L.id==="ad-wt")return [icona(L,["match",["get","k"],"s","ad-ic-ws","ad-ic-w"])];
+  if(/^far-[a-z]$/.test(L.id)&&L.type==="circle"){var k=L.id.slice(4),P=L.paint||{};P["circle-opacity"]=["case",["has","point_count"],.9,0];P["circle-stroke-width"]=["case",["has","point_count"],2,0];P["circle-radius"]=["case",["has","point_count"],["interpolate",["linear"],["get","point_count"],2,11,50,16,500,22],10];L.paint=P;
+    var I=icona({id:L.id+"-ic",source:L.source,minzoom:L.minzoom,maxzoom:L.maxzoom,filter:["!",["has","point_count"]]},"ad-ic-"+k);I.layout["icon-size"]=.55;return [L,I]}
+  return [L]}
 function avvia(){
   if(!window.mapboxgl){$("map").innerHTML='<div class="mapnote">La mappa non si carica. Controlla la connessione.</div>';post({t:"err",m:"libreria"});return}
   mapboxgl.accessToken=MAPBOX_TOKEN;
   try{M=new mapboxgl.Map({container:"map",style:STYLES[styleNow]||STYLES.map,center:[INIT.c[1],INIT.c[0]],zoom:INIT.z,attributionControl:false,pitchWithRotate:true,fadeDuration:150})}
   catch(e){$("map").innerHTML='<div class="mapnote">Questo telefono non riesce a mostrare la mappa.</div>';M=null;post({t:"err",m:"webgl"});return}
   M.addControl(new mapboxgl.AttributionControl({compact:true,customAttribution:"Sentieri © OpenStreetMap contributors"}),"bottom-left");
-  M.on("style.load",function(){styleOK=true;try{itLabels()}catch(e){}if(styleNow==="sat")try{fixSatellite()}catch(e){}try{detailMap()}catch(e){}try{arrow()}catch(e){}
+  M.on("style.load",function(){styleOK=true;try{itLabels()}catch(e){}if(styleNow==="sat")try{fixSatellite()}catch(e){}try{detailMap()}catch(e){}try{arrow()}catch(e){}try{icone()}catch(e){}
     if(!M.getSource("dem"))M.addSource("dem",{type:"raster-dem",tiles:[DEM_TILES],encoding:"terrarium",tileSize:256,maxzoom:14,attribution:"Rilievo: Terrain Tiles (Mapzen, AWS Open Data)"});
     post({t:"style",k:styleNow,v:vista()});setTimeout(overlays,400)});
   M.on("error",function(e){post({t:"log",m:String(e&&e.error&&e.error.message)})});
@@ -95,8 +119,9 @@ function run(c){
   switch(c[0]){
     case "m":M[c[1]].apply(M,c[2]||[]);break;
     case "source":if(!M.getSource(c[1]))M.addSource(c[1],c[2]);break;
-    case "layer":{var b=c[2];if(c[1].id==="ad-bld"){var s=(M.getStyle().layers||[]).find(function(l){return l.type==="symbol"});b=s&&s.id}if(b&&!M.getLayer(b))b=undefined;if(!M.getLayer(c[1].id)&&(!c[1].source||typeof c[1].source!=="string"||M.getSource(c[1].source)))M.addLayer(c[1],b);break}
-    case "unlayer":if(M.getLayer(c[1]))M.removeLayer(c[1]);break;
+    case "layer":{var b=c[2];if(c[1].id==="ad-bld"){var s=(M.getStyle().layers||[]).find(function(l){return l.type==="symbol"});b=s&&s.id}if(b&&!M.getLayer(b))b=undefined;try{icone()}catch(e){}
+      aDisegni(c[1]).forEach(function(L){if(!M.getLayer(L.id)&&(!L.source||typeof L.source!=="string"||M.getSource(L.source)))M.addLayer(L,b)});break}
+    case "unlayer":if(M.getLayer(c[1]+"-ic"))M.removeLayer(c[1]+"-ic");if(M.getLayer(c[1]))M.removeLayer(c[1]);break;
     case "unsource":if(M.getSource(c[1]))M.removeSource(c[1]);break;
     case "data":{var so=M.getSource(c[1]);if(so&&so.setData)so.setData(c[2]);break}
     case "paint":if(M.getLayer(c[1]))M.setPaintProperty(c[1],c[2],c[3]);break;

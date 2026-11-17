@@ -6,6 +6,7 @@ import { SvgXml } from "react-native-svg";
 import { C, F, MOLLA, MORBIDO, R } from "../theme";
 import { ICONE } from "./icone.generated";
 import { EXTRA } from "./icone.extra";
+import { DISEGNI } from "./disegnini";
 
 // ---------- movimento ridotto ----------
 let ridotto = false;
@@ -46,7 +47,7 @@ export function TestoRicco({ children, style, forte, ...p }: TextProps & { child
 // ---------- icone ----------
 export function Icona({ nome, size = 24, colore = C.ink, style }: { nome: string; size?: number; colore?: string; style?: StyleProp<ViewStyle> }) {
   const xml = useMemo(() => {
-    const i = ICONE[nome] || EXTRA[nome] || ICONE.paw;
+    const i = ICONE[nome] || EXTRA[nome] || DISEGNI[nome] || ICONE.paw;
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${i.vb}">${i.xml.split("currentColor").join(colore)}</svg>`;
   }, [nome, colore]);
   return <SvgXml xml={xml} width={size} height={size} style={style as any} />;
