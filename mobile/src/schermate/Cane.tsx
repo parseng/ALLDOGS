@@ -229,28 +229,49 @@ export const Regole = ({ attiva }: { attiva: boolean }) => <Semplice attiva={att
 export const Dati = ({ attiva }: { attiva: boolean }) => <Semplice attiva={attiva} colore={C.lime} titolo={`I dati di ${nomeCane()}`} riga="Età, peso, allenamento, salute e libretto." prepara={() => { const M = motore(); M.showDog(); pagina().el("fold-dog").open = true; }} sel="#fold-dog > .foldb" togli={[".onbonly"]} nota="Restano su questo telefono e, se accedi, anche nel tuo account privato." />;
 export const Proponi = ({ attiva }: { attiva: boolean }) => <Semplice attiva={attiva} colore={C.water} titolo="Proponi un posto" riga="Area cani, spiaggia, fontanella o un tuo giro: lo controllo e lo aggiungo per tutti." prepara={() => { try { motore().propList && motore().propList(); } catch {} }} sel="#fold-prop > .foldb" />;
 export const Account = ({ attiva }: { attiva: boolean }) => <Semplice attiva={attiva} colore={C.lilac} titolo="Il tuo account" riga="Per non perdere i dati se cambi telefono." prepara={() => { const M = motore(); M.accPaint(); M.sbLoad().catch(() => {}); }} id="acc-box" />;
+/** riquadro delle impostazioni: disegnino, titolo, spiegazione e quello che serve */
+function Scheda({ disegno, titolo, testo, children }: { disegno: string; titolo: string; testo?: string; children?: React.ReactNode }) {
+  return (
+    <View style={{ backgroundColor: C.cream, borderRadius: 22, padding: 16, marginTop: 14 }}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+        <View style={{ width: 48, height: 48, borderRadius: 15, backgroundColor: C.sage, alignItems: "center", justifyContent: "center" }}><Icona nome={disegno} size={38} /></View>
+        <Text style={{ flex: 1, fontFamily: F.titolo, fontSize: 19, letterSpacing: -0.3, color: C.ink }}>{titolo}</Text>
+      </View>
+      {testo ? <Text style={{ fontFamily: F.t600, fontSize: 14.5, lineHeight: 20, color: C.ink2, marginTop: 10 }}>{testo}</Text> : null}
+      {children ? <View style={{ marginTop: 6 }}>{children}</View> : null}
+    </View>
+  );
+}
+function RigaLink({ disegno, testo, onPress }: { disegno: string; testo: string; onPress: () => void }) {
+  return (
+    <Tocco hitSlop={0} onPress={onPress} style={{ flexDirection: "row", alignItems: "center", gap: 12, minHeight: 52, borderTopWidth: 1, borderTopColor: C.sage2, marginTop: 6 }}>
+      <Icona nome={disegno} size={26} /><Text style={{ flex: 1, fontFamily: F.t700, fontSize: 15.5, color: C.ink }}>{testo}</Text><Icona nome="chev" size={16} colore={C.ink2} />
+    </Tocco>
+  );
+}
 export function Impostazioni({ attiva }: { attiva: boolean }) {
   useMotore();
   const M = motore();
   const SITO = "https://parseng.github.io/ALLDOGS/";
   return (
     <PaginaSemplice colore={TESTATA.impostazioni} titolo="Impostazioni" riga={`Per ${nomeCane()} e per te.`} indietro={indietro}>
-      <Sezione titolo={`Foto di ${nomeCane()}`} />
-      <Testo tipo="secondo" style={{ marginBottom: 10 }}>La sua foto diventa il suo avatar in tutta l'app.</Testo>
-      <SceltaAvatar />
-      <Sezione titolo="I tuoi cani" />
-      <Testo tipo="secondo">Hai più cani? Aggiungili: ognuno ha il suo profilo, la sua salute e i suoi limiti. Prima di una passeggiata scegli chi viene.</Testo>
-      <Bottone testo="Aggiungi un altro cane" icona="plus" tinta="chiaro" piccolo style={{ marginTop: 10 }} onPress={() => nav.apri("nuovocane")} />
-      <Sezione titolo="Promemoria" />
-      <Testo tipo="secondo">Ti ricordo la passeggiata all'inizio delle fasce orarie libere che hai indicato nelle domande iniziali.</Testo>
-      <Bottone testo="Cambia gli orari liberi" tinta="chiaro" piccolo style={{ marginTop: 10 }} onPress={() => nav.apri("domande")} />
-      <Sezione titolo="Navigazione" />
-      <Testo tipo="secondo">Indicazioni, voce e pausa automatica si cambiano durante una passeggiata, con l'ingranaggio.</Testo>
-      <Sezione titolo="Privacy e condizioni" />
-      <Bottone testo="Informativa sulla privacy" tinta="chiaro" largo onPress={() => Linking.openURL(SITO + "privacy.html")} />
-      <Bottone testo="Condizioni d'uso" tinta="chiaro" largo style={{ marginTop: 8 }} onPress={() => Linking.openURL(SITO + "termini.html")} />
-      <Sezione titolo="Avvertenze e fonti" />
-      <PaginaMotore sel="#settings > .foldb" />
+      <Scheda disegno="d-foto" titolo={`Foto di ${nomeCane()}`} testo="La sua foto diventa il suo avatar in tutta l'app.">
+        <SceltaAvatar />
+      </Scheda>
+      <Scheda disegno="d-cani" titolo="I tuoi cani" testo="Hai più cani? Aggiungili: ognuno ha il suo profilo, la sua salute e i suoi limiti. Prima di una passeggiata scegli chi viene.">
+        <Bottone testo="Aggiungi un altro cane" icona="plus" tinta="lime" piccolo style={{ marginTop: 10, alignSelf: "flex-start" }} onPress={() => nav.apri("nuovocane")} />
+      </Scheda>
+      <Scheda disegno="d-campanella" titolo="Promemoria" testo="Ti ricordo la passeggiata all'inizio delle fasce orarie libere che hai indicato nelle domande iniziali.">
+        <Bottone testo="Cambia gli orari liberi" tinta="chiaro" piccolo style={{ marginTop: 10, alignSelf: "flex-start" }} onPress={() => nav.apri("domande")} />
+      </Scheda>
+      <Scheda disegno="d-bussola" titolo="Navigazione" testo="Indicazioni, voce e pausa automatica si cambiano durante una passeggiata, con l'ingranaggio." />
+      <Scheda disegno="d-lucchetto" titolo="Privacy e condizioni" testo="Come trattiamo i tuoi dati e le regole dell'app.">
+        <RigaLink disegno="d-lucchetto" testo="Informativa sulla privacy" onPress={() => Linking.openURL(SITO + "privacy.html")} />
+        <RigaLink disegno="d-documento" testo="Condizioni d'uso" onPress={() => Linking.openURL(SITO + "termini.html")} />
+      </Scheda>
+      <Scheda disegno="d-avviso" titolo="Avvertenze e fonti">
+        <PaginaMotore sel="#settings > .foldb" />
+      </Scheda>
     </PaginaSemplice>
   );
 }

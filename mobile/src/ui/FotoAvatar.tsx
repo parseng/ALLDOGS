@@ -48,9 +48,9 @@ export function SceltaAvatar() {
     <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
       <FotoCane size={72} />
       <View style={{ flex: 1, gap: 8 }}>
-        <Bottone testo={presente ? "Cambia foto" : "Scegli dalla galleria"} tinta="chiaro" piccolo style={{ alignSelf: "flex-start" }} onPress={() => cambiaFotoCane()} />
-        <Bottone testo="Scatta una foto" tinta="chiaro" piccolo style={{ alignSelf: "flex-start" }} onPress={() => cambiaFotoCane(true)} />
-        {presente ? <Bottone testo="Togli la foto" tinta="chiaro" piccolo style={{ alignSelf: "flex-start" }} onPress={() => { M.store.del(M.PHK); notifica(); strati.avviso(`Foto di ${nome} tolta`); }} /> : null}
+        <Bottone testo={presente ? "Cambia foto" : "Scegli dalla galleria"} tinta="chiaro2" piccolo style={{ alignSelf: "flex-start" }} onPress={() => cambiaFotoCane()} />
+        <Bottone testo="Scatta una foto" tinta="chiaro2" piccolo style={{ alignSelf: "flex-start" }} onPress={() => cambiaFotoCane(true)} />
+        {presente ? <Bottone testo="Togli la foto" tinta="chiaro2" piccolo style={{ alignSelf: "flex-start" }} onPress={() => { M.store.del(M.PHK); notifica(); strati.avviso(`Foto di ${nome} tolta`); }} /> : null}
       </View>
     </View>
   );

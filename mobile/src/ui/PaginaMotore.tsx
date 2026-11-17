@@ -204,6 +204,10 @@ export function Nodo({ n, k = "n" }: { n: any; k?: string }): any {
     const ctl = n.querySelector("input,select,textarea");
     const ck = ctl && (ctl.getAttribute("type") === "checkbox" || ctl.getAttribute("type") === "radio");
     if (ck) return <Tocco hitSlop={0} onPress={() => { ctl.checked = ctl.getAttribute("type") === "radio" ? true : !ctl.checked; simulaCambio(ctl, "change"); tocca(ctl); }} style={{ flexDirection: "row", alignItems: "center", gap: 10, minHeight: 48, borderBottomWidth: 1, borderBottomColor: C.sage2 }}>{(() => { const tb = n.querySelector("b") || n; const dn = disegnoPer(pulito(testo(tb))); return dn ? <Disegno nome={dn} /> : null; })()}{(() => { const sm = n.querySelector("small"); const tit = sm ? pulito(testo(n)).replace(pulito(testo(sm)), "").trim() : pulito(testo(n)).trim(); return <View style={{ flex: 1, paddingVertical: 8 }}><Text style={{ fontFamily: F.t700, fontSize: 15, color: C.ink }}>{tit}</Text>{sm ? <Text style={{ fontFamily: F.t500, fontSize: 13, color: C.ink2, marginTop: 2 }}>{pulito(testo(sm)).trim()}</Text> : null}</View>; })()}<Interruttore acceso={!!ctl.checked} /></Tocco>;
+    // etichetta di un campo con un disegnino (Email, Password, Nome...)
+    const primo = (Array.from(n.childNodes) as any[]).find((c) => c.nodeType === 3 && String(c.textContent).trim());
+    const dnL = primo ? disegnoPer(String(primo.textContent).trim()) : null;
+    if (dnL && primo) return <View style={{ marginTop: 12 }}><View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}><Icona nome={dnL} size={24} /><Text style={{ fontFamily: F.t700, fontSize: 15, color: C.ink }}>{pulito(primo.textContent).trim()}</Text></View><Blocchi nodi={figli.filter((c: any) => c !== primo)} k={k} /></View>;
     return <View style={{ marginTop: 10 }}><Blocchi nodi={figli} k={k} /></View>;
   }
   // righe fatte di più pezzi affiancati (es. "17 novembre | 25 kg | +1"): in colonna con spazio, non attaccati
