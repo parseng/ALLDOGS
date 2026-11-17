@@ -72,7 +72,7 @@ export function PaginaGrande({ colore, titolo, frase, posa, attiva, sbuca, consi
         scrollEventThrottle={16}
         scrollEnabled={!fermo}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
+        keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets keyboardDismissMode="interactive"
         refreshControl={refresh}
         contentContainerStyle={{ paddingTop: APERTA, paddingBottom: BARRA_H + ins.bottom + 28 + fondo }}
       >
@@ -111,7 +111,7 @@ export function PaginaSemplice({ colore, titolo, riga, indietro, children, conBa
   const ins = useSafeAreaInsets();
   return (
     <View style={{ flex: 1, backgroundColor: C.sage }}>
-      <Animated.ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: (conBarra ? BARRA_H : 0) + ins.bottom + 28 }}>
+      <Animated.ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets keyboardDismissMode="interactive" contentContainerStyle={{ paddingBottom: (conBarra ? BARRA_H : 0) + ins.bottom + 28 }}>
         <TestataSemplice colore={colore} titolo={titolo} riga={riga} indietro={indietro} />
         <View style={{ paddingHorizontal: MARGINE }}>{children}</View>
       </Animated.ScrollView>

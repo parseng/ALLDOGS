@@ -108,7 +108,7 @@ export function Cerca({ attiva }: { attiva: boolean }) {
           {q ? <Tocco onPress={() => scrivi("")} accessibilityLabel="Cancella" style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: C.sage2, alignItems: "center", justifyContent: "center" }}><Icona nome="x" size={16} /></Tocco> : null}
         </View>
       </BarraAlta>
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: MARGINE, paddingBottom: 40, paddingTop: 6 }}>{corpo}</ScrollView>
+      <ScrollView keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets keyboardDismissMode="interactive" contentContainerStyle={{ paddingHorizontal: MARGINE, paddingBottom: 40, paddingTop: 6 }}>{corpo}</ScrollView>
     </View>
   );
 }

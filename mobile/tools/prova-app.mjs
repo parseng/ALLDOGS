@@ -42,10 +42,12 @@ for (const p of passi) {
     if (k === "shot") await page.screenshot({ path: `${OUT}/${v}.png` });
     else if (k === "click") await page.getByText(v, { exact: false }).first().click({ timeout: 8000 });
     else if (k === "clickx") await page.getByText(v, { exact: true }).last().click({ timeout: 8000 });
+    else if (k === "fill") { const [ph, ...tx] = v.split("="); await page.getByPlaceholder(ph).first().fill(tx.join("=")); await page.getByPlaceholder(ph).first().blur(); }
     else if (k === "clicklabel") await page.getByLabel(v, { exact: false }).first().click({ timeout: 8000 });
     else if (k === "wait") await page.waitForTimeout(+v);
     else if (k === "scroll") await page.mouse.wheel(0, +v);
     else if (k === "type") await page.keyboard.type(v, { delay: 30 });
+    else if (k === "key") await page.keyboard.press(v);
     else if (k === "eval") console.log("eval:", JSON.stringify(await page.evaluate(v)));
   } catch (e) { console.log("passo fallito:", p, "→", String(e.message).split("\n")[0]); }
   if (k !== "wait" && k !== "shot") await page.waitForTimeout(700);

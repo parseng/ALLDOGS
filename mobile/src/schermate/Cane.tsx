@@ -261,7 +261,7 @@ export function Domande({ attiva }: { attiva: boolean }) {
         <View style={{ flex: 1, height: 6, borderRadius: 3, backgroundColor: C.sage2, overflow: "hidden" }}><View style={{ height: "100%", width: `${Math.round(((M.W.i || 0) / Math.max(1, M.WSTEPS.length - 1)) * 100)}%`, backgroundColor: C.forest }} /></View>
         {!fine ? <Tocco onPress={() => premi("wz-skip")} style={{ minHeight: 44, justifyContent: "center", paddingHorizontal: 6 }}><Text style={{ fontFamily: F.t800, fontSize: 15, color: C.ink2 }}>Salta</Text></Tocco> : null}
       </View>
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
+      <ScrollView keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets keyboardDismissMode="interactive" contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
         <PaginaMotore id="wz-body" />
         <Bottone testo={fine ? "Salva" : "Avanti"} largo style={{ marginTop: 18 }} onPress={() => premi("wz-next")} />
       </ScrollView>

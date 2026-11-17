@@ -106,7 +106,7 @@ const fetchApp = ((u: any, o?: any) => {
 const COLORI = { "--ok": "#3E8E41", "--warn": "#D99A1C", "--no": "#D4503C", "--wait": "#8C9486", "--accent": C.forest, "--dog": C.copper, "--line": C.sage2, "--surface": C.cream, "--accent-soft": C.okSoft, "--steep": C.copper };
 
 // funzioni del motore dopo le quali le schermate vanno ridisegnate
-const ALTRE = new Set(["setFull", "setScene", "peek", "hidePeek", "end3d", "setStyleKind", "toggleSave", "setNear", "clearGen", "setStart", "drawRoute", "closeAI", "homeExtra", "syncSave", "applyScene", "loadWeather", "loadPhotos", "loadCell", "loadPlaces", "findTrail", "loadNames", "geoSuggest", "refreshView", "startNav", "endNav", "generate", "chatSend", "toRoute", "placeLoop", "setSurf", "mcSend", "syncNow", "miniSend", "miniRender", "miniChat", "openAI", "wzFinish", "accPaint", "sbLoad", "sosSheet"]);
+const ALTRE = new Set(["setFull", "setScene", "peek", "hidePeek", "end3d", "setStyleKind", "toggleSave", "setNear", "clearGen", "setStart", "drawRoute", "closeAI", "homeExtra", "syncSave", "applyScene", "loadWeather", "loadPhotos", "loadCell", "loadPlaces", "findTrail", "loadNames", "geoSuggest", "refreshView", "startNav", "endNav", "generate", "chatSend", "toRoute", "placeLoop", "setSurf", "mcSend", "syncNow", "miniSend", "miniRender", "miniChat", "openAI", "wzFinish", "accPaint", "sbLoad", "sosSheet", "renderChat", "showGen", "showMan", "showCrea", "autoWhy", "rules"]);
 
 export function avviaMotore() {
   if (M) return M;
@@ -180,3 +180,6 @@ export function pulito(t: any): string {
     .replace(/<[^>]+>/g, "")
     .replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"');
 }
+
+// per le prove sul PC: motore e pagina invisibile raggiungibili dalla console
+if (__DEV__) (globalThis as any).__AD = { motore: () => M, pagina: () => A };

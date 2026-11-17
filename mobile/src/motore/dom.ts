@@ -30,6 +30,10 @@ function sistemaPrototipi(window: any, document: any) {
   // <input type=checkbox>
   const inp = Object.getPrototypeOf(document.createElement("input"));
   Object.defineProperty(inp, "checked", { configurable: true, get() { return this._ck !== undefined ? this._ck : this.hasAttribute("checked"); }, set(v) { this._ck = !!v; } });
+  // <input> e <textarea>: "value" come nel browser (vuoto = "", mai undefined)
+  for (const P of [inp, Object.getPrototypeOf(document.createElement("textarea"))]) {
+    Object.defineProperty(P, "value", { configurable: true, get() { return this._v !== undefined ? this._v : this.tagName === "TEXTAREA" ? this.textContent || "" : this.getAttribute("value") || ""; }, set(v) { this._v = v == null ? "" : String(v); } });
+  }
   // <select>: valore e scelta come nel browser
   const sel = Object.getPrototypeOf(document.createElement("select"));
   const opzioni = (s: any) => Array.from(s.querySelectorAll("option")) as any[];
@@ -51,12 +55,16 @@ function sistemaPrototipi(window: any, document: any) {
 export function simulaTocco(el: any) {
   let fermo = false;
   const ev: any = { type: "click", target: el, bubbles: true, preventDefault() {}, stopPropagation() { fermo = true; }, stopImmediatePropagation() { fermo = true; } };
-  for (let n = el; n && !fermo; n = n.parentNode) {
+  // come nel browser: il percorso dal bottone in su si decide PRIMA di chiamare i gestori (se un gestore ridisegna la pagina, il percorso non cambia)
+  const via: any[] = [];
+  for (let n = el; n && !via.includes(n); n = n.parentNode) { via.push(n); if (n.nodeType === 9) break; }
+  for (const n of via) {
+    if (fermo) break;
     ev.currentTarget = n;
     if (typeof n.onclick === "function") { try { n.onclick.call(n, ev); } catch (e) { console.warn("motore: tocco", e); } }
     const L = n._ascolti && n._ascolti.click;
-    if (L) for (const f of L.slice()) { try { f.call(n, ev); } catch (e) { console.warn("motore: tocco", e); } }
-    if (n.nodeType === 9) break;
+    // linkedom registra "onclick" anche come ascoltatore: senza questo controllo lo stesso gestore partiva due volte
+    if (L) for (const f of L.slice()) { if (f === n.onclick || fermo) continue; try { f.call(n, ev); } catch (e) { console.warn("motore: tocco", e); } }
   }
 }
 /** evento di modifica (input/change) su un campo */
@@ -65,7 +73,7 @@ export function simulaCambio(el: any, tipo: "input" | "change") {
   const h = el["on" + tipo];
   if (typeof h === "function") { try { h.call(el, ev); } catch (e) { console.warn("motore:", tipo, e); } }
   const L = el._ascolti && el._ascolti[tipo];
-  if (L) for (const f of L.slice()) { try { f.call(el, ev); } catch (e) { console.warn("motore:", tipo, e); } }
+  if (L) for (const f of L.slice()) { if (f === h) continue; try { f.call(el, ev); } catch (e) { console.warn("motore:", tipo, e); } }
   // anche "submit" del modulo, se un campo invia
 }
 

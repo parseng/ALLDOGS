@@ -23,11 +23,13 @@ type Scheda = "chat" | "auto" | "man";
 const MAPPA_H = 300;
 const PUNTO = [C.lime, C.yellow, C.coral];
 
-function Chat({ onCreato }: { onCreato: () => void }) {
+function Chat({ onCreato, giu }: { onCreato: () => void; giu: () => void }) {
   const M = motore();
   const [testo, setTesto] = useState("");
   useEffect(() => { if (!M.S.chat.length) M.showChat(); }, []);
-  const manda = (t: string) => { if (!t.trim() || M.S.busy) return; setTesto(""); M.chatSend(t); };
+  const manda = (t: string) => { if (!t.trim() || M.S.busy) return; setTesto(""); M.chatSend(t); setTimeout(giu, 150); };
+  const n = (M.S.chat as any[]).length;
+  useEffect(() => { setTimeout(giu, 200); }, [n, M.S.busy]);
   const msgs = M.S.chat as any[];
   return (
     <View style={{ paddingHorizontal: MARGINE }}>
@@ -62,7 +64,7 @@ function Chat({ onCreato }: { onCreato: () => void }) {
         </View>
       ) : null}
       <View style={{ flexDirection: "row", gap: 8, marginTop: 14 }}>
-        <TextInput value={testo} onChangeText={setTesto} onSubmitEditing={() => manda(testo)} placeholder="Scrivi cosa vuoi fare" placeholderTextColor={C.ink2} returnKeyType="send" style={{ flex: 1, height: 52, borderRadius: 18, backgroundColor: C.cream, paddingHorizontal: 16, fontFamily: F.t600, fontSize: 16, color: C.ink }} accessibilityLabel="Scrivi all'assistente" />
+        <TextInput value={testo} onChangeText={setTesto} onFocus={() => setTimeout(giu, 350)} onSubmitEditing={() => manda(testo)} placeholder="Scrivi cosa vuoi fare" placeholderTextColor={C.ink2} returnKeyType="send" style={{ flex: 1, height: 52, borderRadius: 18, backgroundColor: C.cream, paddingHorizontal: 16, fontFamily: F.t600, fontSize: 16, color: C.ink }} accessibilityLabel="Scrivi all'assistente" />
         <Bottone icona="send" tinta="scuro" onPress={() => manda(testo)} accessibilityLabel="Invia" style={{ width: 52 }} />
       </View>
       <Testo tipo="piccolo" style={{ marginTop: 10 }}>L'assistente usa Gemini di Google e riceve il profilo del cane (senza veterinario né microchip) e il meteo. Può sbagliare: il percorso finale lo calcola l'app con i limiti di {nomeCane()}.</Testo>
@@ -144,6 +146,8 @@ export function CreaGiro({ attiva }: { attiva: boolean }) {
   useMotore();
   const M = motore(), ins = useSafeAreaInsets(), nome = nomeCane();
   const y = useSharedValue(0), slotY = useSharedValue(600);
+  const scorri = useRef<any>(null);
+  const giu = () => { try { scorri.current?.scrollToEnd({ animated: true }); } catch {} };
   const [scheda, setScheda] = useState<Scheda>(M.S.mode === "man" ? "man" : "auto");
   const [piena, tuttoSchermo] = usePiena("hostCrea", attiva);
   const [statoVolo, setVolo] = useState<StatoVolo | null>(null);
@@ -151,7 +155,15 @@ export function CreaGiro({ attiva }: { attiva: boolean }) {
   const gen = M.S.gen && M.S.gen[M.S.genIdx];
   const uscita = String(el("gen-out").innerHTML || "");
   // se il motore ha creato un giro (anche dalla chat) si passa alla scheda con la mappa
-  useEffect(() => { if (scheda === "chat" && (gen || /Sto disegnando/.test(uscita))) setScheda(M.S.mode === "man" ? "man" : "auto"); }, [!!gen, uscita]);
+  // ogni volta che il motore crea un giro nuovo (anche dalla chat, anche un secondo giro) si passa alla mappa e si mostra il risultato
+  const ultimoGiro = useRef<any>(M.S.gen);
+  useEffect(() => {
+    if (M.S.gen && M.S.gen !== ultimoGiro.current) {
+      ultimoGiro.current = M.S.gen;
+      if (scheda === "chat") setScheda(M.S.mode === "man" ? "man" : "auto");
+      setTimeout(() => { try { scorri.current?.scrollTo({ y: Math.max(0, slotY.value - 120), animated: true }); } catch {} }, 500);
+    } else if (scheda === "chat" && /Sto disegnando/.test(uscita)) setScheda(M.S.mode === "man" ? "man" : "auto");
+  }, [M.S.gen, uscita]);
   useEffect(() => { if (scheda !== "chat" && M.S.mode !== scheda && attiva) { setScheda(M.S.mode === "man" ? "man" : "auto"); } }, [M.S.mode, attiva]);
   useEffect(() => { if (!piena && statoVolo) { volo.ferma(); setVolo(null); } }, [piena]);
   const cambia = (s: Scheda) => {
@@ -167,7 +179,7 @@ export function CreaGiro({ attiva }: { attiva: boolean }) {
   const consigli = [{ titolo: "Un consiglio", testo: "Se è la prima volta in un posto nuovo, parti con un giro corto: annusare tutto mi stanca più di quanto sembra." }, ...(o.zampe ? [{ titolo: "Le mie zampe", testo: pulito(o.zampe.t[0]) }] : [])];
 
   return (
-    <PaginaGrande colore={TESTATA.crea} titolo="Crea un giro" frase={scheda === "chat" ? "Dimmi cosa ti va: il giro lo preparo io." : disegno ? "Metti i segnaposti: la strada la trovo io." : "Dimmi quanto tempo hai: il giro lo disegno io."} posa="creagiro" attiva={attiva} sbuca consigli={consigli} y={y} fermo={piena} pienaSopra={piena}
+    <PaginaGrande scrollRef={scorri} colore={TESTATA.crea} titolo="Crea un giro" frase={scheda === "chat" ? "Dimmi cosa ti va: il giro lo preparo io." : disegno ? "Metti i segnaposti: la strada la trovo io." : "Dimmi quanto tempo hai: il giro lo disegno io."} posa="creagiro" attiva={attiva} sbuca consigli={consigli} y={y} fermo={piena} pienaSopra={piena}
       sotto={
         <MappaGalleggiante attiva={attiva} y={y} slotY={slotY} altezza={MAPPA_H} margine={MARGINE} raggio={R.l} piena={piena} onPiena={tuttoSchermo} nascosta={!conMappa} onVolo={setVolo} legendaSu={statoVolo ? 120 : 34}
           sopra={(p) => (
@@ -193,7 +205,7 @@ export function CreaGiro({ attiva }: { attiva: boolean }) {
         {scheda === "man" ? <View style={{ flexDirection: "row", gap: 8, paddingHorizontal: MARGINE, marginTop: 10 }}><Chip piccolo testo="Scelgo la durata" attivo={M.S.manKind !== "draw"} onPress={() => tipoMan("auto")} /><Chip piccolo testo="Metto i segnaposti" attivo={M.S.manKind === "draw"} onPress={() => tipoMan("draw")} /></View> : null}
         {conMappa ? <Text style={{ fontFamily: F.t600, fontSize: 13.5, color: C.ink2, paddingHorizontal: MARGINE, marginTop: 10 }}>{disegno ? "Tocca la mappa per aggiungere i punti, uno dopo l'altro. Trascinali per spostarli." : "Tocca la mappa per spostare la partenza, oppure parti da dove sei."}</Text> : null}
       </View>
-      {scheda === "chat" ? <Chat onCreato={() => cambia("auto")} /> : (
+      {scheda === "chat" ? <Chat onCreato={() => cambia("auto")} giu={giu} /> : (
         <>
           <View style={{ height: MAPPA_H, marginTop: 12 }} />
           <View style={{ paddingHorizontal: MARGINE }}>

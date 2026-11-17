@@ -89,7 +89,7 @@ export function PrimoAvvio({ modo = "new", alFine }: { modo?: "new" | "add"; alF
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1, backgroundColor: C.sage }}>
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1, paddingTop: ins.top + 10, paddingHorizontal: 20, paddingBottom: ins.bottom + 18 }}>
+      <ScrollView keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets keyboardDismissMode="interactive" contentContainerStyle={{ flexGrow: 1, paddingTop: ins.top + 10, paddingHorizontal: 20, paddingBottom: ins.bottom + 18 }}>
         {cima}
         {eroe(POSE[i])}
         <Testo tipo="momento" accessibilityRole="header" style={{ marginTop: 10 }}>{T}</Testo>

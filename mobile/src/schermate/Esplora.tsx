@@ -120,7 +120,7 @@ export function Esplora({ attiva }: { attiva: boolean }) {
 
   return (
     <View style={{ flex: 1, backgroundColor: C.sage }}>
-      <Animated.ScrollView ref={scroller} onScroll={onScroll} scrollEventThrottle={16} scrollEnabled={scorri && !piena} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingTop: ins.top + 14, paddingBottom: BARRA_H + ins.bottom + 28 }}>
+      <Animated.ScrollView ref={scroller} onScroll={onScroll} scrollEventThrottle={16} scrollEnabled={scorri && !piena} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets keyboardDismissMode="interactive" contentContainerStyle={{ paddingTop: ins.top + 14, paddingBottom: BARRA_H + ins.bottom + 28 }}>
         <View onLayout={(e) => { slotY.value = e.nativeEvent.layout.y + e.nativeEvent.layout.height + 12; }}>
         <View style={{ paddingHorizontal: MARGINE, flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", gap: 8 }}>
           <View style={{ flex: 1 }}>

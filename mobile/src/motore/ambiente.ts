@@ -164,13 +164,15 @@ export function creaAmbiente(s: Servizi) {
   };
   if (vero) {
     const prendi = document.getElementById.bind(document);
-    // un elemento che il sito cerca ma che nella struttura non c'è: lo creo, nascosto, così il codice non si ferma
+    // un elemento che il sito cerca ma che nella struttura non c'è: gli do un sostituto nascosto, così il codice non si ferma.
+    // Il sostituto resta FUORI dalla pagina: se poi l'elemento vero compare (per esempio un modulo ridisegnato), vince sempre quello vero.
+    const sostituti = new Map<string, any>();
+    const scatola = document.createElement("div"); // contenitore staccato: i sostituti hanno un genitore ma non sono nella pagina
     document.getElementById = (id: string) => {
       const e = prendi(id);
       if (e) return e;
-      const n = document.createElement("div");
-      n.id = id; n.setAttribute("hidden", "");
-      document.body.appendChild(n);
+      let n = sostituti.get(id);
+      if (!n) { n = document.createElement("div"); n.id = id; n.setAttribute("hidden", ""); scatola.appendChild(n); sostituti.set(id, n); }
       return n;
     };
     try { Object.defineProperty(document, "visibilityState", { configurable: true, get: () => "visible" }); } catch {}
