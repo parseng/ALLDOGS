@@ -54,6 +54,8 @@ function Livello({ posa, visibile, attiva, ferma, allinea, quandoPronto }: { pos
       <Image
         source={ferma ? fermaDi(posa) : VIVE[posa]}
         autoplay={attiva && !ferma}
+        useAppleWebpCodec={false}
+        allowDownscaling={false}
         contentFit="contain"
         contentPosition={allinea}
         cachePolicy="memory-disk"

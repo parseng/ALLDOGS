@@ -186,7 +186,10 @@ function Coriandoli() {
 // ---------- Gohan che sbuca (basso a destra, sopra la barra del menu) ----------
 function Sbuca() {
   const ins = useSafeAreaInsets();
-  const visibile = st.sbuca && st.barra && !strati.aperto();
+  // toccandolo Gohan se ne va, così si legge quello che c'è sotto; torna la prossima volta che si arriva in fondo
+  const [via, setVia] = useState(false);
+  useEffect(() => { if (!st.sbuca) setVia(false); }, [st.sbuca]);
+  const visibile = st.sbuca && st.barra && !strati.aperto() && !via;
   const y = useSharedValue(1), salto = useSharedValue(0);
   const [bolla, setBolla] = useState<Consiglio | null>(null);
   const giro = useRef(0), tB = useRef<any>(0);
@@ -196,11 +199,9 @@ function Sbuca() {
   }, [visibile]);
   const s = useAnimatedStyle(() => ({ transform: [{ translateY: y.value * 158 + salto.value }] }));
   const tocca = () => {
-    if (!st.consigli.length) return;
-    if (!movimentoRidotto()) { salto.value = withTiming(-22, { duration: 220 }, () => { salto.value = withSpring(0, MOLLA); }); }
-    setBolla(st.consigli[giro.current++ % st.consigli.length]);
     clearTimeout(tB.current);
-    tB.current = setTimeout(() => setBolla(null), 5200);
+    setBolla(null);
+    setVia(true);
   };
   const base = BARRA_H + ins.bottom - 6;
   return (
@@ -208,7 +209,7 @@ function Sbuca() {
       <View pointerEvents="box-none" style={{ position: "absolute", right: 0, bottom: base, width: 122, height: 152, overflow: "hidden", zIndex: 19 }}>
         <Animated.View style={[{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0 }, s]} pointerEvents={visibile ? "auto" : "none"}>
           <Mascotte posa="sbuca" attiva={visibile} allinea="bottom right" style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0 }} />
-          <Pressable onPress={tocca} accessibilityRole="button" accessibilityLabel="Tocca Gohan: ti dà un consiglio" style={{ position: "absolute", left: 10, right: 0, top: 16, bottom: 6 }} />
+          <Pressable onPress={tocca} accessibilityRole="button" accessibilityLabel="Tocca Gohan per farlo andare via" style={{ position: "absolute", left: 10, right: 0, top: 16, bottom: 6 }} />
         </Animated.View>
       </View>
       {bolla ? (

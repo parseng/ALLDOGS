@@ -37,7 +37,7 @@ function Radice() {
   return (
     <View style={{ flex: 1, backgroundColor: C.sage }}>
       {Object.entries(SEZIONI).map(([k, Comp]) => (viste[k] || st.sezione === k ? (
-        <View key={k} style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0, display: st.sezione === k ? "flex" : "none" }}>
+        <View key={k} collapsable={false} style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0, zIndex: 1, display: st.sezione === k && !st.pila.length ? "flex" : "none" }}>
           <Comp attiva={st.sezione === k && !st.pila.length} />
         </View>
       ) : null))}
@@ -45,7 +45,7 @@ function Radice() {
         const Comp = SCHERMATE[s.nome];
         if (!Comp) return null;
         return (
-          <Animated.View key={s.nome + ":" + (s.arg ?? "") + ":" + i} entering={FadeIn.duration(220)} style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0, backgroundColor: C.sage, display: i === st.pila.length - 1 ? "flex" : "none" }}>
+          <Animated.View key={s.nome + ":" + (s.arg ?? "") + ":" + i} entering={FadeIn.duration(220)} collapsable={false} style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0, zIndex: 2 + i, backgroundColor: C.sage, display: i === st.pila.length - 1 ? "flex" : "none" }}>
             <Comp arg={s.arg} attiva={i === st.pila.length - 1} />
           </Animated.View>
         );

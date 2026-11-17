@@ -97,6 +97,8 @@ const posizione = {
 const fetchApp = ((u: any, o?: any) => {
   const url = typeof u === "string" ? u : (u && u.url) || "";
   if (url.includes("api.mapbox.com")) o = Object.assign({}, o, { headers: Object.assign({ Referer: SITO }, o && o.headers) });
+  // le funzioni del server (assistente e calcolo dei giri) rispondono solo alle richieste "dal sito"
+  if (url.includes(".supabase.co/functions/")) o = Object.assign({}, o, { headers: Object.assign({ Origin: "https://parseng.github.io" }, o && o.headers) });
   return fetch(u, o);
 }) as typeof fetch;
 

@@ -65,7 +65,7 @@ export function PaginaGrande({ colore, titolo, frase, posa, attiva, sbuca, consi
   });
 
   return (
-    <View style={{ flex: 1, backgroundColor: C.sage }}>
+    <View collapsable={false} style={{ flex: 1, backgroundColor: C.sage }}>
       <Animated.ScrollView
         ref={scrollRef as any}
         onScroll={onScroll}
@@ -79,7 +79,7 @@ export function PaginaGrande({ colore, titolo, frase, posa, attiva, sbuca, consi
         {children}
       </Animated.ScrollView>
       {pienaSopra ? null : sotto}
-      <Animated.View style={[{ position: "absolute", left: 0, right: 0, top: 0, backgroundColor: colore, overflow: "hidden", paddingHorizontal: MARGINE, paddingTop: ins.top, justifyContent: "flex-start" }, sTesta]}>
+      <Animated.View style={[{ position: "absolute", left: 0, right: 0, top: 0, zIndex: 5, backgroundColor: colore, overflow: "hidden", paddingHorizontal: MARGINE, paddingTop: ins.top, justifyContent: "flex-start" }, sTesta]}>
         <View style={{ paddingRight: 140 }}>
           <Animated.Text accessibilityRole="header" numberOfLines={2} style={[{ fontFamily: F.titolo, color: C.ink, letterSpacing: -0.9 }, sTitolo]}>{titolo}</Animated.Text>
           <Animated.View style={[{ marginTop: 12 }, sFrase]}><Nuvoletta testo={frase} /></Animated.View>
@@ -88,7 +88,7 @@ export function PaginaGrande({ colore, titolo, frase, posa, attiva, sbuca, consi
           <Mascotte posa={posa} attiva={attiva && !aperto} style={{ width: 150, height: 184 }} />
         </Animated.View>
       </Animated.View>
-      <Animated.View pointerEvents="none" style={[{ position: "absolute", left: 0, right: 0, top: CHIUSA, height: 8 }, sOmbra]}>
+      <Animated.View pointerEvents="none" style={[{ position: "absolute", left: 0, right: 0, top: CHIUSA, height: 8, zIndex: 5 }, sOmbra]}>
         <View style={{ height: 1, backgroundColor: "rgba(23,28,20,0.12)" }} />
       </Animated.View>
       {pienaSopra ? sotto : null}

@@ -10,7 +10,7 @@ import { EXTRA } from "./icone.extra";
 // ---------- movimento ridotto ----------
 let ridotto = false;
 const ascoltaRidotto = new Set<(v: boolean) => void>();
-AccessibilityInfo.isReduceMotionEnabled().then((v) => { ridotto = v; ascoltaRidotto.forEach((f) => f(v)); }).catch(() => {});
+AccessibilityInfo.isReduceMotionEnabled().then((v) => { ridotto = v; console.log("AllDogs: Riduci movimento " + (v ? "ATTIVO (mascotte ferma)" : "spento")); ascoltaRidotto.forEach((f) => f(v)); }).catch(() => {});
 AccessibilityInfo.addEventListener("reduceMotionChanged", (v) => { ridotto = v; ascoltaRidotto.forEach((f) => f(v)); });
 export const movimentoRidotto = () => ridotto;
 export function useMovimentoRidotto() {
