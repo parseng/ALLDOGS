@@ -7,6 +7,7 @@ Uso:
 
 Regole (pensate per rispondere a "questo sentiero ha un fiume?" come lo intende chi cerca):
   fiumi     il sentiero corre accanto a un fiume o torrente con nome (entro 70 m) per almeno 400 m o per il 20% della lunghezza
+            (non contano i tratti in galleria o tombati sotto la città, es. i valloni di Napoli)
   laghi     il sentiero arriva a 120 m dalla riva di un lago o invaso vero (non vasche, stagni o depuratori)
   spiaggia  il sentiero arriva a 80 m da una spiaggia
   cascate   una cascata segnata entro 200 m dal tracciato
@@ -47,7 +48,7 @@ def fetch(only=None):
             continue
         log(f"[{n + 1}/{len(order)}] acque e spiagge {k}")
         q = (f'[out:json][timeout:400];('
-             f'way["waterway"~"^(river|stream)$"]["name"]({B});'
+             f'way["waterway"~"^(river|stream)$"]["name"]["tunnel"!~"."]["location"!~"underground"]["layer"!~"^-"]({B});'
              f'way["natural"="water"]["water"!~"^(pond|basin|wastewater|reflecting_pool|fountain|canal|ditch|moat|reservoir_covered|swimming_pool)$"]({B});'
              f'relation["natural"="water"]["water"!~"^(pond|basin|wastewater|reflecting_pool|fountain|canal|ditch|moat)$"]({B});'
              f'nwr["natural"="beach"]({B}););'

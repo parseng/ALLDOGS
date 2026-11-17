@@ -1,3 +1,4 @@
 .cache/
 __pycache__/
 supabase/.temp/
+tools/.cache_cat_foto.json

@@ -288,6 +288,8 @@ def build(city, quick=False):
             if not best:
                 log(f"  {name} {L} m: nessun anello buono"); continue
             nodes, j = best
+            if c.get("tipo") == "natura" and (j["green"] < .3 or j["bad"] > .2):
+                log(f"  {name} {L} m: troppa strada e poco verde, salto"); continue
             # salto i giri quasi uguali a uno più corto già preso
             st = set(nodes)
             if any(len(st & p) / len(st) > .75 for p in prev_paths):
@@ -296,7 +298,7 @@ def build(city, quick=False):
             ways, sf = segments(nodes, pos, E)
             km = j["len"] / 1000
             tid = ID0 + int(hashlib.md5(f"{city}|{name}|{L}".encode()).hexdigest()[:6], 16)
-            out.append({"id": tid, "name": f"{name}: giro di {str(round(km, 1)).replace('.', ',')} km", "type": "walk", "ref": "", "from": name[:40], "to": name[:40],
+            out.append({"id": tid, "name": f"{name}: giro di {str(round(km, 1)).replace('.', ',')} km", "type": c.get("tipo", "walk"), "ref": "", "from": name[:40], "to": name[:40],
                         "cai": False, "scale": "", "dogs": "", "len": round(j["len"]), "ways": ways, "sf": sf, "loop": True,
                         "green": round(j["green"], 2), "busy": round(j["bad"], 2), "zone": c["zone"]})
             log(f"  {name}: {km:.1f} km, verde {j['green']:.0%}, strade trafficate {j['bad']:.0%}, ripetuto {j['rep']:.0%}, scale {j['steps']:.0f} m")
@@ -329,7 +331,11 @@ def build(city, quick=False):
     for ck, lst in by_cell.items():
         dst = os.path.join(out_dir, ck + ".json")
         old = json.load(open(dst, encoding="utf-8"))["trails"] if os.path.exists(dst) else []
-        old = [t for t in old if not (t.get("type") == "walk" and t.get("zone") == c["zone"])]  # rifaccio da capo i giri di questa città
+        if c.get("tipo") == "natura":
+            nomi = {s_[0][:40] for s_ in c["seeds"]}
+            old = [t for t in old if not (t.get("type") == "natura" and t.get("from") in nomi)]  # rifaccio solo i giri di questo posto
+        else:
+            old = [t for t in old if not (t.get("type") == "walk" and t.get("zone") == c["zone"])]  # rifaccio da capo i giri di questa città
         json.dump({"trails": old + lst}, open(dst, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     idxf = os.path.join(bd.ROOT, "data", "index.json")
     I = json.load(open(idxf))
@@ -337,7 +343,7 @@ def build(city, quick=False):
         I["cells"][ck] = len(json.load(open(os.path.join(out_dir, ck + ".json"), encoding="utf-8"))["trails"])
     I["t"] = int(time.time() * 1000)
     json.dump(I, open(idxf, "w"), separators=(",", ":"))
-    log(len(out), "giri in città scritti in", ", ".join(by_cell))
+    log(len(out), "giri scritti in", ", ".join(by_cell))
 
 
 # ---------- tutti i capoluoghi ----------
@@ -413,10 +419,84 @@ def all_cities(skip=("Napoli",), publish_every=15):
     log("FINE")
 
 
+# ---------- posti nella natura senza sentieri segnati (riserve, cascate, boschi con un nome) ----------
+NAT_RE = r"(cipresset|faggeta|abetin|pinet|leccet|castagnet|querce|bosco|foresta|selva|gola|gole|forra|cascat|lago|laghetto|oasi|riserva|parco)"
+
+
+def natura_posti():
+    """Posti con un nome, nella natura, dove non c'è nessun sentiero segnato entro 2 km."""
+    import re
+    f = os.path.join(RAW, "natura.json")
+    if not os.path.exists(f):
+        os.makedirs(RAW, exist_ok=True)
+        q = ('[out:json][timeout:900];area["ISO3166-1"="IT"][admin_level=2]->.it;('
+             'nwr["leisure"="nature_reserve"]["name"](area.it);'
+             'node["natural"="waterfall"]["name"](area.it);'
+             'nwr["natural"="wood"]["name"](area.it);nwr["landuse"="forest"]["name"](area.it);'
+             'nwr["natural"="gorge"]["name"](area.it);nwr["natural"="valley"]["name"~"[Gg]ol|[Ff]orr"](area.it);'
+             ');out tags center;')
+        bi.curl_overpass(q, f, servers=bi.SERVERS)
+    els = json.load(open(f, encoding="utf-8"))["elements"]
+    # partenze dei sentieri che ci sono già
+    starts = {}
+    for r in json.load(open(os.path.join(bd.ROOT, "data", "names.json"), encoding="utf-8"))["r"]:
+        starts.setdefault((round(r[5] * 20), round(r[6] * 20)), []).append((r[5], r[6]))
+    def vicino(la, lo, m=2000):
+        for a in (-1, 0, 1):
+            for b in (-1, 0, 1):
+                for p in starts.get((round(la * 20) + a, round(lo * 20) + b), []):
+                    if bd.hav((la, lo), p) < m:
+                        return True
+        return False
+    out, visti = [], []
+    for e in els:
+        t = e.get("tags", {})
+        nm = (t.get("name:it") or t.get("name") or "").strip()
+        la, lo = (e["lat"], e["lon"]) if "lat" in e else ((e.get("center") or {}).get("lat"), (e.get("center") or {}).get("lon"))
+        if not nm or la is None or len(nm) > 60:
+            continue
+        if not (t.get("natural") == "waterfall" or t.get("leisure") == "nature_reserve" or re.search(NAT_RE, nm, re.I)):
+            continue
+        if vicino(la, lo) or any(bd.hav((la, lo), v) < 1500 for v in visti[-400:]):
+            continue
+        visti.append((la, lo))
+        peso = 0 if t.get("natural") == "waterfall" else 1 if t.get("leisure") == "nature_reserve" else 2
+        out.append((peso, nm[0].upper() + nm[1:], la, lo, e["type"][0] + str(e["id"])))
+    out.sort()
+    return out
+
+
+def natura(publish_every=20, limite=None):
+    done_f = os.path.join(RAW, "natura-fatti.json")
+    done = set(json.load(open(done_f))) if os.path.exists(done_f) else set()
+    todo = [p for p in natura_posti() if p[4] not in done]
+    if limite:
+        todo = todo[:int(limite)]
+    log(len(todo), "posti nella natura da fare")
+    n = 0
+    for _, nm, la, lo, oid in todo:
+        c = {"key": "n" + oid, "zone": nm, "tipo": "natura", "bbox": (round(la - .03, 4), round(lo - .04, 4), round(la + .03, 4), round(lo + .04, 4)), "seeds": [(nm, la, lo)]}
+        log(f"== {nm} ({oid})")
+        try:
+            fetch(c)
+            build(c, quick=True)
+        except Exception as e:  # noqa
+            log("   non riuscito:", str(e)[:120])
+        done.add(oid); json.dump(sorted(done), open(done_f, "w"))
+        for fx in ("_roads.json", "_green.json"):  # i dati grezzi di ogni posto non servono più
+            try: os.remove(os.path.join(RAW, c["key"] + fx))
+            except OSError: pass
+        n += 1
+        if n % publish_every == 0 or n == len(todo):
+            publish(f"Sentieri nella natura: giri ad anello vicino a riserve, cascate e boschi senza sentieri segnati ({len(done)} posti)")
+    log("FINE")
+
+
 def publish(msg):
     import subprocess
     run = lambda *a: subprocess.run(["git", "-C", bd.ROOT] + list(a), capture_output=True, text=True)
-    run("add", "data/c", "data/index.json")
+    subprocess.run([sys.executable, os.path.join(bd.ROOT, "tools", "build_names.py")], capture_output=True)  # la ricerca deve trovare i giri nuovi
+    run("add", "data/c", "data/index.json", "data/names.json")
     if run("diff", "--cached", "--quiet").returncode == 0:
         return
     run("commit", "-q", "-m", msg + "\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>")
@@ -431,6 +511,8 @@ def publish(msg):
 if __name__ == "__main__":
     if sys.argv[1:2] == ["tutti"]:
         all_cities(); sys.exit()
+    if sys.argv[1:2] == ["natura"]:
+        natura(limite=(sys.argv[2:3] or [None])[0]); sys.exit()
     cmd, city = (sys.argv[1:3] + ["", ""])[:2]
     if cmd == "fetch" and city in CITIES:
         fetch(city)
