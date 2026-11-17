@@ -67,13 +67,39 @@ aOgniAvvio((M) => {
   // il motore punta al tempo chiesto col solo passo del cane, ma poi soste e salite allungano la stima di circa un quinto:
   // punto un po' più corto, così la durata mostrata torna vicina a quella chiesta. Se nella chat c'è scritta una durata, vale quella.
   const genera = M.generate;
+  // se il servizio dei percorsi è fuori uso, lo dico chiaro (il testo del sito parlava di chiave da controllare)
+  const spiegaGuasto = () => {
+    try {
+      const out = pagina().el("gen-out");
+      if (out && /chiave di OpenRouteService/.test(out.textContent || "")) { out.innerHTML = `<div class="note warn">Il servizio che calcola i percorsi (OpenRouteService) in questo momento non risponde. Non dipende da te: riprova tra qualche minuto. Intanto puoi scegliere uno dei sentieri della mappa.</div>`; notifica(); }
+    } catch {}
+  };
   M.generate = (o: any) => {
     if (o && o.mins) {
       let m = +o.mins;
       if (o.source === "chat") { const u = [...(M.S.chat || [])].reverse().find((x: any) => x.r === "u"); const det = u ? parla(u.t) : 0; if (det) m = Math.max(10, Math.min(180, det)); }
       o = { ...o, mins: Math.max(10, Math.round(m * 0.82)) };
     }
-    return genera(o);
+    const r = genera(o);
+    Promise.resolve(r).finally(() => setTimeout(spiegaGuasto, 50));
+    return r;
+  };
+  // il modulo "dati del cane" del sito non conosce il sesso: quando salva, lo tengo
+  const salvaVero = M.store.set;
+  M.store.set = (k: string, v: any) => {
+    if (k === "alldogs-dog" && v && typeof v === "object" && v.sex == null) {
+      const prima = M.store.get(k);
+      if (prima && prima.sex) { const nuovo = { ...v, sex: prima.sex }; if (M.S.dog === v) M.S.dog = nuovo; v = nuovo; }
+    }
+    return salvaVero.call(M.store, k, v);
+  };
+  // peso tipico secondo il sesso: i maschi stanno nella parte alta della fascia della razza, le femmine in quella bassa
+  const fasciaRazza = M.breedRange;
+  M.breedRange = (d: any) => {
+    const r = fasciaRazza(d);
+    if (!r || !d || (d.sex !== "m" && d.sex !== "f")) return r;
+    const tondo = (x: number) => Math.round(x * 2) / 2, ampia = r.max - r.min;
+    return d.sex === "m" ? { ...r, min: tondo(r.min + ampia * 0.3) } : { ...r, max: tondo(r.max - ampia * 0.3) };
   };
   // foto sul telefono al posto del magazzino del browser
   M.photoPut = (k: string, v: string | null) => fotoMetti(String(k), v);

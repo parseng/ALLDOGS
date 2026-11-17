@@ -7,13 +7,13 @@ import { Image } from "expo-image";
 import Svg, { Circle, ClipPath, Defs, G, Path, Rect, Text as SvgText } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BARRA_H, C, F, MARGINE, R, TESTATA } from "../theme";
-import { motore, pagina, pulito, riavviaMotore, useMotore } from "../motore";
+import { motore, notifica, pagina, pulito, riavviaMotore, useMotore } from "../motore";
 import { scrivi } from "../archivio";
 import { nav } from "../nav";
 import { scegliFoto } from "../foto";
 import { SceltaAvatar } from "../ui/FotoAvatar";
 import { BarraPeso } from "../ui/BarraPeso";
-import { Bottone, Etichetta, Icona, RigaMenu, Sezione, Testo, Tocco } from "../ui/base";
+import { Bottone, Chip, Etichetta, Icona, RigaMenu, Sezione, Testo, Tocco } from "../ui/base";
 import { FotoCane, fotoCane, nomeCane } from "../ui/BarraMenu";
 import { PaginaMotore } from "../ui/PaginaMotore";
 import { PaginaGrande, PaginaSemplice } from "../ui/Testate";
@@ -115,7 +115,7 @@ export function Cane({ attiva }: { attiva: boolean }) {
           </ScrollView>
         ) : null}
         <Text accessibilityRole="header" style={{ fontFamily: F.titolo, fontSize: 40, letterSpacing: -1.4, lineHeight: 42, color: C.ink }}>{nome}</Text>
-        <Text style={{ fontFamily: F.t700, fontSize: 16, color: C.ink2, marginTop: 6 }}>{[d.breed, d.age !== "" && d.age != null ? `${String(d.age).replace(".", ",")} anni` : "", d.weight ? `${String(d.weight).replace(".", ",")} kg` : ""].filter(Boolean).join(" · ")}</Text>
+        <Text style={{ fontFamily: F.t700, fontSize: 16, color: C.ink2, marginTop: 6 }}>{[d.sex === "m" ? "maschio" : d.sex === "f" ? "femmina" : "", d.breed, d.age !== "" && d.age != null ? `${String(d.age).replace(".", ",")} anni` : "", d.weight ? `${String(d.weight).replace(".", ",")} kg` : ""].filter(Boolean).join(" · ")}</Text>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 10 }}><Icona nome="paw" size={18} colore={C.copper} /><Text style={{ fontFamily: F.t700, fontSize: 15, color: C.ink }}>Regge circa {M.kmN(cap.km)} km e {cap.up} m di salita</Text></View>
         {cap.notes.length ? <Testo tipo="piccolo" style={{ marginTop: 4 }}>Limiti più prudenti perché {nome} {cap.notes.join(", ")}.</Testo> : null}
       </View>
@@ -213,11 +213,12 @@ export function Salute({ attiva }: { attiva: boolean }) {
     </View>
   );
 }
-function Semplice({ attiva, colore, titolo, riga, prepara, id, sel, nota, togli }: { attiva: boolean; colore: string; titolo: string; riga?: string; prepara?: () => void; id?: string; sel?: string; nota?: string; togli?: string[] }) {
+function Semplice({ attiva, colore, titolo, riga, prepara, id, sel, nota, togli, prima }: { prima?: React.ReactNode; attiva: boolean; colore: string; titolo: string; riga?: string; prepara?: () => void; id?: string; sel?: string; nota?: string; togli?: string[] }) {
   useMotore();
   useEffect(() => { if (attiva && prepara) { try { prepara(); } catch (e) { console.warn(e); } } }, [attiva]);
   return (
     <PaginaSemplice colore={colore} titolo={titolo} riga={riga} indietro={indietro}>
+      {prima}
       <PaginaMotore id={id} sel={sel} togli={togli} />
       {nota ? <Testo tipo="piccolo" style={{ marginTop: 16 }}>{nota}</Testo> : null}
     </PaginaSemplice>
@@ -226,7 +227,19 @@ function Semplice({ attiva, colore, titolo, riga, prepara, id, sel, nota, togli 
 export const Zaino = ({ attiva }: { attiva: boolean }) => <Semplice attiva={attiva} colore={TESTATA.zaino} titolo="Zaino pronto" riga="Cosa portare, con il meteo di oggi." prepara={() => motore().showPack()} id="zn-main" />;
 export const Soccorso = ({ attiva }: { attiva: boolean }) => <Semplice attiva={attiva} colore={TESTATA.soccorso} titolo="Pronto soccorso" riga="Cosa fare subito, in attesa del veterinario." prepara={() => motore().showAid()} id="ps-main" nota="Primi aiuti in attesa del veterinario, non una cura. Nel dubbio chiamalo subito." />;
 export const Regole = ({ attiva }: { attiva: boolean }) => <Semplice attiva={attiva} colore={TESTATA.regole} titolo="Regole del posto" riga="Guinzaglio, spiagge, parchi, pascoli." prepara={() => motore().showRules()} id="rg-main" />;
-export const Dati = ({ attiva }: { attiva: boolean }) => <Semplice attiva={attiva} colore={C.lime} titolo={`I dati di ${nomeCane()}`} riga="Età, peso, allenamento, salute e libretto." prepara={() => { const M = motore(); M.showDog(); pagina().el("fold-dog").open = true; }} sel="#fold-dog > .foldb" togli={[".onbonly"]} nota="Restano su questo telefono e, se accedi, anche nel tuo account privato." />;
+export const Dati = ({ attiva }: { attiva: boolean }) => <Semplice attiva={attiva} colore={C.lime} titolo={`I dati di ${nomeCane()}`} riga="Età, peso, allenamento, salute e libretto." prepara={() => { const M = motore(); M.showDog(); pagina().el("fold-dog").open = true; }} sel="#fold-dog > .foldb" togli={[".onbonly"]} prima={<SceltaSesso />} nota="Restano su questo telefono e, se accedi, anche nel tuo account privato." />;
+/** sesso del cane (serve per il peso giusto): si cambia qui */
+export function SceltaSesso() {
+  useMotore();
+  const M = motore(), d = M.dog();
+  const metti = (v: string) => { M.S.dog = { ...M.dog(), sex: v }; M.store.set("alldogs-dog", M.S.dog); notifica(); };
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 6 }}>
+      <Text style={{ fontFamily: F.t800, fontSize: 15, color: C.ink, marginRight: 4 }}>Sesso</Text>
+      {([["m", "Maschio"], ["f", "Femmina"]] as const).map(([v, t]) => <Chip key={v} piccolo testo={t} attivo={d.sex === v} onPress={() => metti(v)} />)}
+    </View>
+  );
+}
 export const Proponi = ({ attiva }: { attiva: boolean }) => <Semplice attiva={attiva} colore={C.water} titolo="Proponi un posto" riga="Area cani, spiaggia, fontanella o un tuo giro: lo controllo e lo aggiungo per tutti." prepara={() => { try { motore().propList && motore().propList(); } catch {} }} sel="#fold-prop > .foldb" />;
 export const Account = ({ attiva }: { attiva: boolean }) => <Semplice attiva={attiva} colore={C.lilac} titolo="Il tuo account" riga="Per non perdere i dati se cambi telefono." prepara={() => { const M = motore(); M.accPaint(); M.sbLoad().catch(() => {}); }} id="acc-box" />;
 /** riquadro delle impostazioni: disegnino, titolo, spiegazione e quello che serve */

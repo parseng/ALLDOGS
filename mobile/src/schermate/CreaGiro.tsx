@@ -9,6 +9,8 @@ import { motore, pagina, pulito, useMotore } from "../motore";
 import { nav } from "../nav";
 import { Bottone, BottoneTondo, Chip, Entra, Icona, Interruttore, Segmenti, Sezione, Testo, Tocco } from "../ui/base";
 import { FotoCane, nomeCane } from "../ui/BarraMenu";
+import { FacciaGohan, StoPensando } from "../ui/FacciaGohan";
+import { ChiediAGohan } from "./Allenati";
 import { HtmlMotore } from "../ui/HtmlMotore";
 import { PaginaGrande } from "../ui/Testate";
 import { Dislivello, Striscia } from "../ui/grafici";
@@ -38,7 +40,7 @@ function Chat({ onCreato, giu }: { onCreato: () => void; giu: () => void }) {
           <React.Fragment key={i}>
             {m.r === "u"
               ? <View style={{ alignSelf: "flex-end", maxWidth: "84%", backgroundColor: C.ink, borderRadius: 20, borderBottomRightRadius: 6, paddingVertical: 11, paddingHorizontal: 14 }}><Text style={S.msgIo}>{m.t}</Text></View>
-              : <View style={{ alignSelf: "flex-start", maxWidth: "88%", backgroundColor: m.err ? "#FBD9C9" : C.cream, borderRadius: 20, borderBottomLeftRadius: 6, paddingVertical: 11, paddingHorizontal: 14, flexDirection: "row", gap: 8 }}><FotoCane size={32} /><Text style={S.msgLui}>{pulito(m.t)}</Text></View>}
+              : <View style={{ alignSelf: "flex-start", maxWidth: "88%", backgroundColor: m.err ? "#FBD9C9" : C.cream, borderRadius: 20, borderBottomLeftRadius: 6, paddingVertical: 11, paddingHorizontal: 14, flexDirection: "row", gap: 8 }}><FacciaGohan size={32} /><Text style={S.msgLui}>{pulito(m.t)}</Text></View>}
             {(m.sug || []).map((id: number) => {
               const tr = M.TR.get(id);
               if (!tr) return null;
@@ -56,7 +58,7 @@ function Chat({ onCreato, giu }: { onCreato: () => void; giu: () => void }) {
             })}
           </React.Fragment>
         ))}
-        {M.S.busy ? <View style={{ alignSelf: "flex-start", backgroundColor: C.cream, borderRadius: 20, borderBottomLeftRadius: 6, paddingVertical: 11, paddingHorizontal: 14 }}><Text style={[S.msgLui, { color: C.ink2 }]}>Sto pensando…</Text></View> : null}
+        {M.S.busy ? <StoPensando colore={C.ink2} /> : null}
       </View>
       {msgs.length <= 1 ? (
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 12 }}>
@@ -182,7 +184,8 @@ export function CreaGiro({ attiva }: { attiva: boolean }) {
   const consigli = [{ titolo: "Un consiglio", testo: "Se è la prima volta in un posto nuovo, parti con un giro corto: annusare tutto mi stanca più di quanto sembra." }, ...(o.zampe ? [{ titolo: "Le mie zampe", testo: pulito(o.zampe.t[0]) }] : [])];
 
   return (
-    <PaginaGrande scrollRef={scorri} colore={TESTATA.crea} titolo="Crea un giro" frase={scheda === "chat" ? "Dimmi cosa ti va: il giro lo preparo io." : disegno ? "Metti i segnaposti: la strada la trovo io." : "Dimmi quanto tempo hai: il giro lo disegno io."} posa="creagiro" attiva={attiva} sbuca consigli={consigli} y={y} fermo={piena} pienaSopra={piena}
+    <View style={{ flex: 1 }}>
+    <PaginaGrande scrollRef={scorri} colore={TESTATA.crea} titolo="Crea un giro" frase={scheda === "chat" ? "Dimmi cosa ti va: il giro lo preparo io." : disegno ? "Metti i segnaposti: la strada la trovo io." : "Dimmi quanto tempo hai: il giro lo disegno io."} posa="creagiro" attiva={attiva} consigli={consigli} y={y} fermo={piena} pienaSopra={piena}
       sotto={
         <MappaGalleggiante attiva={attiva} y={y} slotY={slotY} altezza={MAPPA_H} margine={MARGINE} raggio={R.l} piena={piena} onPiena={tuttoSchermo} nascosta={!conMappa} onVolo={setVolo} legendaSu={statoVolo ? 120 : 34}
           sopra={(p) => (
@@ -252,6 +255,8 @@ export function CreaGiro({ attiva }: { attiva: boolean }) {
         </>
       )}
     </PaginaGrande>
+    <ChiediAGohan attivo={attiva && scheda !== "chat" && !piena} onPress={() => { cambia("chat"); setTimeout(() => { try { scorri.current?.scrollTo({ y: 0, animated: true }); } catch {} }, 80); }} />
+    </View>
   );
 }
 

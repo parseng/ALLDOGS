@@ -11,6 +11,7 @@ import { leggi, scrivi } from "../archivio";
 import { nav, useNav } from "../nav";
 import { Bottone, Chip, Segmenti, Testo, Tocco, movimentoRidotto } from "../ui/base";
 import { FotoCane, nomeCane } from "../ui/BarraMenu";
+import { FacciaGohan, StoPensando } from "../ui/FacciaGohan";
 import { Mascotte } from "../ui/Mascotte";
 import { PaginaGrande } from "../ui/Testate";
 import { PaginaMotore } from "../ui/PaginaMotore";
@@ -30,8 +31,8 @@ function ChatMini({ host }: { host: string }) {
       <View style={{ gap: 10, marginTop: 6 }}>
         {c.msgs.map((m: any, i: number) => (m.r === "u"
           ? <View key={i} style={{ alignSelf: "flex-end", maxWidth: "84%", backgroundColor: C.ink, borderRadius: 20, borderBottomRightRadius: 6, paddingVertical: 11, paddingHorizontal: 14 }}><Text style={{ fontFamily: F.t600, fontSize: 15, lineHeight: 20, color: C.cream }}>{m.t}</Text></View>
-          : <View key={i} style={{ alignSelf: "flex-start", maxWidth: "88%", backgroundColor: m.err ? "#FBD9C9" : C.sage, borderRadius: 20, borderBottomLeftRadius: 6, paddingVertical: 11, paddingHorizontal: 14, flexDirection: "row", gap: 8 }}><FotoCane size={32} /><Text style={{ flex: 1, fontFamily: F.t600, fontSize: 15, lineHeight: 20, color: C.ink }}>{pulito(m.t)}</Text></View>))}
-        {c.busy ? <View style={{ alignSelf: "flex-start", backgroundColor: C.sage, borderRadius: 20, paddingVertical: 11, paddingHorizontal: 14 }}><Text style={{ fontFamily: F.t600, fontSize: 15, color: C.ink2 }}>Sto pensando…</Text></View> : null}
+          : <View key={i} style={{ alignSelf: "flex-start", maxWidth: "88%", backgroundColor: m.err ? "#FBD9C9" : C.sage, borderRadius: 20, borderBottomLeftRadius: 6, paddingVertical: 11, paddingHorizontal: 14, flexDirection: "row", gap: 8 }}><FacciaGohan size={32} /><Text style={{ flex: 1, fontFamily: F.t600, fontSize: 15, lineHeight: 20, color: C.ink }}>{pulito(m.t)}</Text></View>))}
+        {c.busy ? <StoPensando colore={C.ink2} /> : null}
       </View>
       {sugg.length ? <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 12 }}>{sugg.map((s) => <Chip key={s} piccolo sfondo={C.white} testo={s} onPress={() => manda(s)} />)}</View> : null}
       <View style={{ flexDirection: "row", gap: 8, marginTop: 14 }}>
@@ -44,7 +45,7 @@ function ChatMini({ host }: { host: string }) {
 }
 
 /** cerchietto lime fisso in basso a destra: Gohan sbuca dentro e apre la chat */
-function ChiediAGohan({ attivo, onPress }: { attivo: boolean; onPress: () => void }) {
+export function ChiediAGohan({ attivo, onPress }: { attivo: boolean; onPress: () => void }) {
   const ins = useSafeAreaInsets(), aperto = useStratoAperto();
   const v = useSharedValue(0), et = useSharedValue(0);
   const on = attivo && !aperto;

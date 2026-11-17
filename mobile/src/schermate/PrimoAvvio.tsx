@@ -17,7 +17,7 @@ const barre = (n: number) => `<rect x="2" y="2" width="36" height="36" rx="11" f
 export function PrimoAvvio({ modo = "new", alFine }: { modo?: "new" | "add"; alFine?: () => void }) {
   const M = motore(), ins = useSafeAreaInsets();
   const [i, setI] = useState(0);
-  const [d, setD] = useState<any>({ name: "", breed: "", age: "", weight: "", energy: "", lim: {} as Record<string, boolean>, altro: "" });
+  const [d, setD] = useState<any>({ name: "", sex: "", breed: "", age: "", weight: "", energy: "", lim: {} as Record<string, boolean>, altro: "" });
   const [cerca, setCerca] = useState("");
   const nome = d.name.trim() || "il tuo cane";
   const N = 5;
@@ -26,7 +26,7 @@ export function PrimoAvvio({ modo = "new", alFine }: { modo?: "new" | "add"; alF
     const q = M.norm(cerca);
     return (q ? M.RAZZE.filter((r: string) => M.norm(r).includes(q)) : M.RAZZE).slice(0, q ? 12 : 9) as string[];
   }, [cerca]);
-  const fascia = useMemo(() => { try { return M.breedRange({ breed: d.breed }); } catch { return null; } }, [d.breed]);
+  const fascia = useMemo(() => { try { return M.breedRange({ breed: d.breed, sex: d.sex }); } catch { return null; } }, [d.breed, d.sex]);
 
   const num = (v: string) => parseFloat(String(v).replace(",", "."));
   const avanti = () => {
@@ -44,7 +44,7 @@ export function PrimoAvvio({ modo = "new", alFine }: { modo?: "new" | "add"; alF
     M.W.mode = modo;
     M.W.photo = undefined;
     M.W.d = {
-      name: d.name.trim(), breed: d.breed, age: d.age === "" ? "" : num(d.age), weight: d.weight === "" ? "" : num(d.weight),
+      name: d.name.trim(), sex: d.sex || undefined, breed: d.breed, age: d.age === "" ? "" : num(d.age), weight: d.weight === "" ? "" : num(d.weight),
       train: "medio", agil: d.lim.salti ? "bassa" : "media", coat: "corto", brachy: !!d.lim.brachy, caldo: !!d.lim.caldo, brachyAsked: true,
       energy: d.energy || undefined, pat: p, patOther: d.lim.altro ? d.altro.trim() : "", healthOk: !Object.keys(p).length, health: {},
     };
@@ -107,6 +107,10 @@ export function PrimoAvvio({ modo = "new", alFine }: { modo?: "new" | "add"; alF
           ) : null}
           {i === 2 ? (
             <>
+              <Text style={{ fontFamily: F.t800, fontSize: 14, marginBottom: 6, color: C.ink }}>È maschio o femmina?</Text>
+              <View style={{ flexDirection: "row", gap: 8, marginBottom: 14 }}>
+                {([["m", "Maschio"], ["f", "Femmina"]] as const).map(([v, t]) => <Chip key={v} testo={t} attivo={d.sex === v} onPress={() => setD({ ...d, sex: v })} />)}
+              </View>
               <View style={{ flexDirection: "row", gap: 10 }}>
                 <View style={{ flex: 1 }}><Text style={{ fontFamily: F.t800, fontSize: 14, marginBottom: 6, color: C.ink }}>Anni</Text><TextInput style={S.campo} value={String(d.age)} onChangeText={(v) => setD({ ...d, age: v })} placeholder="Es. 4" placeholderTextColor={C.ink2} keyboardType="decimal-pad" accessibilityLabel="Età in anni" /></View>
                 <View style={{ flex: 1 }}><Text style={{ fontFamily: F.t800, fontSize: 14, marginBottom: 6, color: C.ink }}>Chili</Text><TextInput style={S.campo} value={String(d.weight)} onChangeText={(v) => setD({ ...d, weight: v })} placeholder="Es. 20" placeholderTextColor={C.ink2} keyboardType="decimal-pad" accessibilityLabel="Peso in chili" /></View>

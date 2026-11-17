@@ -158,11 +158,36 @@ function flyStart(src){
   var total=Cu[Cu.length-1],el=document.createElement("div");el.className="mk-fly";el.innerHTML='<svg viewBox="0 0 24 24"><path d="M12 2.5 20 21 12 16.5 4 21Z"/></svg>';
   var b0=bearing(P[0],P[Math.min(P.length-1,6)]);
   fly={P:P,C:Cu,total:total,out:out,cOut:Cu[out],prof:src.prof,len:src.len,full:src.len+(src.shape==="loop"?0:src.ret||src.len),d:0,i:0,brg:b0,mb:b0,cen:P[0],playing:true,started:false,last:0,painted:0,
-    speed:total/Math.min(100,Math.max(28,total/1000*14)),mk:new mapboxgl.Marker({element:el,rotationAlignment:"map",pitchAlignment:"map"}).setLngLat(ll(P[0])).setRotation(b0).addTo(M)};
+    speed:total/Math.min(100,Math.max(28,total/1000*14)),mk:new mapboxgl.Marker({element:el,rotationAlignment:"map",pitchAlignment:"map",occludedOpacity:1}).setLngLat(ll(P[0])).setRotation(b0).addTo(M)};
   paintFly();
   setTimeout(function(){if(!fly)return;try{M.setTerrain({source:"dem",exaggeration:1.4});M.setFog({})}catch(e){}
-    M.easeTo({center:ll(P[0]),zoom:15.6,pitch:62,bearing:b0,duration:1300});
+    M.easeTo({center:ll(P[0]),zoom:15.3,pitch:58,bearing:b0,duration:1300});
     setTimeout(function(){if(!fly)return;fly.started=true;fly.last=0;stopSpin();spin=requestAnimationFrame(flyStep)},1400)},450);
+}
+// volo: la freccia resta sempre visibile (anche dietro una collina), all'inversione di marcia la visuale gira
+// sempre dalla stessa parte (prima tremava), e se dietro c'è una montagna la visuale si alza per non finirci dentro
+function flyStep(t){
+  if(!fly){spin=null;return}
+  var F=fly,dt=F.last?Math.min(100,t-F.last):0;F.last=t;
+  if(F.playing){
+    F.d=Math.min(F.total,F.d+dt/1000*F.speed);
+    var i=F.i;while(i<F.C.length-2&&F.C[i+1]<F.d)i++;F.i=i;
+    var a=F.P[i],b=F.P[i+1],sg=F.C[i+1]-F.C[i],g=sg>0?(F.d-F.C[i])/sg:0,p=[a[0]+(b[0]-a[0])*g,a[1]+(b[1]-a[1])*g];
+    var ahead=function(m){var j=i+1;while(j<F.C.length-1&&F.C[j]-F.d<m)j++;return F.C[j]-F.d>3?bearing(p,F.P[j]):null};
+    var turn=function(cur,tb,ms){if(tb==null)return cur;var df=((tb-cur+540)%360)-180;if(Math.abs(df)>170)df=Math.abs(df);return (cur+df*Math.min(1,dt/ms)+360)%360};
+    F.brg=turn(F.brg,ahead(140),1800);F.mb=turn(F.mb,ahead(30),250);
+    var q=Math.min(1,dt/180);F.cen=[F.cen[0]+(p[0]-F.cen[0])*q,F.cen[1]+(p[1]-F.cen[1])*q];
+    F.mk.setLngLat(ll(p)).setRotation(F.mb);
+    // quanto è più alto il terreno dietro la visuale? se molto, inclino meno la mappa
+    var pt=M.getPitch(),want=58;
+    try{var r=F.brg*Math.PI/180,dl=0.0035,dietro=[F.cen[0]-Math.cos(r)*dl,F.cen[1]-Math.sin(r)*dl/Math.cos(F.cen[0]*Math.PI/180)];
+      var eQ=M.queryTerrainElevation(ll(F.cen))||0,eD=M.queryTerrainElevation(ll(dietro))||0;want=Math.max(30,Math.min(58,58-Math.max(0,eD-eQ)/4))}catch(e){}
+    var np=pt+(want-pt)*Math.min(1,dt/600);
+    M.jumpTo({center:ll(F.cen),bearing:F.brg,pitch:np});
+    if(t-F.painted>200||F.d>=F.total){F.painted=t;paintFly()}
+    if(F.d>=F.total){F.playing=false;paintFly();M.fitBounds(boundsOf([F.P]),{padding:70,pitch:50,bearing:F.brg,duration:1800})}
+  }
+  spin=requestAnimationFrame(flyStep);
 }
 function flyCtl(a){if(a==="stop"){flyEnd();return}if(!fly||!fly.started)return;
   if(!fly.playing&&fly.d>=fly.total){fly.d=0;fly.i=0;fly.brg=fly.mb=bearing(fly.P[0],fly.P[Math.min(fly.P.length-1,6)]);fly.cen=fly.P[0];M.easeTo({center:ll(fly.P[0]),zoom:15.6,pitch:62,bearing:fly.brg,duration:800})}

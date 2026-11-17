@@ -3,11 +3,12 @@
 import React from "react";
 import { Text, View } from "react-native";
 import Svg, { Path } from "react-native-svg";
+import { LinearGradient } from "expo-linear-gradient";
 import { C, F } from "../theme";
 import { motore, useMotore } from "../motore";
 import { nomeCane } from "./BarraMenu";
 
-const BLU = "#4C8DDB", VERDE = "#5BB36A", ROSSO = "#E0584A";
+const BLU = "#6FA4DC", VERDE = "#6DBE78", ROSSO = "#E8806A";
 
 export function BarraPeso() {
   useMotore();
@@ -42,21 +43,23 @@ export function BarraPeso() {
         <Text style={{ fontFamily: F.t600, fontSize: 14, color: C.ink2, marginTop: 6 }}>Scrivi la razza nei dati del cane, oppure fai la prova delle costole qui sotto: così ti mostro se il peso è giusto.</Text>
       ) : (
         <>
-          {verdetto ? <View style={{ alignSelf: "flex-start", marginTop: 6, backgroundColor: colore, paddingHorizontal: 10, paddingVertical: 3, borderRadius: 999 }}><Text style={{ fontFamily: F.t800, fontSize: 13, color: "#fff" }}>{verdetto}</Text></View> : null}
-          <View style={{ marginTop: 26 }}>
-            {/* freccetta */}
-            <View style={{ position: "absolute", left: `${pos * 100}%`, top: -20, marginLeft: -10, alignItems: "center" }}>
-              <Svg width={20} height={16} viewBox="0 0 20 16"><Path d="M2 1h16L10 15Z" fill={C.ink} stroke="#fff" strokeWidth={1.5} strokeLinejoin="round" /></Svg>
+          {verdetto ? <View style={{ alignSelf: "flex-start", marginTop: 6, backgroundColor: colore + "33", paddingHorizontal: 12, paddingVertical: 4, borderRadius: 999, flexDirection: "row", alignItems: "center", gap: 6 }}><View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colore }} /><Text style={{ fontFamily: F.t800, fontSize: 13.5, color: C.ink }}>{verdetto}</Text></View> : null}
+          <View style={{ marginTop: 40 }}>
+            {/* fumetto con i kg sopra il punto */}
+            <View style={{ position: "absolute", left: `${pos * 100}%`, top: -36, width: 70, marginLeft: -35, alignItems: "center" }}>
+              <View style={{ backgroundColor: C.ink, borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3 }}><Text style={{ fontFamily: F.t800, fontSize: 13, color: C.cream }}>{kg ? `${String(Math.round(kg * 10) / 10).replace(".", ",")} kg` : nome}</Text></View>
+              <Svg width={12} height={7} viewBox="0 0 12 7"><Path d="M0 0h12L6 7Z" fill={C.ink} /></Svg>
             </View>
-            <View style={{ height: 16, borderRadius: 8, overflow: "hidden", flexDirection: "row" }}>
-              <View style={{ flex: z1, backgroundColor: BLU }} />
-              <View style={{ flex: z2 - z1, backgroundColor: VERDE }} />
-              <View style={{ flex: 1 - z2, backgroundColor: ROSSO }} />
-            </View>
-            <View style={{ flexDirection: "row", marginTop: 6 }}>
-              <Text style={{ flex: z1, fontFamily: F.t700, fontSize: 12, color: BLU }}>Sottopeso</Text>
-              <Text style={{ flex: z2 - z1, fontFamily: F.t700, fontSize: 12, color: VERDE, textAlign: "center" }}>Giusto{br ? `\n${String(br.min).replace(".", ",")}-${String(br.max).replace(".", ",")} kg` : ""}</Text>
-              <Text style={{ flex: 1 - z2, fontFamily: F.t700, fontSize: 12, color: ROSSO, textAlign: "right" }}>Sovrappeso</Text>
+            <LinearGradient colors={["#7FB2E5", "#9FD3C7", "#9ED39A", "#B9DB8A", "#F2C46D", "#EE8E72"]} locations={[0, z1 * 0.8, z1 + 0.04, z2 - 0.04, z2 + (1 - z2) * 0.35, 1]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ height: 14, borderRadius: 7 }} />
+            {/* il punto sul peso di oggi */}
+            <View style={{ position: "absolute", left: `${pos * 100}%`, top: -5, marginLeft: -12, width: 24, height: 24, borderRadius: 12, backgroundColor: "#fff", borderWidth: 4, borderColor: colore, shadowColor: "#000", shadowOpacity: 0.2, shadowRadius: 4, shadowOffset: { width: 0, height: 2 }, elevation: 3 }} />
+            <View style={{ flexDirection: "row", marginTop: 10 }}>
+              <Text style={{ flex: z1, fontFamily: F.t700, fontSize: 12.5, color: "#3F78B5" }}>Sottopeso</Text>
+              <View style={{ flex: z2 - z1, alignItems: "center" }}>
+                <Text style={{ fontFamily: F.t800, fontSize: 12.5, color: "#3E8C4A" }}>Peso giusto</Text>
+                {br ? <Text style={{ fontFamily: F.t600, fontSize: 12, color: C.ink2 }}>{String(br.min).replace(".", ",")}–{String(br.max).replace(".", ",")} kg</Text> : null}
+              </View>
+              <Text style={{ flex: 1 - z2, fontFamily: F.t700, fontSize: 12.5, color: "#C4553C", textAlign: "right" }}>Sovrappeso</Text>
             </View>
           </View>
           {br ? <Text style={{ fontFamily: F.t600, fontSize: 12.5, color: C.ink2, marginTop: 8 }}>Peso tipico di un {br.n} adulto. Conta di più la prova delle costole: ogni cane è fatto a modo suo.</Text>
