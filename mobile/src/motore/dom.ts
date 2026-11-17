@@ -52,7 +52,10 @@ function sistemaPrototipi(window: any, document: any) {
 }
 
 /** simula un tocco: evento che "sale" dall'elemento ai genitori, con onclick e addEventListener */
+/** l'ultimo tocco fatto: serve per ripeterlo dopo il "sì" a una domanda di conferma */
+export let ultimoTocco: any = null;
 export function simulaTocco(el: any) {
+  ultimoTocco = el;
   let fermo = false;
   const ev: any = { type: "click", target: el, bubbles: true, preventDefault() {}, stopPropagation() { fermo = true; }, stopImmediatePropagation() { fermo = true; } };
   // come nel browser: il percorso dal bottone in su si decide PRIMA di chiamare i gestori (se un gestore ridisegna la pagina, il percorso non cambia)

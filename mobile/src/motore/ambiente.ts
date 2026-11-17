@@ -19,6 +19,7 @@ export type Servizi = {
   copia?: (testo: string) => Promise<void>;
   apri?: (url: string) => void;
   avviso?: (testo: string) => void;
+  conferma?: (testo: string) => boolean;
   cambioPagina?: (hash: string) => void;
   ricarica?: () => void;
   supabase?: { createClient: (...a: any[]) => any };
@@ -253,7 +254,7 @@ export function creaAmbiente(s: Servizi) {
     indexedDB: undefined, caches: undefined,
     speechSynthesis, SpeechSynthesisUtterance,
     alert: (t: string) => s.avviso && s.avviso(String(t)),
-    confirm: () => false, // le conferme le chiede l'app nativa, prima di chiamare il motore
+    confirm: (t: string) => (s.conferma ? s.conferma(String(t)) : false), // domanda del telefono: al "sì" il tocco viene ripetuto
     prompt: () => null,
     open: (u: string) => { if (s.apri) s.apri(u); return null; },
     scrollTo() {}, Image: Immagine, Event: Evento,

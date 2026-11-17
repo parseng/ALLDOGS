@@ -1,7 +1,7 @@
 // Collega il motore (le regole del sito) al telefono: memoria, GPS, voce, condivisione.
 // Le schermate usano `motore()` per leggere i dati e `useMotore()` per ridisegnarsi quando cambiano.
 import { useSyncExternalStore } from "react";
-import { Alert, Linking, Share, Vibration } from "react-native";
+import { Alert, Linking, Platform, Share, Vibration } from "react-native";
 import * as Location from "expo-location";
 import * as Speech from "expo-speech";
 import * as Clipboard from "expo-clipboard";
@@ -10,6 +10,8 @@ import { archivio } from "../archivio";
 import { Pos, onPosition, startWatch, stopWatch } from "../location";
 import { C } from "../theme";
 import { creaAmbiente } from "./ambiente";
+import { simulaTocco, ultimoTocco } from "./dom";
+let siDato: string | null = null;
 import { CORPO } from "./corpo.generated";
 import { azzeraMappa, collegaMotore, mapboxFinto, mappaRemota } from "../mappa/remota";
 // @ts-ignore: file generato da tools/genera-motore.mjs
@@ -122,6 +124,14 @@ export function avviaMotore() {
     copia: async (t: string) => void (await Clipboard.setStringAsync(t)),
     apri: (u: string) => void Linking.openURL(u).catch(() => {}),
     avviso: (t: string) => Alert.alert("AllDogs", t),
+    // il sito chiede "sei sicuro?" e si aspetta subito la risposta: mostro la domanda e, se dici sì, ripeto lo stesso tocco con il sì già dato
+    conferma: (t: string) => {
+      if (siDato === t) { siDato = null; return true; }
+      if (Platform.OS === "web") return (globalThis as any).confirm ? !!(globalThis as any).confirm(t) : true;
+      const el = ultimoTocco;
+      Alert.alert("AllDogs", t, [{ text: "Annulla", style: "cancel" }, { text: "Sì", style: "destructive", onPress: () => { if (!el) return; siDato = t; simulaTocco(el); siDato = null; notifica(); } }]);
+      return false;
+    },
     cambioPagina: (h: string) => pagine.forEach((f) => f(h)),
     ricarica: () => setTimeout(riavviaMotore, 0),
     get supabase() { return supabaseLib; },

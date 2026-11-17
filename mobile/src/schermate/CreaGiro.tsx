@@ -85,7 +85,7 @@ function Risultato({ onVolo }: { onVolo: () => void }) {
       <View style={{ marginTop: 8 }}><Verdetto v={Math.max(0, res.v)} motivo={res.short} /></View>
       {r.note ? <Text style={{ fontFamily: F.t600, fontSize: 14.5, lineHeight: 20, color: C.ink, backgroundColor: "#FFF1BF", borderRadius: 12, padding: 10, marginTop: 10, overflow: "hidden" }}>{pulito(r.note)}</Text> : null}
       <View style={{ flexDirection: "row", marginTop: 12, borderTopWidth: 1.5, borderBottomWidth: 1.5, borderColor: C.sage2 }}>
-        {[[`${M.km(r.len)} km`, "lunghezza"], [`${r.up ?? 0} m`, "dislivello"], [M.fmtH(res.hours).replace(" min", ""), `con ${nome}`], [M.EFFORT[res.effort], `per ${nome}`]].map(([a, b], i) => (
+        {[[`${M.km(r.len)} km`, "lunghezza"], [`${r.up ?? 0} m`, "dislivello"], [M.fmtH(res.hours).replace(/ h (\d+) min$/, " h $1"), `con ${nome}`], [M.EFFORT[res.effort], `per ${nome}`]].map(([a, b], i) => (
           <View key={i} style={{ flex: 1, paddingVertical: 10, paddingLeft: i ? 8 : 0, borderLeftWidth: i ? 1.5 : 0, borderColor: C.sage2 }}>
             <Text numberOfLines={1} adjustsFontSizeToFit style={{ fontFamily: F.titolo, fontSize: 19, color: i === 2 ? C.warnInk : C.ink, fontVariant: ["tabular-nums"] }}>{a}</Text>
             <Text style={{ fontFamily: F.t700, fontSize: 12, color: C.ink2 }}>{b}</Text>
@@ -171,7 +171,10 @@ export function CreaGiro({ attiva }: { attiva: boolean }) {
     if (s !== "chat") { M.S.mode = s; M.store.set("alldogs-creamode", s); M.showCrea(); }
   };
   const tipoMan = (k: "auto" | "draw") => { M.S.manKind = k; M.store.set("alldogs-mankind", k); M.showCrea(); };
-  const avviaVolo = () => { if (!gen) return; if (!piena) tuttoSchermo(true); setTimeout(() => volo.parti({ path: gen.path, prof: gen.prof, len: gen.len, shape: "loop", ret: 0 }), 500); };
+  // sul telefono la mappa, appena diventa grande, si risistema da sola e può fermare il volo appena partito: parto un attimo dopo e, se non è partito, riprovo
+  const voloPartito = useRef(false);
+  useEffect(() => { voloPartito.current = !!statoVolo; }, [statoVolo]);
+  const avviaVolo = () => { if (!gen) return; if (!piena) tuttoSchermo(true); const src = { path: gen.path, prof: gen.prof, len: gen.len, shape: "loop", ret: 0 }; voloPartito.current = false; setTimeout(() => volo.parti(src), 800); setTimeout(() => { if (!voloPartito.current) volo.parti(src); }, 2200); };
   const conMappa = scheda !== "chat";
   const disegno = scheda === "man" && M.S.manKind === "draw";
   const D = M.S.draw;

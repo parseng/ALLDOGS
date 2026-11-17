@@ -1,6 +1,7 @@
 // Esplora: saluto, Gohan nella fascia lime, meteo per il cane, ricerca, filtri, mappa vera e sentieri consigliati.
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Dimensions, ScrollView, Text, View } from "react-native";
+import * as Location from "expo-location";
 import Animated, { runOnJS, useAnimatedReaction, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BARRA_H, C, F, MARGINE, OMBRA, R } from "../theme";
@@ -11,6 +12,7 @@ import { FotoCane, nomeCane } from "../ui/BarraMenu";
 import { Mascotte } from "../ui/Mascotte";
 import { Nuvoletta } from "../ui/Testate";
 import { BannerMeteo, oggiPerIlCane } from "../ui/meteo";
+import { InvitoFoto } from "../ui/FotoAvatar";
 import { CartaSentiero, Foto, Vuoto, impegnoTesto, verdettoTesto } from "../ui/sentieri";
 import { PastiglieMomento, strati, useStratoAperto } from "../ui/strati";
 import { Mappa } from "../mappa/Mappa";
@@ -75,6 +77,23 @@ export function Esplora({ attiva }: { attiva: boolean }) {
   const aperto = useStratoAperto();
   const y = useSharedValue(0), slotY = useSharedValue(900), inFondo = useSharedValue(0), bandaFine = useSharedValue(400);
   const [piena, tuttoSchermo] = usePiena("hostExplore", attiva);
+  // all'apertura dell'app la mappa parte da dove sei (se hai già dato il permesso), non dall'ultimo posto guardato
+  useEffect(() => {
+    let via = false;
+    (async () => {
+      try {
+        const { granted } = await Location.getForegroundPermissionsAsync();
+        if (!granted) return;
+        await new Promise((r) => setTimeout(r, 1200));
+        if (via) return;
+        const p = await motore().getPos();
+        if (via || !p) return;
+        try { motore().showMe(p); } catch {}
+        motore().goPlace(p, 14, null);
+      } catch {}
+    })();
+    return () => { via = true; };
+  }, []);
   const [scorri, setScorri] = useState(true);
   const scroller = useRef<Animated.ScrollView>(null);
 
@@ -135,6 +154,7 @@ export function Esplora({ attiva }: { attiva: boolean }) {
           <Mascotte posa="esplora" attiva={attiva && !aperto && !piena} style={{ position: "absolute", right: 2, bottom: 0, width: 134, height: 140 }} />
         </View>
 
+        <InvitoFoto />
         <BannerMeteo />
 
         <Tocco onPress={() => nav.apri("cerca")} accessibilityLabel="Cerca sentieri e posti" style={{ marginHorizontal: MARGINE, marginTop: 14, height: 52, borderRadius: 999, backgroundColor: C.cream, flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 18 }}>

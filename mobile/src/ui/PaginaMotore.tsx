@@ -67,6 +67,8 @@ function ricorda(n: any) {
   const id = n && n.id;
   if (id && DIGITATI.has(id) && n.value !== DIGITATI.get(id)) n.value = DIGITATI.get(id);
 }
+/** il campo sta in una riga affiancata (es. peso + Salva)? Allora deve allargarsi, non restare stretto */
+const inFila = (n: any) => { const p = n && n.parentNode; return !!(p && p.nodeType === 1 && ["row", "tags", "seg", "chips"].some((c) => cl(p, c))); };
 function Campo({ n }: { n: any }) {
   ricorda(n);
   const [v, setV] = useState<string>(String(n.value ?? ""));
@@ -83,7 +85,7 @@ function Campo({ n }: { n: any }) {
       keyboardType={ty === "number" || n.getAttribute("inputmode") === "numeric" ? "numeric" : n.getAttribute("inputmode") === "decimal" ? "decimal-pad" : ty === "tel" ? "phone-pad" : ty === "email" ? "email-address" : "default"}
       secureTextEntry={ty === "password"} autoCapitalize={ty === "email" || ty === "password" ? "none" : "sentences"} autoCorrect={false}
       accessibilityLabel={n.getAttribute("aria-label") || undefined}
-      style={{ minHeight: area ? 84 : 48, borderRadius: 14, backgroundColor: C.white, borderWidth: 1.5, borderColor: C.sage2, paddingHorizontal: 14, paddingVertical: area ? 10 : 0, fontFamily: F.t600, fontSize: 16, color: C.ink, textAlignVertical: area ? "top" : "center", marginTop: 6 }}
+      style={{ ...(inFila(n) ? { flexGrow: 1, flexBasis: 150, minWidth: 120 } : null), minHeight: area ? 84 : 48, borderRadius: 14, backgroundColor: C.white, borderWidth: 1.5, borderColor: C.sage2, paddingHorizontal: 14, paddingVertical: area ? 10 : 0, fontFamily: F.t600, fontSize: 16, color: C.ink, textAlignVertical: area ? "top" : "center", marginTop: 6 }}
     />
   );
 }
@@ -195,6 +197,10 @@ export function Nodo({ n, k = "n" }: { n: any; k?: string }): any {
     const ck = ctl && (ctl.getAttribute("type") === "checkbox" || ctl.getAttribute("type") === "radio");
     if (ck) return <Tocco hitSlop={0} onPress={() => { ctl.checked = ctl.getAttribute("type") === "radio" ? true : !ctl.checked; simulaCambio(ctl, "change"); tocca(ctl); }} style={{ flexDirection: "row", alignItems: "center", gap: 10, minHeight: 48, borderBottomWidth: 1, borderBottomColor: C.sage2 }}>{(() => { const sm = n.querySelector("small"); const tit = sm ? pulito(testo(n)).replace(pulito(testo(sm)), "").trim() : pulito(testo(n)).trim(); return <View style={{ flex: 1, paddingVertical: 8 }}><Text style={{ fontFamily: F.t700, fontSize: 15, color: C.ink }}>{tit}</Text>{sm ? <Text style={{ fontFamily: F.t500, fontSize: 13, color: C.ink2, marginTop: 2 }}>{pulito(testo(sm)).trim()}</Text> : null}</View>; })()}<Interruttore acceso={!!ctl.checked} /></Tocco>;
     return <View style={{ marginTop: 10 }}><Blocchi nodi={figli} k={k} /></View>;
+  }
+  // righe fatte di più pezzi affiancati (es. "17 novembre | 25 kg | +1"): in colonna con spazio, non attaccati
+  if (t === "li" && n.children.length >= 2 && Array.from(n.childNodes).every((c: any) => (c.nodeType === 3 && !String(c.textContent).trim()) || (c.nodeType === 1 && tag(c) === "span"))) {
+    return <View style={{ flexDirection: "row", gap: 14, paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: C.sage2 }}>{(Array.from(n.children) as any[]).filter((c, i) => i === 0 || pulito(testo(c)).trim()).map((c, i) => <Text key={i} numberOfLines={i === 0 ? undefined : 1} style={{ ...(i === 0 ? { flex: 1 } : { flexShrink: 0 }), fontFamily: i === 0 ? F.t600 : F.t700, fontSize: 14.5, color: cl(c, "muted") ? C.ink2 : C.ink }}>{pulito(testo(c)).trim()}</Text>)}</View>;
   }
   if (t === "li") return <View style={{ flexDirection: "row", gap: 8, marginTop: 4 }}><Text style={{ fontFamily: F.t800, color: C.ink2, marginTop: 4 }}>•</Text><View style={{ flex: 1 }}><Blocchi nodi={figli} k={k} /></View></View>;
   if (cl(n, "stats")) {

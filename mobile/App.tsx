@@ -17,6 +17,7 @@ import { Strati, strati, useBarra } from "./src/ui/strati";
 import { PrimoAvvio } from "./src/schermate/PrimoAvvio";
 import { SEZIONI, SCHERMATE } from "./src/schermate";
 import "./src/collega";
+import "./src/pericoli";
 import { PastigliaInCammino } from "./src/schermate/Vai";
 import { salutoDelGiorno } from "./src/schermate/Esplora";
 

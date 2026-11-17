@@ -6,6 +6,8 @@ import { C, F } from "../theme";
 import { motore } from "../motore";
 import { Bottone, Interruttore, Testo, Tocco } from "../ui/base";
 import { strati } from "../ui/strati";
+import { fondoDisponibile } from "./Galleggiante";
+import { segnalaPericolo } from "../pericoli";
 
 const IMG: Record<string, any> = {
   map: require("../../assets/mappe/map.jpg"), sat: require("../../assets/mappe/sat.jpg"), s2: require("../../assets/mappe/s2.jpg"), topo: require("../../assets/mappe/topo.jpg"),
@@ -67,7 +69,15 @@ export function foglioMappe(extra?: { legenda?: () => void; proponi?: () => void
             <Interruttore acceso={acceso(k)} />
           </Tocco>
         ))}
-        <Bottone testo="Legenda della mappa" tinta="chiaro2" largo style={{ marginTop: 14 }} onPress={foglioLegenda} />
+        {fondoDisponibile() ? (
+          <Tocco hitSlop={0} onPress={() => M.setSurf(!M.surfOn)} accessibilityRole="switch" accessibilityState={{ checked: !!M.surfOn }} style={{ flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 11, minHeight: 44, borderBottomWidth: 1.5, borderBottomColor: C.sage2 }}>
+            <View style={{ width: 22, height: 6, borderRadius: 3, overflow: "hidden", flexDirection: "row" }}><View style={{ flex: 1, backgroundColor: M.SFC.n }} /><View style={{ flex: 1, backgroundColor: M.SFC.a }} /><View style={{ flex: 1, backgroundColor: M.SFC.g }} /></View>
+            <View style={{ flex: 1 }}><Text style={{ fontFamily: F.t700, fontSize: 15, color: C.ink }}>Colora il fondo del percorso</Text><Text style={{ fontFamily: F.t600, fontSize: 12, color: C.ink2 }}>Terra, asfalto o gradini, a colori</Text></View>
+            <Interruttore acceso={!!M.surfOn} />
+          </Tocco>
+        ) : null}
+        <Bottone testo="Segnala un pericolo dove sei" icona="alert" tinta="chiaro2" largo style={{ marginTop: 14 }} onPress={() => { strati.chiudiFoglio(); setTimeout(() => segnalaPericolo(null), 350); }} />
+        <Bottone testo="Legenda della mappa" tinta="chiaro2" largo style={{ marginTop: 8 }} onPress={foglioLegenda} />
         {extra && extra.proponi ? <Bottone testo="Manca un posto? Proponilo" tinta="chiaro2" largo style={{ marginTop: 8 }} onPress={extra.proponi} /> : null}
         <Testo tipo="piccolo" style={{ marginTop: 12 }}>Una mappa meteo o satellite alla volta. Fonti gratuite: Open-Meteo, RainViewer, NASA, Sentinel-2 di EOX.</Testo>
       </View>

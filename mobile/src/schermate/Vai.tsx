@@ -1,5 +1,6 @@
 // In cammino: mappa dal vivo, prossima svolta, tempo, km fatti e mancanti, passi, avvisi per il cane, Pausa, SOS, Chiudi.
 // A tutto schermo, scuro, senza mascotte. La logica (GPS, fuori percorso, pausa acqua, meteo che cambia) è quella del motore.
+import { segnalaPericolo } from "../pericoli";
 import React, { useEffect, useState } from "react";
 import { Alert, Dimensions, Text, TextInput, View } from "react-native";
 import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
@@ -259,6 +260,7 @@ export function Vai({ attiva }: { attiva: boolean }) {
           {tondo("gear", "Impostazioni di navigazione", foglioImpostazioni)}
           {tondo("share", "Condividi la posizione in tempo reale", () => el("nav-share").click(), n.share ? { backgroundColor: C.copper } : null)}
           {tondo("cam", "Scatta una foto del sentiero", foto)}
+          {tondo("alert", "Segnala un pericolo lungo il percorso", () => segnalaPericolo(n.pos || null))}
           <View style={{ flex: 1 }} />
           {tondo("x", "Riduci: torna all'app, la passeggiata continua", () => navi.indietro())}
         </View>

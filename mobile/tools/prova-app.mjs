@@ -16,6 +16,7 @@ const CANE = { id: "d1", name: "Gohan", breed: "Pastore australiano", age: 3, we
 const browser = await chromium.launch({ channel: "msedge" });
 const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true, locale: "it-IT", geolocation: { latitude: 40.8385, longitude: 14.0745 }, permissions: ["geolocation"] });
 const page = await ctx.newPage();
+page.on("dialog", (d) => { console.log("[domanda]", d.message().slice(0, 120)); d.accept(); });
 page.on("console", (m) => { const t = m.text(); if (m.type() === "error" || /motore:|mappa:|nav:/.test(t)) console.log("[" + m.type() + "]", t.slice(0, 400)); });
 page.on("pageerror", (e) => console.log("[eccezione]", String(e).slice(0, 600)));
 // L'app di prova viene servita "come se fosse" sul sito: così la mappa accetta le richieste (il token è limitato al sito)

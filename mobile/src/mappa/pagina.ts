@@ -10,12 +10,16 @@ const CSS = `
 html,body,#map{margin:0;padding:0;height:100%;width:100%;overflow:hidden;background:${C.sage2};font-family:system-ui,sans-serif;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 .mapnote{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:20px;color:${C.ink2};font-size:15px;font-weight:600}
 .mk-stop{width:26px;height:26px;border-radius:50%;background:${C.cream};color:${C.ink};border:2.5px solid ${C.ink};font:800 13.5px/21px system-ui;text-align:center;box-shadow:0 3px 8px rgba(23,28,20,.35);box-sizing:border-box}
-.mk-me{position:relative;width:44px;height:44px}
-.mk-me .face{position:absolute;inset:0;border-radius:50%;background:${C.copper} center/cover;color:#fff;border:3px solid ${C.cream};box-shadow:0 0 0 7px rgba(210,128,58,.25),0 3px 10px rgba(0,0,0,.35);display:grid;place-items:center;box-sizing:border-box}
-.mk-me .face svg{width:28px;height:28px}
-.mk-me .hd{display:none;position:absolute;inset:-14px;pointer-events:none}
-.mk-me .hd::before{content:"";position:absolute;left:50%;top:0;margin-left:-9px;border:9px solid transparent;border-top:0;border-bottom:13px solid ${C.copper};filter:drop-shadow(0 0 1.5px #fff)}
+.mk-me{position:relative;width:20px;height:20px}
+.mk-me .face{position:absolute;inset:0;border-radius:50%;background:${C.copper};border:3px solid #fff;box-shadow:0 0 0 6px rgba(210,128,58,.22),0 1px 4px rgba(0,0,0,.35);box-sizing:border-box}
+.mk-me .face svg{display:none}
+.mk-me .hd{display:none;position:absolute;inset:-12px;pointer-events:none}
+.mk-me .hd::before{content:"";position:absolute;left:50%;top:0;margin-left:-6px;border:6px solid transparent;border-top:0;border-bottom:9px solid ${C.copper};filter:drop-shadow(0 0 1.5px #fff)}
 .mk-me.dir .hd{display:block}
+.mk-haz{width:30px;height:27px;position:relative;cursor:pointer;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
+.mk-haz::before{content:"";position:absolute;left:0;top:0;border-left:15px solid transparent;border-right:15px solid transparent;border-bottom:26px solid #1b1f17}
+.mk-haz::after{content:"";position:absolute;left:3.5px;top:4px;border-left:11.5px solid transparent;border-right:11.5px solid transparent;border-bottom:20px solid #F6CB45}
+.mk-haz b{position:absolute;left:0;right:0;top:9px;z-index:1;text-align:center;font:900 14px/14px system-ui;color:#1b1f17}
 .mk-start{display:flex;flex-direction:column;align-items:center;pointer-events:none}
 .mk-start .pin{width:40px;height:40px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:${C.forest};border:3px solid ${C.cream};box-shadow:0 3px 10px rgba(0,0,0,.45);display:grid;place-items:center;margin-bottom:6px;box-sizing:border-box}
 .mk-start svg{width:22px;height:22px;transform:rotate(45deg);fill:none;stroke:${C.lime};stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}

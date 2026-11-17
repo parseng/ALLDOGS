@@ -95,6 +95,8 @@ export function Sentiero({ arg, attiva }: { arg?: any; attiva: boolean }) {
   const y = useSharedValue(0), slotY = useSharedValue(0);
   const [piena, tuttoSchermo] = usePiena("hostTrail", attiva);
   const [statoVolo, setVolo] = useState<StatoVolo | null>(null);
+  const voloPartito = useRef(false);
+  useEffect(() => { voloPartito.current = !!statoVolo; }, [statoVolo]);
   const onScroll = useAnimatedScrollHandler((e) => { y.value = e.contentOffset.y; });
   const tr = M.TR.get(id);
   const t0 = useRef(Date.now()).current;
@@ -127,10 +129,12 @@ export function Sentiero({ arg, attiva }: { arg?: any; attiva: boolean }) {
   if (f && f.f.includes("citta")) regole.push("Tratti in città: guinzaglio al massimo 1,5 m e raccogli i bisogni.");
   regole.push("Nei parchi e nelle riserve il guinzaglio è quasi sempre obbligatorio: guarda i cartelli all'ingresso.");
 
-  const avviaVolo = () => { if (!piena) tuttoSchermo(true); setTimeout(() => volo.parti({ path: tr.path, prof: e && e.p, len: tr.len, shape: tr.shape || "loop", ret: tr.ret || 0 }), 500); };
+  // sul telefono la mappa, appena diventa grande, si risistema da sola e può fermare il volo appena partito: parto un attimo dopo e, se non è partito, riprovo
+  const avviaVolo = () => { if (!piena) tuttoSchermo(true); const src = { path: tr.path, prof: e && e.p, len: tr.len, shape: tr.shape || "loop", ret: tr.ret || 0 }; voloPartito.current = false; setTimeout(() => volo.parti(src), 800); setTimeout(() => { if (!voloPartito.current) volo.parti(src); }, 2200); };
   const zaino = () => motore().packSheet({ km: M.totLen(tr) / 1000, p: tr.start, day: M.S.day, title: tr.name, water: ((f && f.w) || []).length, mount: !!((e && (e.up >= 300 || e.max >= 900)) || (f && f.f.includes("vette"))), beach: !!(f && f.f.includes("spiaggia")), lake: !!(f && (f.f.includes("laghi") || f.f.includes("fiumi"))) });
   const attrezzi: [string, string, () => void][] = [
     ["cube", "Anteprima 3D", avviaVolo],
+    ...(sh ? [["layers", M.surfOn ? "Fondo colorato" : "Colora il fondo", () => M.setSurf(!M.surfOn)] as [string, string, () => void]] : []),
     ["down", eScaricata("s-" + id) ? "Scaricato" : "Scarica", () => foglioScarica("s-" + id, M.navObjTrail(tr), `${M.km(it.len)} km · ${tr.zone || "sentiero"}`, () => partiCon(M.navObjTrail(tr), M.item(tr), tr.name))],
     ["edit", "Modifica", () => { try { M.editTrail(tr); } catch { strati.avviso("Non riesco ad aprire la modifica."); } }],
     ["bag", "Zaino", zaino],
@@ -172,7 +176,7 @@ export function Sentiero({ arg, attiva }: { arg?: any; attiva: boolean }) {
           </ScrollView>
 
           <View style={{ flexDirection: "row", marginTop: 16, borderTopWidth: 1.5, borderBottomWidth: 1.5, borderColor: C.sage2 }}>
-            {[[`${M.km(it.len)} km`, it.shape === "lolli" ? "giro completo" : it.loop === false ? "andata e ritorno" : "lunghezza", false], [it.up != null ? `${it.up} m` : "…", it.loop === false ? "salita in tutto" : "dislivello", false], [M.fmtH(res.hours).replace(" min", ""), `con ${nome}`, true], [res.v >= 0 ? M.EFFORT[res.effort] : "…", `per ${nome}`, false]].map(([a, b, cane], i) => (
+            {[[`${M.km(it.len)} km`, it.shape === "lolli" ? "giro completo" : it.loop === false ? "andata e ritorno" : "lunghezza", false], [it.up != null ? `${it.up} m` : "…", it.loop === false ? "salita in tutto" : "dislivello", false], [M.fmtH(res.hours).replace(/ h (\d+) min$/, " h $1"), `con ${nome}`, true], [res.v >= 0 ? M.EFFORT[res.effort] : "…", `per ${nome}`, false]].map(([a, b, cane], i) => (
               <View key={i} style={{ flex: 1, paddingTop: 12, paddingBottom: 10, paddingLeft: i ? 8 : 0, borderLeftWidth: i ? 1.5 : 0, borderColor: C.sage2 }}>
                 <Text numberOfLines={1} adjustsFontSizeToFit style={{ fontFamily: F.titolo, fontSize: 20, letterSpacing: -0.4, color: cane ? C.warnInk : C.ink, fontVariant: ["tabular-nums"] }}>{a as string}</Text>
                 <Text style={{ fontFamily: F.t700, fontSize: 12.5, lineHeight: 15, color: C.ink2, marginTop: 3 }}>{b as string}</Text>

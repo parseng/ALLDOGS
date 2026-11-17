@@ -11,6 +11,7 @@ import { motore, pagina, pulito, riavviaMotore, useMotore } from "../motore";
 import { scrivi } from "../archivio";
 import { nav } from "../nav";
 import { scegliFoto } from "../foto";
+import { SceltaAvatar } from "../ui/FotoAvatar";
 import { Bottone, Etichetta, Icona, RigaMenu, Sezione, Testo, Tocco } from "../ui/base";
 import { FotoCane, fotoCane, nomeCane } from "../ui/BarraMenu";
 import { PaginaMotore } from "../ui/PaginaMotore";
@@ -106,7 +107,7 @@ export function Cane({ attiva }: { attiva: boolean }) {
         </Tocco>
       </View>
       <View style={{ paddingHorizontal: MARGINE, paddingTop: 16 }}>
-        {ALTRI.length > 1 ? (
+        {ALTRI.length >= 1 ? (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingBottom: 12 }}>
             {ALTRI.map((x) => <Tocco key={x.id} onPress={() => scegliCane(x.id)} accessibilityState={{ selected: x.id === M.DOGS.cur }} style={{ alignItems: "center", gap: 4 }}><View style={{ borderRadius: 30, borderWidth: 2.5, borderColor: x.id === M.DOGS.cur ? C.ink : "transparent", padding: 2 }}><FotoCane size={50} id={x.id} /></View><Text style={{ fontFamily: F.t700, fontSize: 12.5, color: C.ink }}>{x.name || "?"}</Text></Tocco>)}
             <Tocco onPress={() => nav.apri("nuovocane")} style={{ alignItems: "center", gap: 4 }}><View style={{ width: 58, height: 58, borderRadius: 29, backgroundColor: C.cream, alignItems: "center", justifyContent: "center" }}><Icona nome="plus" size={22} /></View><Text style={{ fontFamily: F.t700, fontSize: 12.5, color: C.ink }}>Aggiungi</Text></Tocco>
@@ -232,6 +233,12 @@ export function Impostazioni({ attiva }: { attiva: boolean }) {
   const SITO = "https://parseng.github.io/ALLDOGS/";
   return (
     <PaginaSemplice colore={TESTATA.impostazioni} titolo="Impostazioni" riga={`Per ${nomeCane()} e per te.`} indietro={indietro}>
+      <Sezione titolo={`Foto di ${nomeCane()}`} />
+      <Testo tipo="secondo" style={{ marginBottom: 10 }}>La sua foto diventa il suo avatar in tutta l'app.</Testo>
+      <SceltaAvatar />
+      <Sezione titolo="I tuoi cani" />
+      <Testo tipo="secondo">Hai più cani? Aggiungili: ognuno ha il suo profilo, la sua salute e i suoi limiti. Prima di una passeggiata scegli chi viene.</Testo>
+      <Bottone testo="Aggiungi un altro cane" icona="plus" tinta="chiaro" piccolo style={{ marginTop: 10 }} onPress={() => nav.apri("nuovocane")} />
       <Sezione titolo="Promemoria" />
       <Testo tipo="secondo">Ti ricordo la passeggiata all'inizio delle fasce orarie libere che hai indicato nelle domande iniziali.</Testo>
       <Bottone testo="Cambia gli orari liberi" tinta="chiaro" piccolo style={{ marginTop: 10 }} onPress={() => nav.apri("domande")} />
