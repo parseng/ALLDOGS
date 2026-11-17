@@ -8,6 +8,7 @@ import { Chip, Icona, Tocco } from "../ui/base";
 import { nomeCane } from "../ui/BarraMenu";
 import { BarraAlta } from "../ui/Testate";
 import { Foto, Vuoto, verdettoTesto } from "../ui/sentieri";
+import { TIPO_PARCO, apriParco, cercaParchi } from "../parchi";
 import { strati } from "../ui/strati";
 import { filtro } from "./Esplora";
 
@@ -89,7 +90,8 @@ export function Cerca({ attiva }: { attiva: boolean }) {
     });
     const righeP = gp.map((x, i) => <Riga key={"p" + i} icona={x.place_type && x.place_type[0] === "poi" ? "pin" : "compass"} titolo={x.text || x.place_name} sotto={pulito(x.place_name.replace(/, Italia$/, "")) === x.text ? "Posto in Italia" : x.place_name.replace(/, Italia$/, "")} onPress={() => apriLuogo(x)} />);
     const primaLuogo = gp.some((x) => M.norm(x.text) === nq) && !(th[0] && th[0].r.n === nq);
-    const lista = scheda === "all" ? (primaLuogo ? [...righeP, ...righeT] : [...righeT.slice(0, 4), ...righeP, ...righeT.slice(4)]) : [...righeT, ...righeP];
+    const righeParchi = scheda === "place" ? [] : cercaParchi(qt).map((p) => <Riga key={"pk" + p.id} icona="compass" titolo={p.n} sotto={`${TIPO_PARCO[p.k]} · ${p.s.length} sentieri`} onPress={() => { chiudi(); setTimeout(() => apriParco(p), 300); }} />);
+    const lista = righeParchi.length ? [...righeParchi, ...(scheda === "all" ? (primaLuogo ? [...righeP, ...righeT] : [...righeT.slice(0, 4), ...righeP, ...righeT.slice(4)]) : [...righeT, ...righeP])] : scheda === "all" ? (primaLuogo ? [...righeP, ...righeT] : [...righeT.slice(0, 4), ...righeP, ...righeT.slice(4)]) : [...righeT, ...righeP];
     corpo = (
       <>
         <View style={{ flexDirection: "row", gap: 8, marginBottom: 6 }}>

@@ -13,6 +13,7 @@ import { Mascotte } from "../ui/Mascotte";
 import { Nuvoletta } from "../ui/Testate";
 import { BannerMeteo, oggiPerIlCane } from "../ui/meteo";
 import { InvitoFoto } from "../ui/FotoAvatar";
+import { TIPO_PARCO, apriParco, chiudiParco, elencoParchi, parcoAttivo, parchiVicini } from "../parchi";
 import { CartaSentiero, Foto, Vuoto, impegnoTesto, verdettoTesto } from "../ui/sentieri";
 import { PastiglieMomento, strati, useStratoAperto } from "../ui/strati";
 import { Mappa } from "../mappa/Mappa";
@@ -112,6 +113,8 @@ export function Esplora({ attiva }: { attiva: boolean }) {
     return ps.sort((a, b2) => b2.d - a.d).slice(0, 10);
   }, [righe, af, M.S.far, Object.keys(M.PL).length]);
 
+  const aree = useMemo(() => { try { return parchiVicini(M.S.view.c, 60, 8); } catch { return []; } }, [Math.round(M.S.view.c[0] * 20), Math.round(M.S.view.c[1] * 20), elencoParchi().length]);
+
   // Gohan sbuca solo quando la fascia lime non si vede più e la pagina è arrivata in fondo
   const onScroll = useAnimatedScrollHandler((e) => {
     y.value = e.contentOffset.y;
@@ -174,6 +177,7 @@ export function Esplora({ attiva }: { attiva: boolean }) {
           <Chip testo="Andata e ritorno" attivo={tipo === "line"} onPress={() => filtro("f-type", tipo === "line" ? "all" : "line")} />
         </ScrollView>
         {M.S.near ? <View style={{ paddingHorizontal: MARGINE, marginTop: 8, flexDirection: "row" }}><Chip testo={`Vicino a ${M.S.near.n}  ✕`} attivo onPress={() => M.setNear(null)} /></View> : null}
+        {parcoAttivo() ? <View style={{ paddingHorizontal: MARGINE, marginTop: 8, flexDirection: "row" }}><Chip testo={`${parcoAttivo()!.n}  ✕`} attivo onPress={chiudiParco} /></View> : null}
 
         </View>
         <View style={{ height: MAPPA_H, marginTop: 12 }} />
@@ -189,6 +193,14 @@ export function Esplora({ attiva }: { attiva: boolean }) {
               </ScrollView>
             </>
           ) : null}
+          {!parcoAttivo() && !M.S.far && aree.length ? (
+            <>
+              <Sezione titolo="Parchi e riserve qui intorno" />
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -MARGINE }} contentContainerStyle={{ paddingHorizontal: MARGINE, gap: 12 }}>
+                {aree.map((p) => <CartaLuogo key={p.id} nome={p.n} riga={TIPO_PARCO[p.k]} sotto={`${p.s.length} ${p.s.length === 1 ? "sentiero" : "sentieri"} nel parco · tocca per vederli`} img={M.staticPlace(p.c)} etichetta={TIPO_PARCO[p.k]} onPress={() => { apriParco(p); scroller.current?.scrollTo({ y: 0, animated: true }); }} />)}
+              </ScrollView>
+            </>
+          ) : null}
           {parchi.length ? (
             <>
               <Sezione titolo="Parchi per una passeggiata" />
@@ -198,7 +210,7 @@ export function Esplora({ attiva }: { attiva: boolean }) {
             </>
           ) : null}
 
-          <Sezione titolo={M.S.far ? "Sentieri d'Italia" : af ? "Sentieri trovati" : "Sentieri in questa zona"} destra={conta} />
+          <Sezione titolo={parcoAttivo() ? `Sentieri: ${parcoAttivo()!.n}` : M.S.far ? "Sentieri d'Italia" : af ? "Sentieri trovati" : "Sentieri in questa zona"} destra={conta} />
           {af ? <Bottone testo="Azzera i filtri" tinta="chiaro" piccolo icona="x" style={{ marginBottom: 14 }} onPress={() => { M.S.day = 0; pagina().el("reset").click(); }} /> : null}
           {!M.S.ready ? <Vuoto titolo="Annuso i sentieri…" testo="Sto caricando i sentieri d'Italia." />
             : M.S.far ? <Vuoto titolo="Avvicina la mappa" testo={`Scegli una zona, tocca uno dei cerchi con i numeri oppure cerca un luogo: ti mostro i sentieri adatti a ${nome}. Sentieri disponibili: ${totale.toLocaleString("it-IT")}.`}><Bottone testo="Cerca un posto" icona="search" onPress={() => nav.apri("cerca")} /></Vuoto>
