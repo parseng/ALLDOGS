@@ -1126,6 +1126,7 @@ body{font-size:17px;line-height:1.5}
   <div class="form" style="margin-top:6px">
     <label>Nome<input id="d-name" autocomplete="off"></label>
     <label class="full">Razza<input id="d-breed" autocomplete="off" placeholder="Es. Labrador, meticcio"></label>
+    <label class="full">Se è un meticcio: che incrocio può essere?<input id="d-mix" autocomplete="off" placeholder="Facoltativo. Es. pastore tedesco e labrador"></label>
     <label>Età (anni)<input id="d-age" type="number" inputmode="decimal" min="0" max="25" step="0.5"></label>
     <label>Peso (kg)<input id="d-weight" type="number" inputmode="decimal" min="1" max="100"></label>
     <label class="w">Allenamento<select id="d-train"><option value="poco">Poco: passeggiate in città</option><option value="medio">Medio: qualche escursione</option><option value="molto">Molto: escursioni frequenti</option></select></label>
@@ -1404,7 +1405,7 @@ async function syncPush(sb,uid,st){
   const del=async(t,col,ids,own="user_id")=>{for(let i=0;i<ids.length;i+=100){const {error}=await sb.from(t).delete().eq(own,uid).in(col,ids.slice(i,i+100));if(error)throw error}};
   // cani
   const map={};
-  const dRows=DL.map(d=>({owner_id:uid,local_id:d.id,nome:String(d.name||"").slice(0,80),razza:d.breed||null,eta_anni:syNum(d.age),data_nascita:d.birth||null,peso_kg:syNum(d.weight),energia:d.energy||null,allenamento:d.train||null,orari_liberi:d.orari?{fasce:d.orari,slots:d.orariSlots||orariSlots(d.orari)}:{},durata_preferita:syNum(d.durata),obiettivo:d.obiettivo||null,soffre_caldo:!!d.caldo,agilita:d.agil||null,mantello:d.coat||null,
+  const dRows=DL.map(d=>({owner_id:uid,local_id:d.id,nome:String(d.name||"").slice(0,80),razza:d.breed?String(d.breed+(d.mix?" (incrocio: "+d.mix+")":"")).slice(0,120):null,eta_anni:syNum(d.age),data_nascita:d.birth||null,peso_kg:syNum(d.weight),energia:d.energy||null,allenamento:d.train||null,orari_liberi:d.orari?{fasce:d.orari,slots:d.orariSlots||orariSlots(d.orari)}:{},durata_preferita:syNum(d.durata),obiettivo:d.obiettivo||null,soffre_caldo:!!d.caldo,agilita:d.agil||null,mantello:d.coat||null,
     brachicefalo:!!d.brachy,patologie:d.pat||{},patologie_note:d.patOther||null,
     dati:{profilo:d,obiettivo:store.get(syK("alldogs-goal",d.id)),lezioni:store.get(syK("alldogs-train",d.id)),salute:store.get(syK("alldogs-salute",d.id))}}));
   if(dRows.length){const {data,error}=await sb.from("dogs").upsert(dRows,{onConflict:"owner_id,local_id"}).select("id,local_id");if(error)throw error;data.forEach(r=>map[r.local_id]=r.id)}
@@ -1546,7 +1547,21 @@ const BREED_FIT=[
   ["resistente","di razza da lavoro, molto resistente",/border collie|australian|cattle dog|lupo|korthals|lessinia|oropa|russell|jagdterrier|brie\b|pastore australiano|aussie|kelpie|malinois|pastore belga|bergamasc|husky|malamute|pointer|setter|bracco|kurzhaar|drahthaar|vizsla|weimaraner|breton|epagneul|springer|dalmata|segugio|jack russell|spinone|cirneco|lagotto|pastore tedesco|pastore svizzero|pastore olandese|beauceron/,{poco:[8,400],medio:[15,900],molto:[24,1500]}],
   ["atletico","di razza media o grande, sportiva",/labrador|golden|retriever|collie|shetland|beagle|cocker|schnauzer|samoied|akita|shiba|fox terrier|terrier|amstaff|pit ?bull|staffordshire|bull terrier|dobermann|pinscher|boxer|maremman|dogo argentino|barbon|barboncino|husky|basenji|vizsla|doodle|cockapoo|ridgeback|hovawart|eurasier|keeshond|fiandre|acqua|\bpuli\b/,{poco:[6,300],medio:[12,700],molto:[20,1200]}]];
 const BASE_FIT={poco:[6,300],medio:[12,700],molto:[20,1200]}; // meticci e razze non riconosciute: si usa il peso
-function breedFit(d){const b=String(d.breed||"").toLowerCase();if(!b||/meticci/.test(b))return null;const g=BREED_FIT.find(x=>x[2].test(b));return g?{id:g[0],txt:g[1],t:g[3]}:null}
+const FIT_NOME={brachy:"muso schiacciato",schiena:"schiena lunga",mini:"piccola da compagnia",levriero:"levriero",molosso:"grande e pesante",resistente:"da lavoro",atletico:"sportiva"};
+const fitOf=id=>BREED_FIT.find(x=>x[0]===id);
+// Meticci (o razza non riconosciuta): limiti in base al peso, come le razze: sotto 10 kg come un cane piccolo, oltre 40 kg come un molosso.
+// Se l'utente scrive che incrocio può essere (es. "pastore tedesco e labrador"), si usa la razza PIÙ DELICATA dell'incrocio,
+// ma mai più dei limiti della sua taglia (un incrocio di 4 kg resta un cane piccolo).
+function breedFit(d){const b=String(d.breed||"").toLowerCase(),w=+d.weight;
+  if(b&&!/meticci/.test(b)){const g=BREED_FIT.find(x=>x[2].test(b));if(g)return {id:g[0],txt:g[1],t:g[3]}}
+  const mix=String(d.mix||"").toLowerCase().trim(),tr=d.train in BASE_FIT?d.train:"medio";
+  const wg=w>0&&w<10?fitOf("mini"):w>40?fitOf("molosso"):w>0?fitOf("atletico"):null;
+  const C=mix?mix.split(/\s+(?:e|ed|x|con|incrocio|incrociato|misto)\s+|[,;/+&×]|\s+-\s+/).map(x=>x.trim()).filter(Boolean).map(x=>BREED_FIT.find(g=>g[2].test(x))).filter(Boolean):[];
+  if(C.length){let g=C.reduce((a,x)=>x[3][tr][0]<a[3][tr][0]?x:a);
+    if(wg&&(wg[0]==="mini"||wg[0]==="molosso")&&wg[3][tr][0]<g[3][tr][0])g=wg;
+    return {id:g[0],txt:`un incrocio: conto i limiti della parte più delicata (razza ${FIT_NOME[g[0]]})`,t:g[3],mix:true,brachy:C.some(x=>x[0]==="brachy"),longback:C.some(x=>x[0]==="schiena")}}
+  if(!wg)return null;
+  return {id:wg[0],txt:wg[0]==="mini"?"un meticcio di taglia piccola":wg[0]==="molosso"?"un meticcio di taglia gigante":"un meticcio di taglia media",t:wg[3],mix:true}}
 // Cucciolo: le ossa crescono fino a 1 anno nelle taglie piccole e medie, fino a 18 mesi in quelle grandi (da 25 kg in su da adulto).
 function puppyAge(d){let r=null;try{r=breedRange(d)}catch(e){}const g=breedFit(d);return (r&&(r.min+r.max)/2>=25)||(g&&g.id==="molosso")||(!r&&d.weight>=25)?1.5:1}
 // Allenamento VERO: le passeggiate registrate nelle ultime 6 settimane. Con almeno 3 uscite in cui il cane non è tornato stanco,
@@ -1571,8 +1586,8 @@ function capacity(d){
   else if(d.age>=senior){f*=.6;notes.push("è anziano per la sua taglia")}
   if(!g&&d.weight<8){f*=.7;notes.push("è di taglia piccola")}
   if(!g&&d.weight>40){f*=.8;notes.push("è di taglia gigante")}
-  if(g&&g.id!=="atletico"&&g.id!=="resistente")notes.push("è "+g.txt);
-  if(d.brachy&&!(g&&g.id==="brachy")){f*=.6;notes.push("ha il muso schiacciato e respira con più fatica")}
+  if(g&&(g.id!=="atletico"&&g.id!=="resistente"||g.txt.startsWith("un incrocio")))notes.push("è "+g.txt);
+  if(d.brachy&&!(g&&(g.id==="brachy"||g.brachy))){f*=.6;notes.push("ha il muso schiacciato e respira con più fatica")}
   if(p.art){f*=.7;fu*=.6;notes.push("ha problemi alle articolazioni")}
   if(p.cuore){f*=.6;fu*=.5;heat-=3;notes.push("ha problemi di cuore")}
   if(p.resp){f*=.7;heat-=3;notes.push("ha problemi respiratori")}
@@ -1581,11 +1596,11 @@ function capacity(d){
   if(p.diab){f*=.85;notes.push("ha il diabete")}
   if(p.altro){f*=.85;notes.push("ha un problema di salute"+(d.patOther?" ("+d.patOther+")":""))}
   if(p.conv){k=Math.min(k,3);up=Math.min(up,100);notes.push("è in convalescenza")}
-  const brachy=!!d.brachy||!!(g&&g.id==="brachy");
+  const brachy=!!d.brachy||!!(g&&(g.id==="brachy"||g.brachy));
   const sensitive=brachy||d.caldo||d.coat==="lungo"||puppy||d.age>=senior||d.weight>35||p.cuore||p.resp||p.peso;
   const agil=p.art||p.conv?"bassa":d.agil;
   return {km:Math.max(1,Math.round(k*f*10)/10),up:Math.max(50,Math.round(up*f*fu/10)*10),notes,plus,heat:(sensitive?21:24)+heat,sensitive,agil,health:pats(d).length>0,
-    breed:g?g.id:null,brachy,puppy,longback:!!(g&&g.id==="schiena"),heart:!!p.cuore,strict:puppy||!!p.conv,breath:brachy||!!p.resp};
+    breed:g?g.id:null,brachy,puppy,longback:!!(g&&(g.id==="schiena"||g.longback)),heart:!!p.cuore,strict:puppy||!!p.conv,breath:brachy||!!p.resp};
 }
 const dogStep=w=>w<10?.3:w<25?.45:w<40?.6:.7;
 // lunghezza del TUO passo: media delle passeggiate in cui hai scritto i passi veri dell'app Salute (altrimenti 75 cm)
@@ -3560,7 +3575,7 @@ async function miniSend(id,text){
   catch(e){console.warn("Gemini:",e);c.msgs.push({r:"a",t:gemErr(e),err:true})}
   c.busy=false;miniRender(id);
 }
-const dogLine=d=>`nome ${d.name}; razza ${d.breed||"non indicata"}; età ${d.age} anni; peso ${d.weight} kg; allenamento ${d.train}; agilità ${capacity(d).agil}; pelo ${d.coat}; muso schiacciato ${d.brachy?"sì":"no"}; problemi di salute: ${pats(d).join(", ")||"nessuno indicato"}`;
+const dogLine=d=>`nome ${d.name}; razza ${d.breed||"non indicata"}${d.mix?" (incrocio: "+d.mix+")":""}; età ${d.age} anni; peso ${d.weight} kg; allenamento ${d.train}; agilità ${capacity(d).agil}; pelo ${d.coat}; muso schiacciato ${d.brachy?"sì":"no"}; problemi di salute: ${pats(d).join(", ")||"nessuno indicato"}`;
 
 // ================= Addestramento =================
 // Lezioni in ordine di difficoltà. avoid: salti = esercizi con salto; zampe = pesano su spalle e anche; schiena = torsioni della schiena.
@@ -4765,7 +4780,7 @@ function paintFollow(){
 }
 
 // ================= Il mio cane =================
-const DF=["name","breed","age","weight","train","agil","coat","brachy"];
+const DF=["name","breed","mix","age","weight","train","agil","coat","brachy"];
 const HF=[["chip","h-chip"],["vet","h-vet"],["vettel","h-vettel"],["antip","h-antip"],["antipdate","h-antipdate"],["note","h-note"]];
 $("pat").innerHTML=PATS.map(p=>`<label><input type="checkbox" data-p="${p[0]}">${p[1]}</label>`).join("");
 $("pat").querySelector('[data-p="altro"]').onchange=e=>$("pat-other-l").hidden=!e.target.checked;
@@ -4817,7 +4832,7 @@ function showDog(){
   $("onb").hidden=!first;$("dog-head").style.display=first?"none":"flex";$("settings").style.display=first?"none":"block";
   $("dog-hub").hidden=first;$("fold-dog").classList.toggle("onb",first);if(first)$("fold-dog").open=true;$("fold-dog-t").textContent=first?"":"I dati di "+(d.name||"del cane");
   $("dog-save").textContent=first?"Inizia":"Salva";
-  DF.forEach(f=>{const el=$("d-"+f);if(el.type==="checkbox")el.checked=!!d[f];else el.value=first&&["name","breed","age","weight"].includes(f)?"":d[f]});
+  DF.forEach(f=>{const el=$("d-"+f);if(el.type==="checkbox")el.checked=!!d[f];else el.value=first&&["name","breed","age","weight"].includes(f)?"":(d[f]??"")});
   $("pat").querySelectorAll("input").forEach(i=>i.checked=!first&&!!(d.pat&&d.pat[i.dataset.p]));
   $("pat-other").value=first?"":d.patOther||"";$("pat-other-l").hidden=!(d.pat&&d.pat.altro)||first;
   const h=first?{}:d.health||{};HF.forEach(([k,id])=>$(id).value=h[k]||"");
@@ -4875,6 +4890,9 @@ const WSTEPS=[
      $("wz-list").querySelectorAll("button").forEach(b=>b.onclick=()=>{W.d.breed=b.dataset.own?$("wz-in").value.trim():b.textContent;W.q="";wzGo(1)})};
    $("wz-in").oninput=()=>{W.q=$("wz-in").value;paint()};paint()},
   read:()=>{const v=$("wz-in").value.trim();if(v)W.d.breed=RAZZE.find(r=>norm(r)===norm(v))||v;return true}},
+ {k:"mix",show:()=>/meticci/i.test(W.d.breed||""),t:()=>`Sai che incrocio può essere ${wzN()}?`,sub:()=>"Facoltativo. Mi aiuta a capire quanto può camminare: uso la razza più delicata dell'incrocio.",
+  html:()=>`<input class="field" id="wz-in" autocomplete="off" enterkeyhint="next" placeholder="Es. pastore tedesco e labrador" value="${esc(W.d.mix||"")}" aria-label="Incrocio">`,
+  read:()=>{W.d.mix=$("wz-in").value.trim();return true},skip:()=>{W.d.mix=""}},
  {k:"age",t:()=>`Quanti anni ha ${wzN()}?`,sub:()=>"Puoi scrivere gli anni oppure la data di nascita.",
   html:()=>`<div class="wz-seg"><button class="pill" type="button" data-am="anni" aria-pressed="${W.ageMode==="anni"}">Anni</button><button class="pill" type="button" data-am="data" aria-pressed="${W.ageMode==="data"}">Data di nascita</button></div>
    ${W.ageMode==="anni"?`<input class="field" id="wz-in" type="number" inputmode="decimal" min="0" max="25" step="0.5" placeholder="Es. 4" value="${W.d.age!=null&&W.d.age!==""?esc(W.d.age):""}" aria-label="Età in anni"><p class="small muted" style="margin-top:8px">Per un cucciolo: 6 mesi = 0,5.</p>`
@@ -4949,7 +4967,7 @@ function wzPaint(){const st=WSTEPS[W.i],n=WSTEPS.length-1,pc=Math.round(W.i/n*10
   $("wz-next").textContent=st.end?(W.mode==="redo"?"Salva":"Inizia"):"Avanti";
   if(st.bind)st.bind();$("wz-body").scrollTop=0;
   const inp=$("wz-in");if(inp){if(inp.type!=="date"&&!matchMedia("(pointer:coarse)").matches)inp.focus();inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();wzNext()}}}}
-function wzGo(dir){W.i=Math.max(0,Math.min(WSTEPS.length-1,W.i+dir));wzPaint()}
+function wzGo(dir){W.i=Math.max(0,Math.min(WSTEPS.length-1,W.i+dir));while(WSTEPS[W.i].show&&!WSTEPS[W.i].show()&&W.i>0&&W.i<WSTEPS.length-1)W.i+=dir<0?-1:1;wzPaint()}
 function wzNext(){const st=WSTEPS[W.i];if(st.end){wzFinish(false);return}if(st.read()===false)return;wzGo(1)}
 $("wz-next").onclick=wzNext;
 $("wz-skip").onclick=()=>{const st=WSTEPS[W.i];if(st.skip)st.skip();wzGo(1)};
