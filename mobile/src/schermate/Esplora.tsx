@@ -13,6 +13,7 @@ import { Mascotte } from "../ui/Mascotte";
 import { Nuvoletta } from "../ui/Testate";
 import { BannerMeteo, oggiPerIlCane } from "../ui/meteo";
 import { InvitoFoto } from "../ui/FotoAvatar";
+import { scorrimento } from "../ui/fotoMapbox";
 import { TIPO_PARCO, apriParco, chiudiParco, elencoParchi, fotoParco, parcoAttivo, parchiVicini } from "../parchi";
 import { CartaSentiero, Foto, Vuoto, impegnoTesto, verdettoTesto } from "../ui/sentieri";
 import { PastiglieMomento, strati, useStratoAperto } from "../ui/strati";
@@ -76,7 +77,7 @@ export function Esplora({ attiva }: { attiva: boolean }) {
   useMotore();
   const M = motore(), ins = useSafeAreaInsets(), nome = nomeCane();
   const aperto = useStratoAperto();
-  const y = useSharedValue(0), slotY = useSharedValue(900), inFondo = useSharedValue(0), bandaFine = useSharedValue(400);
+  const y = useSharedValue(0), ultimaY = useSharedValue(0), slotY = useSharedValue(900), inFondo = useSharedValue(0), bandaFine = useSharedValue(400);
   const [piena, tuttoSchermo] = usePiena("hostExplore", attiva);
   // all'apertura dell'app la mappa parte da dove sei (se hai già dato il permesso), non dall'ultimo posto guardato
   useEffect(() => {
@@ -118,6 +119,7 @@ export function Esplora({ attiva }: { attiva: boolean }) {
   // Gohan sbuca solo quando la fascia lime non si vede più e la pagina è arrivata in fondo
   const onScroll = useAnimatedScrollHandler((e) => {
     y.value = e.contentOffset.y;
+    if (Math.abs(e.contentOffset.y - ultimaY.value) > 120) { ultimaY.value = e.contentOffset.y; runOnJS(scorrimento)(); }
     const max = e.contentSize.height - e.layoutMeasurement.height;
     inFondo.value = max > 20 && e.contentOffset.y >= max - 40 && e.contentOffset.y >= bandaFine.value ? 1 : 0;
   });
@@ -186,7 +188,7 @@ export function Esplora({ attiva }: { attiva: boolean }) {
           {famosi.length && !parcoAttivo() ? (
             <>
               <Sezione titolo={`Consigliati per ${nome}`} />
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -MARGINE }} contentContainerStyle={{ paddingHorizontal: MARGINE, gap: 12 }}>
+              <ScrollView horizontal onScroll={scorrimento} scrollEventThrottle={200} showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -MARGINE }} contentContainerStyle={{ paddingHorizontal: MARGINE, gap: 12 }}>
                 {famosi.map((m: any) => (m.tr
                   ? <CartaSentiero key={m.i} tr={m.tr} res={M.verdictMemo(m.tr, M.dog())} titolo={m.f.n} larga={W * 0.78} style={{ marginBottom: 4 }} onApri={() => apri(m.tr.id)} />
                   : <CartaLuogo key={m.i} nome={m.f.n} riga="Luogo famoso" sotto="Tocca per vedere i sentieri nei dintorni" img={(M.FAMPH && M.FAMPH[m.f.n] && M.FAMPH[m.f.n][0] && M.FAMPH[m.f.n][0].u) || M.staticPlace(m.f.c)} etichetta="Sentieri vicini" onPress={() => { M.setNear(m.f); scroller.current?.scrollTo({ y: Math.max(0, slotY.value - 80), animated: true }); }} />))}
@@ -196,7 +198,7 @@ export function Esplora({ attiva }: { attiva: boolean }) {
           {!parcoAttivo() && !M.S.far && aree.length ? (
             <>
               <Sezione titolo="Parchi e riserve qui intorno" />
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -MARGINE }} contentContainerStyle={{ paddingHorizontal: MARGINE, gap: 12 }}>
+              <ScrollView horizontal onScroll={scorrimento} scrollEventThrottle={200} showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -MARGINE }} contentContainerStyle={{ paddingHorizontal: MARGINE, gap: 12 }}>
                 {aree.map((p) => <CartaLuogo key={p.id} nome={p.n} riga={TIPO_PARCO[p.k]} sotto={`${p.s.length} ${p.s.length === 1 ? "sentiero" : "sentieri"} nel parco · tocca per vederli`} img={fotoParco(p) || M.staticPlace(p.c)} etichetta={TIPO_PARCO[p.k]} onPress={() => { apriParco(p); scroller.current?.scrollTo({ y: 0, animated: true }); }} />)}
               </ScrollView>
             </>
@@ -204,7 +206,7 @@ export function Esplora({ attiva }: { attiva: boolean }) {
           {parchi.length && !parcoAttivo() ? (
             <>
               <Sezione titolo="Parchi per una passeggiata" />
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -MARGINE }} contentContainerStyle={{ paddingHorizontal: MARGINE, gap: 12 }}>
+              <ScrollView horizontal onScroll={scorrimento} scrollEventThrottle={200} showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -MARGINE }} contentContainerStyle={{ paddingHorizontal: MARGINE, gap: 12 }}>
                 {parchi.map((p: any, i: number) => <CartaLuogo key={i} nome={p.n} riga={p.dog === "no" ? "Secondo OpenStreetMap i cani non sono ammessi" : p.dog === "leashed" ? "Cani al guinzaglio" : "Verifica sul posto le regole per i cani"} sotto={`Tocca per creare un giro su misura per ${nome}`} img={M.staticPlace(p.c)} etichetta="Parco" onPress={() => M.startAtPlace(p.c, p.n, p)} />)}
               </ScrollView>
             </>

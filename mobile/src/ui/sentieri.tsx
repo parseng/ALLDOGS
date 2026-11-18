@@ -1,12 +1,13 @@
 // Pezzi per mostrare i sentieri: etichetta del verdetto, cartello col tempo, carta con foto.
-import React from "react";
-import { StyleProp, Text, View, ViewStyle } from "react-native";
+import React, { useRef } from "react";
+import { Platform, StyleProp, Text, View, ViewStyle } from "react-native";
 import { Image } from "expo-image";
 import Svg, { Path } from "react-native-svg";
 import { C, F, R } from "../theme";
 import { SITO, motore } from "../motore";
 import { BottoneTondo, Icona, Testo, Tocco } from "./base";
 import { nomeCane } from "./BarraMenu";
+import { daMapbox, useFotoSalvata, useVisibile } from "./fotoMapbox";
 
 const VC = [C.lime, C.yellow, C.coral], VI = ["check", "alert", "x"];
 /** testo del verdetto nel nuovo stile: "Adatto a Gohan", "Con prudenza", "Sconsigliato" */
@@ -35,9 +36,25 @@ export function Cartello({ testo, icona = "paw" }: { testo: string; icona?: stri
   );
 }
 
-/** immagine presa dal sito o da Mapbox (il token della mappa accetta solo richieste "dal sito") */
+/** immagine presa dal sito o da Mapbox (il token della mappa accetta solo richieste "dal sito").
+ * Le foto di Mapbox costano: si chiedono solo quando la carta è sullo schermo e poi restano salvate nel telefono. */
 export function Foto({ uri, style, rotonda }: { uri: string; style?: any; rotonda?: number }) {
-  return <Image source={{ uri, headers: uri.includes("mapbox.com") ? { Referer: SITO } : undefined }} style={[{ backgroundColor: C.sage2 }, rotonda != null ? { borderRadius: rotonda } : null, style]} contentFit="cover" transition={200} recyclingKey={uri} />;
+  const mb = daMapbox(uri);
+  const box = useRef<any>(null);
+  const vista = useVisibile(() => box.current, mb);
+  const src = useFotoSalvata(uri, vista);
+  const forma = [{ backgroundColor: C.sage2, overflow: "hidden" as const }, rotonda != null ? { borderRadius: rotonda } : null, style];
+  return (
+    <View ref={box} collapsable={false} style={forma}>
+      {vista && src ? (
+        <Image
+          source={{ uri: src, headers: mb && Platform.OS !== "web" ? { Referer: SITO } : undefined }}
+          style={{ position: "absolute", left: 0, top: 0, right: 0, bottom: 0 }}
+          contentFit="cover" transition={200} recyclingKey={uri} cachePolicy="memory-disk"
+        />
+      ) : null}
+    </View>
+  );
 }
 
 const CANI: Record<string, [string, string]> = { ok: ["check", "Nessun divieto noto"], lea: ["alert", "Al guinzaglio"], lim: ["alert", "Cani ammessi solo in parte"], no: ["x", "Cani vietati"] };
