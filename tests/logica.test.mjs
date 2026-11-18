@@ -183,3 +183,11 @@ test("allenamento registrato: i limiti salgono con calma e scendono se torna sta
   assert.ok(call("capacity", cane()).km < 12, "tornato stanco: più prudente");
   acts.length = 0;
 });
+
+test("ogni razza dell'elenco ha un gruppo con i suoi limiti (tranne i meticci)", () => {
+  const senza = $("RAZZE").filter((r) => !/meticci/i.test(r) && !call("breedFit", { breed: r }));
+  assert.deepEqual(senza, []);
+  assert.equal(call("breedFit", { breed: "Border terrier" }).id, "atletico", "border terrier non è un border collie");
+  assert.equal(call("breedFit", { breed: "Griffone Korthals" }).id, "resistente", "korthals non ha il muso schiacciato");
+  assert.equal(call("breedFit", { breed: "Bovaro delle Fiandre" }).id, "atletico");
+});
