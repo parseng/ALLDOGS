@@ -93,6 +93,20 @@ aOgniAvvio((M) => {
     }
     return salvaVero.call(M.store, k, v);
   };
+  // "possibile incrocio": nell'app si vede solo se il cane è un meticcio (anche mentre scrivi la razza)
+  const mostraCane = M.showDog;
+  const aggiornaIncrocio = () => {
+    try {
+      const mix = pagina().el("d-mix"), br = pagina().el("d-breed"), lab = mix && mix.closest && mix.closest("label");
+      if (lab) lab.hidden = !/meticci/i.test((br && br.value) || (M.dog() && M.dog().breed) || "");
+    } catch {}
+  };
+  M.showDog = (...a: any[]) => {
+    const r = mostraCane(...a);
+    aggiornaIncrocio();
+    try { const br = pagina().el("d-breed"); if (br && !br._incrocio) { br._incrocio = 1; br.addEventListener("input", () => { aggiornaIncrocio(); notifica(); }); } } catch {}
+    return r;
+  };
   // peso tipico secondo il sesso: i maschi stanno nella parte alta della fascia della razza, le femmine in quella bassa
   const fasciaRazza = M.breedRange;
   M.breedRange = (d: any) => {
