@@ -34,7 +34,14 @@
         "ACCESS_BACKGROUND_LOCATION",
         "FOREGROUND_SERVICE",
         "FOREGROUND_SERVICE_LOCATION",
-        "POST_NOTIFICATIONS"
+        "POST_NOTIFICATIONS",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_BACKGROUND_LOCATION",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_LOCATION",
+        "android.permission.POST_NOTIFICATIONS"
       ],
       "softwareKeyboardLayoutMode": "resize"
     },
@@ -63,6 +70,12 @@
       "expo-asset",
       "expo-sharing",
       "@react-native-community/datetimepicker"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "6d90f6d8-d1cc-44a8-9159-c46a96a6eb33"
+      }
+    },
+    "owner": "mrpars"
   }
 }
