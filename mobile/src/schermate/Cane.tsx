@@ -13,6 +13,7 @@ import { nav } from "../nav";
 import { scegliFoto } from "../foto";
 import { SceltaAvatar } from "../ui/FotoAvatar";
 import { BarraPeso } from "../ui/BarraPeso";
+import { ZainoMio } from "../ui/ZainoMio";
 import { Bottone, Chip, Etichetta, Icona, RigaMenu, Sezione, Testo, Tocco } from "../ui/base";
 import { FotoCane, fotoCane, nomeCane } from "../ui/BarraMenu";
 import { PaginaMotore } from "../ui/PaginaMotore";
@@ -213,18 +214,19 @@ export function Salute({ attiva }: { attiva: boolean }) {
     </View>
   );
 }
-function Semplice({ attiva, colore, titolo, riga, prepara, id, sel, nota, togli, prima }: { prima?: React.ReactNode; attiva: boolean; colore: string; titolo: string; riga?: string; prepara?: () => void; id?: string; sel?: string; nota?: string; togli?: string[] }) {
+function Semplice({ attiva, colore, titolo, riga, prepara, id, sel, nota, togli, prima, dopo }: { prima?: React.ReactNode; dopo?: React.ReactNode; attiva: boolean; colore: string; titolo: string; riga?: string; prepara?: () => void; id?: string; sel?: string; nota?: string; togli?: string[] }) {
   useMotore();
   useEffect(() => { if (attiva && prepara) { try { prepara(); } catch (e) { console.warn(e); } } }, [attiva]);
   return (
     <PaginaSemplice colore={colore} titolo={titolo} riga={riga} indietro={indietro}>
       {prima}
       <PaginaMotore id={id} sel={sel} togli={togli} />
+      {dopo}
       {nota ? <Testo tipo="piccolo" style={{ marginTop: 16 }}>{nota}</Testo> : null}
     </PaginaSemplice>
   );
 }
-export const Zaino = ({ attiva }: { attiva: boolean }) => <Semplice attiva={attiva} colore={TESTATA.zaino} titolo="Zaino pronto" riga="Cosa portare, con il meteo di oggi." prepara={() => motore().showPack()} id="zn-main" />;
+export const Zaino = ({ attiva }: { attiva: boolean }) => <Semplice attiva={attiva} colore={TESTATA.zaino} titolo="Zaino pronto" riga="Cosa portare, con il meteo di oggi." prepara={() => motore().showPack()} id="zn-main" dopo={<ZainoMio />} />;
 export const Soccorso = ({ attiva }: { attiva: boolean }) => <Semplice attiva={attiva} colore={TESTATA.soccorso} titolo="Pronto soccorso" riga="Cosa fare subito, in attesa del veterinario." prepara={() => motore().showAid()} id="ps-main" nota="Primi aiuti in attesa del veterinario, non una cura. Nel dubbio chiamalo subito." />;
 export const Regole = ({ attiva }: { attiva: boolean }) => <Semplice attiva={attiva} colore={TESTATA.regole} titolo="Regole del posto" riga="Guinzaglio, spiagge, parchi, pascoli." prepara={() => motore().showRules()} id="rg-main" />;
 export const Dati = ({ attiva }: { attiva: boolean }) => <Semplice attiva={attiva} colore={C.lime} titolo={`I dati di ${nomeCane()}`} riga="Età, peso, allenamento, salute e libretto." prepara={() => { const M = motore(); M.showDog(); pagina().el("fold-dog").open = true; }} sel="#fold-dog > .foldb" togli={[".onbonly"]} prima={<SceltaSesso />} nota="Restano su questo telefono e, se accedi, anche nel tuo account privato." />;

@@ -13,11 +13,11 @@ let ridotto = false;
 const ascoltaRidotto = new Set<(v: boolean) => void>();
 AccessibilityInfo.isReduceMotionEnabled().then((v) => { ridotto = v; console.log("AllDogs: Riduci movimento " + (v ? "ATTIVO (mascotte ferma)" : "spento")); ascoltaRidotto.forEach((f) => f(v)); }).catch(() => {});
 AccessibilityInfo.addEventListener("reduceMotionChanged", (v) => { ridotto = v; ascoltaRidotto.forEach((f) => f(v)); });
-export const movimentoRidotto = () => ridotto;
+// l'app si anima sempre allo stesso modo (richiesta: le animazioni non devono dipendere da "Riduci movimento" del telefono)
+export const movimentoRidotto = () => false;
 export function useMovimentoRidotto() {
-  const [v, set] = useState(ridotto);
-  useEffect(() => { ascoltaRidotto.add(set); return () => void ascoltaRidotto.delete(set); }, []);
-  return v;
+  const [v, set] = useState(false);
+  return v && false;
 }
 
 // ---------- testo ----------

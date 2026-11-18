@@ -7,7 +7,7 @@ import { StatusBar } from "expo-status-bar";
 import { useFonts } from "expo-font";
 import { BricolageGrotesque_800ExtraBold } from "@expo-google-fonts/bricolage-grotesque";
 import { Urbanist_500Medium, Urbanist_600SemiBold, Urbanist_700Bold, Urbanist_800ExtraBold } from "@expo-google-fonts/urbanist";
-import Animated, { FadeIn } from "react-native-reanimated";
+import Animated, { FadeIn, ReduceMotion, ReducedMotionConfig } from "react-native-reanimated";
 import { caricaArchivio } from "./src/archivio";
 import { avviaMotore, generazioneMotore, motore, useMotore } from "./src/motore";
 import { C } from "./src/theme";
@@ -19,6 +19,7 @@ import { SEZIONI, SCHERMATE } from "./src/schermate";
 import "./src/collega";
 import "./src/pericoli";
 import "./src/parchi";
+import "./src/obiettivoChat";
 import { PastigliaInCammino } from "./src/schermate/Vai";
 import { salutoDelGiorno } from "./src/schermate/Esplora";
 
@@ -69,6 +70,7 @@ export default function App() {
   useMotore();
   return (
     <SafeAreaProvider>
+      <ReducedMotionConfig mode={ReduceMotion.Never} />
       <StatusBar style="dark" />
       {font && pronto ? <Radice key={generazioneMotore()} /> : (
         <View style={{ flex: 1, backgroundColor: C.sage, alignItems: "center", justifyContent: "center", padding: 24 }}>

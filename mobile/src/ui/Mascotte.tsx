@@ -1,12 +1,11 @@
 // La mascotte animata. Ogni posto dove sta (testata, sbuca, cerchietto, momento) ha una posa:
 // cambiare posa = immagine nuova sopra la vecchia, dissolvenza di 180 ms, poi la vecchia si toglie.
-// Con "Riduci movimento" acceso si mostra l'immagine ferma della stessa posa.
+// Si muove sempre, anche con "Riduci movimento" acceso (le immagini ferme restano per usi futuri).
 import React, { useEffect, useRef, useState } from "react";
 import { StyleProp, View, ViewStyle } from "react-native";
 import { Image } from "expo-image";
 import { Asset } from "expo-asset";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
-import { useMovimentoRidotto } from "./base";
 
 export type Posa = "esplora" | "creagiro" | "attivita" | "salvati" | "allenati" | "salute" | "sbuca" | "ciao" | "felice" | "preoccupato" | "intro" | "loop";
 
@@ -69,7 +68,9 @@ function Livello({ posa, visibile, attiva, ferma, allinea, quandoPronto }: { pos
 }
 
 export function Mascotte({ posa, attiva = true, style, allinea = "bottom" }: { posa: Posa; attiva?: boolean; style?: StyleProp<ViewStyle>; allinea?: "bottom" | "bottom right" }) {
-  const ferma = useMovimentoRidotto();
+  // la mascotte si muove sempre: prima con "Riduci movimento" acceso su iPhone restava ferma, e non si può chiedere
+  // a chi usa l'app di cambiare le impostazioni del telefono (è un movimento lento e tranquillo, senza lampi)
+  const ferma = false;
   const [livelli, setLivelli] = useState<{ k: number; posa: Posa; pronto: boolean }[]>([{ k: 0, posa, pronto: true }]);
   const n = useRef(0);
   useEffect(() => {
