@@ -2,7 +2,7 @@
 // - L'app (pagina, script, icone, libreria della mappa, caratteri) resta salvata nel telefono.
 // - I file dei sentieri già aperti restano disponibili offline.
 // - Le mappe dei sentieri scaricati (cache "ad-off-...") vengono servite dal telefono.
-const V = "alldogs-v21";
+const V = "alldogs-v22";
 const SHELL = "ad-shell-" + V, DATA = "ad-data", RUN = "ad-run";
 const CORE = ["./", "index.html", "lezioni-anim.js", "manifest.json", "icon-192.png", "icon-512.png", "img/aussie/chiedi.jpg", "privacy.html", "termini.html", "legal.css",
   "https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl/3.9.4/mapbox-gl.min.js",
@@ -77,7 +77,28 @@ self.addEventListener("fetch", e => {
   }
   // mappa topografica: prima i tasselli scaricati, poi la rete
   if (/\.tile\.opentopomap\.org$/.test(u.hostname)) { e.respondWith(cacheFirst(req, null, topoKey(u))); return; }
+  // foto dal satellite di Mapbox (anteprime dei sentieri): ogni richiesta consuma crediti, quindi una volta scaricata
+  // la foto resta nel telefono 30 giorni (un "cassetto" per mese: i più vecchi si buttano via da soli)
+  if (u.hostname === "api.mapbox.com" && u.pathname.includes("/static/")) { e.respondWith(mapboxFoto(req, u)); return; }
   // caratteri delle scritte sulla mappa, libreria della mappa, caratteri del testo
   if (u.hostname === "api.mapbox.com" && u.pathname.startsWith("/fonts/")) { e.respondWith(cacheFirst(req, RUN, dataKey(u))); return; }
   if (u.hostname === "cdnjs.cloudflare.com" || u.hostname === "cdn.jsdelivr.net" || u.hostname === "fonts.googleapis.com" || u.hostname === "fonts.gstatic.com") { e.respondWith(cacheFirst(req, RUN, req.url)); return; }
 });
+
+const MB = "ad-mbfoto-", MESE = 30 * 864e5;
+async function mapboxFoto(req, u) {
+  const ora = Math.floor(Date.now() / MESE), nome = MB + ora;
+  const hit = await caches.match(req.url, { cacheName: nome }) || await caches.match(req.url, { cacheName: MB + (ora - 1) });
+  if (hit) return hit;
+  // chiedo la foto in modo "leggibile" (cors): una risposta opaca occuperebbe molto più spazio nel telefono
+  const r = await fetch(new Request(req.url, { mode: "cors", credentials: "omit" })).catch(() => fetch(req));
+  if (r && r.ok && r.type !== "opaque") {
+    const c = await caches.open(nome);
+    c.put(req.url, r.clone()).then(async () => {
+      const ks = await c.keys();
+      for (const k of ks.slice(0, Math.max(0, ks.length - 400))) await c.delete(k);
+      (await caches.keys()).filter(k => k.startsWith(MB) && k !== nome && k !== MB + (ora - 1)).forEach(k => caches.delete(k));
+    }).catch(() => 0);
+  }
+  return r;
+}

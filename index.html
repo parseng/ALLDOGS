@@ -4989,7 +4989,7 @@ setTimeout(()=>{try{if(sessionStorage.getItem("alldogs-openacc")){sessionStorage
 // i dati del cane stanno in cima alla sua pagina
 $("fold-slot").replaceWith($("fold-dog"));
 // ================= Avvio =================
-let geoT=null,geoSeq=0;
+let geoT=null,geoSeq=0;const geoMemo=new Map();
 function goPlace(c,z,bb){
   $("q").value="";$("place-row").hidden=true;S.near=null;
   if(M){if(bb)M.fitBounds([[bb[0],bb[1]],[bb[2],bb[3]]],{padding:20,maxZoom:13,duration:900});else M.flyTo({center:ll(c),zoom:z||12})}
@@ -5068,9 +5068,11 @@ async function geoSuggest(){
   try{
     // paesi e città (Mapbox Geocoding) + monti, laghi, parchi e posti famosi (Mapbox Search Box, senza negozi e ristoranti)
     const OK=new Set(["marker","natural","attraction","viewpoint","park","mountain","volcano","picnic-site","beach","water","monument","castle","landmark","garden","campsite","information","religious-christian","museum","waterfall","wetland","zoo"]);
-    const [a,b]=await Promise.all([
+    // la stessa ricerca (anche cancellando e riscrivendo) non si chiede due volte a Mapbox: ogni richiesta consuma crediti
+    const mk=norm(q);if(!geoMemo.has(mk)){if(geoMemo.size>80)geoMemo.delete(geoMemo.keys().next().value);geoMemo.set(mk,Promise.all([
       getJSON(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(q)}.json?country=it&language=it&limit=4&types=place,locality,region,district&access_token=${MAPBOX_TOKEN}`).catch(()=>({})),
-      getJSON(`https://api.mapbox.com/search/searchbox/v1/forward?q=${encodeURIComponent(q)}&country=it&language=it&limit=10&access_token=${MAPBOX_TOKEN}`).catch(()=>({}))]);
+      getJSON(`https://api.mapbox.com/search/searchbox/v1/forward?q=${encodeURIComponent(q)}&country=it&language=it&limit=10&access_token=${MAPBOX_TOKEN}`).catch(()=>({}))]))}
+    const [a,b]=await geoMemo.get(mk);if(!(a.features||[]).length&&!(b.features||[]).length)geoMemo.delete(mk); // senza risposta (o senza rete) si riprova la prossima volta
     if(my!==geoSeq)return;const seen=new Set();
     const pois=(b.features||[]).filter(x=>OK.has((x.properties||{}).maki)).map(x=>{const p=x.properties;return {text:p.name,place_name:p.name+(p.place_formatted?", "+p.place_formatted:""),center:x.geometry.coordinates,place_type:["poi"],bbox:null}});
     geoPlaces=[...(a.features||[]),...pois].filter(x=>{const k=norm(x.text)+"|"+x.center.map(v=>v.toFixed(2)).join();if(seen.has(k))return false;seen.add(k);return true}).slice(0,6);
