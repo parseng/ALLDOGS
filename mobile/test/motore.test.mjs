@@ -47,8 +47,8 @@ test("il motore parte senza cane e chiede il primo avvio", async () => {
 test("limiti del cane e verdetto", () => {
   const { M } = nuovoMotore({ dati: { "alldogs-dog": CANE } });
   const c = M.capacity(CANE);
-  assert.equal(c.km, 12);
-  assert.equal(c.up, 700);
+  assert.equal(c.km, 15); // regole per razza (pastore australiano, 3 anni, allenamento medio)
+  assert.equal(c.up, 900);
   assert.ok(c.sensitive, "pelo lungo: soffre di più il caldo");
   const v = M.verdict({ len: 30000, up: 200, scale: "T", start: [40.8, 14.2], loop: true }, CANE, 0);
   assert.equal(v.v, 2, "30 km sono troppi");
