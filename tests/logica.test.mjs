@@ -122,3 +122,64 @@ test("sicurezza: i testi vengono resi innocui prima di finire nella pagina", () 
   assert.equal(call("esc", `<img src=x onerror="alert(1)">`), "&lt;img src=x onerror=&quot;alert(1)&quot;&gt;");
   assert.equal(call("esc", null), "");
 });
+
+// ===== Razza, cuccioli grandi, schiena lunga, cuore, allenamento registrato (18/11/2026) =====
+test("la razza cambia i limiti: un carlino molto allenato non fa 20 km", () => {
+  const carlino = call("capacity", cane({ breed: "Carlino", weight: 8, train: "molto" }));
+  assert.ok(carlino.km <= 8, "carlino: al massimo 8 km anche se molto allenato");
+  assert.ok(carlino.brachy && carlino.breath, "carlino: muso schiacciato anche senza la casella");
+  const aussie = call("capacity", cane({ breed: "Pastore australiano", weight: 22, train: "medio" }));
+  assert.ok(aussie.km > 12, "pastore australiano: più resistente di un meticcio");
+  assert.equal(call("capacity", cane({ breed: "Meticcio medio (10-25 kg)" })).km, 12, "meticcio: come prima");
+  assert.equal(call("capacity", cane({ breed: "Pastore del Caucaso", weight: 60 })).breed, "molosso");
+});
+
+test("cuccioli di taglia grande: cuccioli fino a 18 mesi, e oltre il limite è subito sconsigliato", () => {
+  assert.ok(call("capacity", cane({ breed: "Labrador", age: 1.2, weight: 28 })).puppy, "labrador di 14 mesi: ancora cucciolo");
+  assert.ok(!call("capacity", cane({ breed: "Beagle", age: 1.2, weight: 12 })).puppy, "beagle di 14 mesi: adulto");
+  const r = call("verdict", { len: 4500, up: 100, scale: "T", start: null, loop: true }, cane({ breed: "Labrador", age: 1.2, weight: 28 }), 0);
+  assert.equal(r.why[0].lvl, 2);
+});
+
+test("schiena lunga: gradini o difficoltà E danno prudenza", () => {
+  const b = cane({ breed: "Bassotto", weight: 9 });
+  assert.ok(call("verdict", { len: 3000, up: 50, scale: "T", start: null, loop: true, gr: 0.1 }, b, 0).why.some((w) => w.lvl === 1 && /Schiena lunga/.test(w.txt)));
+  assert.ok(!call("verdict", { len: 3000, up: 50, scale: "T", start: null, loop: true, gr: 0 }, b, 0).why.some((w) => /Schiena lunga/.test(w.txt)));
+});
+
+test("cuore: oltre 1.500 m o salite ripide è sconsigliato", () => {
+  const c = cane({ pat: { cuore: true } });
+  assert.ok(call("verdict", { len: 3000, up: 100, scale: "T", start: null, loop: true, top: 1700, slope: 0.03 }, c, 0).why.some((w) => w.lvl === 2 && /quota/.test(w.txt)));
+  assert.ok(call("verdict", { len: 3000, up: 100, scale: "T", start: null, loop: true, top: 600, slope: 0.12 }, c, 0).why.some((w) => w.lvl === 2 && /ripide/.test(w.txt)));
+});
+
+test("muso schiacciato e caldo: sopra i 22 gradi percepiti è sconsigliato", () => {
+  const p = [40.1, 14.1];
+  meteo(p, 23);
+  const it = { len: 2000, up: 20, scale: "T", start: p, loop: true };
+  assert.equal(call("verdict", it, cane({ breed: "Carlino", weight: 8 }), 0).v, 2, "carlino a 23 gradi: sconsigliato");
+  assert.equal(call("verdict", it, cane({ coat: "lungo" }), 0).v, 1, "cane a pelo lungo a 23 gradi: con prudenza");
+});
+
+test("al limite su km e salita insieme: con prudenza", () => {
+  const r = call("verdict", { len: 11000, up: 650, scale: "T", start: null, loop: true }, cane(), 0);
+  assert.ok(r.why.some((w) => w.lvl === 1 && /^Al limite/.test(w.txt)));
+  assert.ok(!call("verdict", { len: 11000, up: 200, scale: "T", start: null, loop: true }, cane(), 0).why.some((w) => /^Al limite/.test(w.txt)));
+});
+
+test("allenamento registrato: i limiti salgono con calma e scendono se torna stanco", () => {
+  const ora = Date.now(), giorno = 864e5;
+  const acts = app.get("S").acts;
+  acts.length = 0;
+  for (let i = 0; i < 4; i++) acts.push({ t: ora - i * 3 * giorno, dist: 14000, dur: 4 * 3600e3, up: 500 });
+  const allenato = call("capacity", cane());
+  assert.ok(allenato.km > 12 && allenato.km <= 18, "sale, ma al massimo +50%: " + allenato.km);
+  assert.ok(allenato.plus.length > 0);
+  acts.length = 0;
+  for (let i = 0; i < 4; i++) acts.push({ t: ora - i * 3 * giorno, dist: 40000, dur: 9 * 3600e3, up: 3000 });
+  assert.equal(call("capacity", cane()).km, 18, "mai oltre +50% anche con uscite enormi");
+  acts.length = 0;
+  for (let i = 0; i < 3; i++) acts.push({ t: ora - i * giorno, dist: 5000, dur: 3600e3, up: 50, mood: "tired" });
+  assert.ok(call("capacity", cane()).km < 12, "tornato stanco: più prudente");
+  acts.length = 0;
+});
