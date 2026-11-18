@@ -191,3 +191,18 @@ test("ogni razza dell'elenco ha un gruppo con i suoi limiti (tranne i meticci)",
   assert.equal(call("breedFit", { breed: "Griffone Korthals" }).id, "resistente", "korthals non ha il muso schiacciato");
   assert.equal(call("breedFit", { breed: "Bovaro delle Fiandre" }).id, "atletico");
 });
+
+test("meticci: limiti in base al peso e all'incrocio", () => {
+  const piccolo = call("capacity", cane({ breed: "Meticcio piccolo (fino a 10 kg)", weight: 4, train: "molto" }));
+  assert.ok(piccolo.km <= 11, "meticcio di 4 kg molto allenato: niente 20 km (" + piccolo.km + ")");
+  assert.ok(call("capacity", cane({ breed: "Meticcio", weight: 55, train: "molto" })).km <= 12, "meticcio gigante: come un molosso");
+  const pl = call("capacity", cane({ breed: "Meticcio grande (oltre 25 kg)", weight: 30, mix: "pastore tedesco e labrador" }));
+  assert.equal(pl.km, 12, "pastore tedesco x labrador: vale il labrador, il più delicato");
+  const pa = call("capacity", cane({ breed: "Meticcio medio (10-25 kg)", weight: 20, mix: "border collie e pastore australiano" }));
+  assert.ok(pa.km > 12, "incrocio di due razze da lavoro: più resistente");
+  const pic = call("capacity", cane({ breed: "Meticcio piccolo (fino a 10 kg)", weight: 6, mix: "border collie" }));
+  assert.ok(pic.km <= 7, "un incrocio di 6 kg resta un cane piccolo");
+  const cb = call("capacity", cane({ breed: "Meticcio", weight: 12, mix: "carlino e beagle" }));
+  assert.ok(cb.brachy && cb.km <= 5, "se c'è un carlino nell'incrocio: muso schiacciato");
+  assert.ok(call("capacity", cane({ breed: "Meticcio", weight: 12, mix: "bassotto e jack russell" })).longback, "bassotto nell'incrocio: schiena lunga");
+});
