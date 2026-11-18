@@ -76,6 +76,9 @@
         "projectId": "6d90f6d8-d1cc-44a8-9159-c46a96a6eb33"
       }
     },
-    "owner": "mrpars"
+    "owner": "mrpars",
+    "experiments": {
+      "baseUrl": "/ALLDOGS/app"
+    }
   }
 }
