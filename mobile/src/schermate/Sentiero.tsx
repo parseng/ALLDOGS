@@ -14,6 +14,7 @@ import { fermaDi } from "../ui/Mascotte";
 import { Dislivello, OreDelGiorno, Striscia, pezziOmbra } from "../ui/grafici";
 import { foglioPericoli, foglioQuando } from "../ui/meteo";
 import { Foto, Verdetto, Vuoto } from "../ui/sentieri";
+import { scorrimento } from "../ui/fotoMapbox";
 import { PastiglieMomento, strati } from "../ui/strati";
 import { MappaGalleggiante, usePiena } from "../mappa/Galleggiante";
 import { StatoVolo, volo } from "../mappa/Mappa";
@@ -166,7 +167,7 @@ export function Sentiero({ arg, attiva }: { arg?: any; attiva: boolean }) {
             </View>
           ) : null}
 
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -MARGINE, marginTop: 14 }} contentContainerStyle={{ paddingHorizontal: MARGINE, gap: 8 }}>
+          <ScrollView horizontal onScroll={scorrimento} scrollEventThrottle={200} showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -MARGINE, marginTop: 14 }} contentContainerStyle={{ paddingHorizontal: MARGINE, gap: 8 }}>
             {[...foto.map((p) => ({ u: p.u, t: `Foto ${M.phA(p.a)}, ${p.l}`, link: p.p })), { u: M.staticImg(tr.path, 480, 360), t: "Dal satellite", link: "" }].map((p, i) => (
               <Tocco key={i} hitSlop={0} disabled={!p.link} onPress={() => p.link && Linking.openURL(p.link)} style={{ width: 290, aspectRatio: 4 / 3, borderRadius: R.m, overflow: "hidden", backgroundColor: C.sage2 }}>
                 <Foto uri={p.u} style={{ width: "100%", height: "100%" }} />
