@@ -13,6 +13,7 @@ import { Mascotte } from "../ui/Mascotte";
 import { Nuvoletta } from "../ui/Testate";
 import { BannerMeteo, oggiPerIlCane } from "../ui/meteo";
 import { InvitoFoto } from "../ui/FotoAvatar";
+import { avviaPasseggiataLibera } from "../libera";
 import { scorrimento } from "../ui/fotoMapbox";
 import { TIPO_PARCO, apriParco, chiudiParco, elencoParchi, fotoParco, parcoAttivo, parchiVicini } from "../parchi";
 import { CartaSentiero, Foto, Vuoto, impegnoTesto, verdettoTesto } from "../ui/sentieri";
@@ -174,6 +175,7 @@ export function Esplora({ attiva }: { attiva: boolean }) {
           <Chip testo={M.S.day ? M.dayName(M.S.day) : "Oggi"} attivo={M.S.day > 0} onPress={foglioGiorno} />
           <Chip testo="Cani ammessi" attivo={valoreFiltro("f-dog") !== "show"} onPress={() => filtro("f-dog", valoreFiltro("f-dog") === "show" ? "all" : "show")} />
           <Chip testo={`Adatti a ${nome}`} attivo={valoreFiltro("f-fit") === "0"} onPress={() => filtro("f-fit", valoreFiltro("f-fit") === "0" ? "all" : "0")} />
+          <Chip testo="Passeggiata libera" icona="play" onPress={avviaPasseggiataLibera} />
           <Chip testo="Ad anello" attivo={tipo === "loop"} onPress={() => filtro("f-type", tipo === "loop" ? "all" : "loop")} />
           <Chip testo="Fino a 5 km" attivo={valoreFiltro("f-len") === "0-5"} onPress={() => filtro("f-len", valoreFiltro("f-len") === "0-5" ? "all" : "0-5")} />
           <Chip testo="Andata e ritorno" attivo={tipo === "line"} onPress={() => filtro("f-type", tipo === "line" ? "all" : "line")} />

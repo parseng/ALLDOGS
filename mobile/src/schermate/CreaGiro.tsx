@@ -11,6 +11,7 @@ import { Bottone, BottoneTondo, Chip, Entra, Icona, Interruttore, Segmenti, Sezi
 import { FotoCane, nomeCane } from "../ui/BarraMenu";
 import { FacciaGohan, StoPensando } from "../ui/FacciaGohan";
 import { ChiediAGohan } from "./Allenati";
+import { avviaPasseggiataLibera } from "../libera";
 import { HtmlMotore } from "../ui/HtmlMotore";
 import { PaginaGrande } from "../ui/Testate";
 import { Dislivello, Striscia } from "../ui/grafici";
@@ -74,7 +75,7 @@ function Chat({ onCreato, giu }: { onCreato: () => void; giu: () => void }) {
   );
 }
 
-function Risultato({ onVolo }: { onVolo: () => void }) {
+function Risultato({ onVolo, onModifica }: { onVolo: () => void; onModifica: () => void }) {
   const M = motore(), nome = nomeCane();
   const r = M.S.gen[M.S.genIdx], d = M.dog(), it = M.genItem(r), res = M.verdict(it, d, 0), sp = M.steps(r.len, d);
   const titolo = r.name || `Giro di ${M.km(r.len)} km`;
@@ -100,6 +101,7 @@ function Risultato({ onVolo }: { onVolo: () => void }) {
       </View>
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 }}>
         {M.S.gen.length > 1 ? <Chip piccolo sfondo={C.sage} icona="loop" testo="Prova un altro giro" onPress={() => el("gen-next").click()} /> : null}
+        {r.source === "draw" ? <Chip piccolo sfondo={C.lime} icona="edit" testo="Modifica il percorso" onPress={onModifica} /> : null}
         <Chip piccolo sfondo={C.sage} icona="cube" testo="Volo 3D" onPress={onVolo} />
         {gsh ? <Chip piccolo sfondo={C.sage} testo="Colora il fondo" attivo={!!M.surfOn} onPress={() => M.setSurf(!M.surfOn)} /> : null}
         <Chip piccolo sfondo={C.sage} icona="bag" testo="Zaino" onPress={() => motore().packSheet({ km: r.len / 1000, p: r.path[0], title: titolo, mount: (r.up || 0) >= 300 })} />
@@ -173,6 +175,17 @@ export function CreaGiro({ attiva }: { attiva: boolean }) {
     if (s !== "chat") { M.S.mode = s; M.store.set("alldogs-creamode", s); M.showCrea(); }
   };
   const tipoMan = (k: "auto" | "draw") => { M.S.manKind = k; M.store.set("alldogs-mankind", k); M.showCrea(); };
+  // percorso disegnato a mano e già creato: torno ai segnaposti (restano tutti) per spostarli, aggiungerli o toglierli
+  const modifica = () => {
+    try {
+      M.S.gen = null; M.S.genIdx = 0;
+      const out = pagina().el("gen-out"); if (out) out.innerHTML = "";
+      M.setScene({ mode: "crea" }, true);
+      cambia("man"); tipoMan("draw");
+      M.paintDraw();
+      strati.avviso("Sposta, aggiungi o togli i segnaposti, poi tocca «Usa questo percorso»");
+    } catch (e) { console.warn(e); }
+  };
   // sul telefono la mappa, appena diventa grande, si risistema da sola e può fermare il volo appena partito: parto un attimo dopo e, se non è partito, riprovo
   const voloPartito = useRef(false);
   useEffect(() => { voloPartito.current = !!statoVolo; }, [statoVolo]);
@@ -207,6 +220,14 @@ export function CreaGiro({ attiva }: { attiva: boolean }) {
       }
     >
       <View onLayout={(e) => { slotY.value = e.nativeEvent.layout.y + e.nativeEvent.layout.height + 12; }}>
+        <Tocco hitSlop={0} onPress={avviaPasseggiataLibera} accessibilityLabel="Passeggiata libera: parti senza un percorso" style={{ marginHorizontal: MARGINE, marginTop: 14, backgroundColor: C.forest, borderRadius: 20, padding: 14, flexDirection: "row", alignItems: "center", gap: 12 }}>
+          <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: C.lime, alignItems: "center", justifyContent: "center" }}><Icona nome="play" size={20} /></View>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontFamily: F.titolo, fontSize: 18, color: C.cream }}>Passeggiata libera</Text>
+            <Text style={{ fontFamily: F.t600, fontSize: 13, color: C.onForest2 }}>Accendo GPS e mappa: cammina dove vuoi, registro tutto io</Text>
+          </View>
+          <Icona nome="chev" size={18} colore={C.cream} />
+        </Tocco>
         <Segmenti<Scheda> voci={[["chat", "Chiedi"], ["auto", "Automatico"], ["man", "Lo disegno io"]]} valore={scheda} onCambia={cambia} style={{ marginHorizontal: MARGINE, marginTop: 14 }} />
         {scheda === "man" ? <View style={{ flexDirection: "row", gap: 8, paddingHorizontal: MARGINE, marginTop: 10 }}><Chip piccolo testo="Scelgo la durata" attivo={M.S.manKind !== "draw"} onPress={() => tipoMan("auto")} /><Chip piccolo testo="Metto i segnaposti" attivo={M.S.manKind === "draw"} onPress={() => tipoMan("draw")} /></View> : null}
         {conMappa ? <Text style={{ fontFamily: F.t600, fontSize: 13.5, color: C.ink2, paddingHorizontal: MARGINE, marginTop: 10 }}>{disegno ? "Tocca la mappa per aggiungere i punti, uno dopo l'altro. Trascinali per spostarli." : "Tocca la mappa per spostare la partenza, oppure parti da dove sei."}</Text> : null}
@@ -216,7 +237,7 @@ export function CreaGiro({ attiva }: { attiva: boolean }) {
           <View style={{ height: MAPPA_H, marginTop: 12 }} />
           <View style={{ paddingHorizontal: MARGINE }}>
             <Bottone testo={disegno ? "Aggiungi dove sono" : "Parto da dove sono"} icona="nav" tinta="chiaro" piccolo style={{ marginTop: 10 }} onPress={() => el("new-loc").click()} />
-            {gen ? <Risultato onVolo={avviaVolo} /> : (
+            {gen ? <Risultato onVolo={avviaVolo} onModifica={modifica} /> : (
               <>
                 {uscita ? <View style={{ marginTop: 12, backgroundColor: C.cream, borderRadius: 16, padding: 12 }}><HtmlMotore html={uscita} /></View> : null}
                 {scheda === "auto" ? (
@@ -255,7 +276,7 @@ export function CreaGiro({ attiva }: { attiva: boolean }) {
         </>
       )}
     </PaginaGrande>
-    <ChiediAGohan attivo={attiva && scheda !== "chat" && !piena} onPress={() => { cambia("chat"); setTimeout(() => { try { scorri.current?.scrollTo({ y: 0, animated: true }); } catch {} }, 80); }} />
+    <ChiediAGohan attivo={attiva && scheda !== "chat" && !piena && !(scheda === "man" && M.S.manKind === "draw")} onPress={() => { cambia("chat"); setTimeout(() => { try { scorri.current?.scrollTo({ y: 0, animated: true }); } catch {} }, 80); }} />
     </View>
   );
 }

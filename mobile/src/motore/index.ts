@@ -70,6 +70,38 @@ async function permesso() {
 const ascolti = new Map<number, () => void>();
 let ultimoTempo = 0;
 const daPos = (p: Pos) => ({ coords: { latitude: p.latitude, longitude: p.longitude, accuracy: p.accuracy ?? 30, altitude: p.altitude, heading: p.heading != null && p.heading >= 0 ? p.heading : null, speed: p.speed != null && p.speed >= 0 ? p.speed : null }, timestamp: p.timestamp });
+// GPS più pulito durante la passeggiata: le posizioni poco precise (in città i palazzi fanno "saltare" il segnale) o vecchie
+// si mostrano ma non si registrano (il motore registra solo con precisione entro 45 m: le altre le marco come imprecise);
+// dopo una pausa del segnale (schermo bloccato) aspetto 3 posizioni buone prima di riprendere a registrare.
+let riscaldamento = 0, ultimaBuona = 0;
+function pulisci(p: Pos, prima: number) {
+  const o: any = daPos(p);
+  const acc = p.accuracy ?? 99, vecchia = Date.now() - p.timestamp > 10000;
+  // di solito tengo solo le posizioni entro 25 m; se da 30 secondi non ne arriva nessuna così precisa, accetto fino a 40 m
+  const soglia = p.timestamp - ultimaBuona > 30000 ? 40 : 25;
+  if (prima && p.timestamp - prima > 15000) riscaldamento = 3;
+  const buona = acc <= soglia && !vecchia;
+  if (!buona || riscaldamento > 0) { if (buona) riscaldamento--; o.coords.accuracy = 99; }
+  else ultimaBuona = p.timestamp;
+  return o;
+}
+// dopo un buco del segnale la traccia andrebbe dritta tra l'ultimo punto e il nuovo (anche attraverso i palazzi):
+// se i due punti stanno sul percorso, il buco lo riempio seguendo il percorso
+let dopoBuco = -1;
+function riempiBuco() {
+  try {
+    const n = M && M.nav;
+    if (!n || !n.P || !n.track || n.track.length < 2) return;
+    const T = n.track, a = T[T.length - 2], b = T[T.length - 1];
+    if (M.hav(a, b) < 40) return;
+    const vicino = (q: number[]) => { let bi = -1, bd = 1e9; n.P.forEach((x: number[], i: number) => { const d = M.hav(x, q); if (d < bd) { bd = d; bi = i; } }); return bd <= 30 ? bi : -1; };
+    const ia = vicino(a), ib = vicino(b);
+    if (ia < 0 || ib < 0 || ib <= ia || ib - ia > 400) return;
+    const mezzo = n.P.slice(ia + 1, ib).map((x: number[]) => [Math.round(x[0] * 1e5) / 1e5, Math.round(x[1] * 1e5) / 1e5]);
+    n.track.splice(T.length - 1, 0, ...mezzo);
+    try { M.paintNav(); } catch {}
+  } catch {}
+}
 const posizione = {
   una(ok: (p: any) => void, ko: (e: any) => void) {
     (async () => {
@@ -83,7 +115,7 @@ const posizione = {
   segui(ok: (p: any) => void, ko: (e: any) => void) {
     const id = ++nSeguiti;
     // la stessa posizione può arrivare due volte (primo piano e sottofondo): la seconda si scarta
-    ascolti.set(id, onPosition((p) => { if (p.timestamp <= ultimoTempo) return; ultimoTempo = p.timestamp; ok(daPos(p)); }));
+    ascolti.set(id, onPosition((p) => { if (p.timestamp <= ultimoTempo) return; const prima = ultimoTempo; ultimoTempo = p.timestamp; if (prima && p.timestamp - prima > 15000) dopoBuco = (M && M.nav && M.nav.track) ? M.nav.track.length : -1; ok(pulisci(p, prima)); if (dopoBuco >= 0 && M && M.nav && M.nav.track && M.nav.track.length > dopoBuco) { dopoBuco = -1; riempiBuco(); } }));
     startWatch().then((si) => { if (!si && ko) ko({ code: 1 }); }).catch((e) => ko && ko(e));
     return id;
   },

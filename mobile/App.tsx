@@ -20,6 +20,8 @@ import "./src/collega";
 import "./src/pericoli";
 import "./src/parchi";
 import "./src/obiettivoChat";
+import "./src/libera";
+import "./src/bloccoSchermo";
 import { PastigliaInCammino } from "./src/schermate/Vai";
 import { salutoDelGiorno } from "./src/schermate/Esplora";
 

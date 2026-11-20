@@ -1,6 +1,7 @@
 // In cammino: mappa dal vivo, prossima svolta, tempo, km fatti e mancanti, passi, avvisi per il cane, Pausa, SOS, Chiudi.
 // A tutto schermo, scuro, senza mascotte. La logica (GPS, fuori percorso, pausa acqua, meteo che cambia) è quella del motore.
 import { segnalaPericolo } from "../pericoli";
+import { permessoBlocco } from "../bloccoSchermo";
 import React, { useEffect, useState } from "react";
 import { Alert, Dimensions, Text, TextInput, View } from "react-native";
 import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
@@ -175,6 +176,7 @@ export function Vai({ attiva }: { attiva: boolean }) {
     // il motore aggiorna i suoi testi solo se "la pagina In cammino è aperta"
     el("s-vai").classList.add("on");
     startBackground().catch(() => {});
+    permessoBlocco();
     schermo(!!M.NS.wake);
     const t = setInterval(() => tic((x) => x + 1), 1000);
     return () => { clearInterval(t); el("s-vai").classList.remove("on"); schermo(false); };
@@ -184,15 +186,16 @@ export function Vai({ attiva }: { attiva: boolean }) {
   const n = M.nav;
   if (!n) return <View style={{ flex: 1, backgroundColor: C.ink, alignItems: "center", justifyContent: "center", padding: 24 }}><Testo colore={C.cream} centro>Nessuna passeggiata in corso.</Testo><Bottone testo="Torna indietro" style={{ marginTop: 16, alignSelf: "center" }} onPress={() => navi.indietro()} /></View>;
 
-  const o = n.o, d = M.dog(), tempo = M.navElapsed(), fatti = n.dist, lin = o.loop === false;
+  const o = n.o, d = M.dog(), tempo = M.navElapsed(), fatti = n.dist, lin = o.loop === false, libera = !!o.free;
   const mancano = lin ? (n.back ? Math.max(0, n.prog) : Math.max(0, n.total - n.prog) + n.retC) : Math.max(0, n.total - n.prog);
-  const arrivati = lin ? n.back && n.prog < 30 : n.prog > 0 && mancano < 30;
+  const arrivati = libera ? false : lin ? n.back && n.prog < 30 : n.prog > 0 && mancano < 30;
   const inMoto = fatti >= 150 && tempo >= 60e3, pk = inMoto ? tempo / 60000 / (fatti / 1000) : 0, pks = Math.round(pk * 60);
-  const fuori = n.off != null && n.off > 50 && !!n.pos && !(n.prog < 30);
-  const msg = pulito(el("nav-msg").dataset.h || ""), classe = String(el("nav-msg").className || "");
+  const fuori = !libera && n.off != null && n.off > 50 && !!n.pos && !(n.prog < 30);
+  const msg0 = pulito(el("nav-msg").dataset.h || ""), classe = String(el("nav-msg").className || "");
+  const msg = libera && /linea arancione|percorso/i.test(msg0) ? "Cammina dove vuoi: registro io il percorso." : msg0;
   const meteo = pulito(el("nav-wx").innerHTML || "");
   let svolta: any = null;
-  if (M.NS.turns && !arrivati && !(n.off > 50 && n.pos)) {
+  if (!libera && M.NS.turns && !arrivati && !(n.off > 50 && n.pos)) {
     svolta = n.back ? { km: 0, end: 1, text: "Ritorno alla partenza per la stessa strada" } : n.turns.find((x: any) => x.km > n.prog + 5) || { km: n.total, end: 1, text: o.loop ? "Arrivo: di nuovo alla partenza" : "Metà strada: ora si torna indietro alla partenza" };
   }
   const dist = svolta ? (n.back ? n.prog : svolta.km - n.prog) : 0;
@@ -204,8 +207,8 @@ export function Vai({ attiva }: { attiva: boolean }) {
     try { await fotoMetti(k, f.uri); (n.photos = n.photos || []).push({ k, p: n.pos ? M.r5(n.pos) : null, km: Math.round(n.dist) }); M.saveNav(); strati.avviso("Foto salvata: a fine giro la puoi mettere nella recensione"); } catch { strati.avviso("Non riesco a salvare la foto"); }
   };
   const cella = (a: string, b: string, lime?: boolean, piccolo?: string) => (
-    <View style={{ width: "33.33%", marginBottom: 10 }}>
-      <Text style={{ fontFamily: F.titolo, fontSize: 28, letterSpacing: -0.8, lineHeight: 30, color: lime ? C.lime : C.cream, fontVariant: ["tabular-nums"] }}>{a}{piccolo ? <Text style={{ fontSize: 14 }}> {piccolo}</Text> : null}</Text>
+    <View style={{ width: "33.33%", marginBottom: 6 }}>
+      <Text style={{ fontFamily: F.titolo, fontSize: 24, letterSpacing: -0.7, lineHeight: 26, color: lime ? C.lime : C.cream, fontVariant: ["tabular-nums"] }}>{a}{piccolo ? <Text style={{ fontSize: 14 }}> {piccolo}</Text> : null}</Text>
       <Text style={{ fontFamily: F.t700, fontSize: 12.5, color: C.onForest2 }}>{b}</Text>
     </View>
   );
@@ -232,6 +235,7 @@ export function Vai({ attiva }: { attiva: boolean }) {
             <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: n.gps === "ok" ? C.lime : C.yellow }} /><Text style={{ fontFamily: F.t800, fontSize: 12.5, color: C.cream }}>{gps}</Text>
           </View>
           <View style={{ gap: 8 }}>
+            <BottoneTondo icona="x" size={46} ombra onPress={() => navi.indietro()} accessibilityLabel="Riduci: torna all'app, la passeggiata continua" />
             <BottoneTondo icona="volume" size={46} ombra sfondo={M.NS.voice ? C.lime : C.cream} onPress={() => { M.NS.voice = !M.NS.voice; M.store.set("alldogs-navset", M.NS); if (M.NS.voice) M.say("Navigazione vocale attiva"); strati.avviso(M.NS.voice ? "Indicazioni a voce attive" : "Indicazioni a voce spente"); }} accessibilityLabel="Indicazioni a voce" accessibilityState={{ selected: !!M.NS.voice }} />
             <BottoneTondo icona="compass" size={46} ombra sfondo={M.navHeadUp ? C.lime : C.cream} onPress={() => el("nav-comp").click()} accessibilityLabel="Mappa che gira con te o con il nord in alto" />
             <BottoneTondo icona="nav" size={46} ombra onPress={() => el("m-loc").click()} accessibilityLabel="Torna sulla mia posizione" />
@@ -240,33 +244,37 @@ export function Vai({ attiva }: { attiva: boolean }) {
         </View>
       </View>
 
-      <View onLayout={(e) => setAltezza(e.nativeEvent.layout.height)} style={{ position: "absolute", left: 0, right: 0, bottom: 0, backgroundColor: C.forest, borderTopLeftRadius: 26, borderTopRightRadius: 26, paddingHorizontal: 16, paddingTop: 8, paddingBottom: ins.bottom + 16 }}>
-        <Tocco hitSlop={10} onPress={() => setAperta(!aperta)} accessibilityLabel={aperta ? "Mostra meno dati" : "Mostra tutti i dati"} style={{ alignItems: "center", paddingBottom: 8 }}><View style={{ width: 44, height: 5, borderRadius: 3, backgroundColor: C.forest2 }} /></Tocco>
-        <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
-          {cella(M.clock(tempo), "tempo", true)}
-          {cella((fatti / 1000).toFixed(2).replace(".", ","), "fatti", true, "km")}
-          {cella(arrivati ? "Arrivati" : M.km(mancano), arrivati ? "" : "mancano", false, arrivati ? undefined : "km")}
-          {aperta ? <>
-            {cella(inMoto && pk < 60 ? `${Math.floor(pks / 60)}:${String(pks % 60).padStart(2, "0")}` : "–", "al km")}
-            {cella((tempo > 0 ? fatti / 1000 / (tempo / 3600e3) : 0).toFixed(1).replace(".", ","), "km/h")}
-            {cella(Math.round(fatti / M.dogStep(d.weight)).toLocaleString("it-IT"), `passi di ${nome}`)}
-          </> : null}
-        </View>
-        {meteo ? <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 2 }}><Icona nome="sun" size={16} colore={C.yellow} /><Text numberOfLines={2} style={{ flex: 1, fontFamily: F.t700, fontSize: 13.5, color: C.onForest2 }}>{meteo}</Text></View> : null}
+      <View onLayout={(e) => setAltezza(e.nativeEvent.layout.height)} style={{ position: "absolute", left: 0, right: 0, bottom: 0, backgroundColor: C.forest, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: 14, paddingTop: 6, paddingBottom: ins.bottom + 10 }}>
+        {/* toccando i numeri (o la linguetta) si aprono/chiudono gli altri dati e gli strumenti */}
+        <Tocco hitSlop={0} onPress={() => setAperta(!aperta)} accessibilityLabel={aperta ? "Mostra meno dati" : "Mostra tutti i dati e gli strumenti"} accessibilityState={{ expanded: aperta }}>
+          <View style={{ alignItems: "center", paddingBottom: 6 }}><View style={{ width: 40, height: 5, borderRadius: 3, backgroundColor: C.forest2 }} /></View>
+          <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+            {cella(M.clock(tempo), "tempo", true)}
+            {cella((fatti / 1000).toFixed(2).replace(".", ","), "fatti", true, "km")}
+            {libera ? cella(Math.round(fatti / M.dogStep(d.weight)).toLocaleString("it-IT"), `passi di ${nome}`) : cella(arrivati ? "Arrivati" : M.km(mancano), arrivati ? "" : "mancano", false, arrivati ? undefined : "km")}
+            {aperta ? <>
+              {cella(inMoto && pk < 60 ? `${Math.floor(pks / 60)}:${String(pks % 60).padStart(2, "0")}` : "–", "al km")}
+              {cella((tempo > 0 ? fatti / 1000 / (tempo / 3600e3) : 0).toFixed(1).replace(".", ","), "km/h")}
+              {libera ? cella(n.track && n.track.length > 1 ? "Sì" : "…", "traccia GPS") : cella(Math.round(fatti / M.dogStep(d.weight)).toLocaleString("it-IT"), `passi di ${nome}`)}
+            </> : null}
+          </View>
+          {!aperta ? <Text style={{ fontFamily: F.t700, fontSize: 12, color: C.onForest2, textAlign: "center", marginTop: -2 }}>Tocca per altri dati e strumenti</Text> : null}
+        </Tocco>
+        {aperta && meteo ? <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 2 }}><Icona nome="sun" size={16} colore={C.yellow} /><Text numberOfLines={2} style={{ flex: 1, fontFamily: F.t700, fontSize: 13.5, color: C.onForest2 }}>{meteo}</Text></View> : null}
         {aperta && o.prof ? <View style={{ marginTop: 10 }}><Dislivello p={o.prof} len={o.len} segno={n.total ? n.prog / n.total : 0} scuro /></View> : null}
-        {aperta ? <Text style={{ fontFamily: F.t600, fontSize: 13, color: C.onForest2, marginTop: 8 }}>{pulito(el("nav-info").textContent || "")} · {o.name}</Text> : null}
-        <View style={{ flexDirection: "row", gap: 8, marginTop: 12 }}>
-          <Tocco onPress={() => M.sosSheet(n.pos)} accessibilityLabel="Emergenza" style={{ width: 52, height: 52, borderRadius: 16, backgroundColor: C.coral, alignItems: "center", justifyContent: "center" }}><Text style={{ fontFamily: F.t800, fontSize: 14, color: C.ink }}>SOS</Text></Tocco>
-          {tondo("gear", "Impostazioni di navigazione", foglioImpostazioni)}
-          {tondo("share", "Condividi la posizione in tempo reale", () => el("nav-share").click(), n.share ? { backgroundColor: C.copper } : null)}
-          {tondo("cam", "Scatta una foto del sentiero", foto)}
-          {tondo("alert", "Segnala un pericolo lungo il percorso", () => segnalaPericolo(n.pos || null))}
-          <View style={{ flex: 1 }} />
-          {tondo("x", "Riduci: torna all'app, la passeggiata continua", () => navi.indietro())}
-        </View>
-        <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
-          <Bottone testo={n.paused ? "Riprendi" : "Pausa"} icona={n.paused ? "play" : "pause"} tinta="fantasma" style={{ flex: 1, alignSelf: "auto", paddingHorizontal: 12 }} onPress={() => el("nav-pause").click()} />
-          <Bottone testo="Chiudi attività" icona="flag" tinta="lime" style={{ flex: 1.2, alignSelf: "auto", paddingHorizontal: 12 }} onPress={chiudiAttivita} />
+        {aperta ? <Text style={{ fontFamily: F.t600, fontSize: 13, color: C.onForest2, marginTop: 8 }}>{libera ? o.name : `${pulito(el("nav-info").textContent || "")} · ${o.name}`}</Text> : null}
+        {aperta ? (
+          <View style={{ flexDirection: "row", gap: 8, marginTop: 10 }}>
+            {tondo("gear", "Impostazioni di navigazione", foglioImpostazioni)}
+            {tondo("share", "Condividi la posizione in tempo reale", () => el("nav-share").click(), n.share ? { backgroundColor: C.copper } : null)}
+            {tondo("cam", "Scatta una foto del sentiero", foto)}
+            {tondo("alert", "Segnala un pericolo lungo il percorso", () => segnalaPericolo(n.pos || null))}
+          </View>
+        ) : null}
+        <View style={{ flexDirection: "row", gap: 8, marginTop: 10 }}>
+          <Tocco onPress={() => M.sosSheet(n.pos)} accessibilityLabel="Emergenza" style={{ width: 50, height: 50, borderRadius: 16, backgroundColor: C.coral, alignItems: "center", justifyContent: "center" }}><Text style={{ fontFamily: F.t800, fontSize: 14, color: C.ink }}>SOS</Text></Tocco>
+          <Bottone testo={n.paused ? "Riprendi" : "Pausa"} icona={n.paused ? "play" : "pause"} tinta="fantasma" style={{ flex: 1, alignSelf: "auto", paddingHorizontal: 10 }} onPress={() => el("nav-pause").click()} />
+          <Bottone testo="Fine" icona="flag" tinta="lime" style={{ flex: 1, alignSelf: "auto", paddingHorizontal: 10 }} onPress={chiudiAttivita} />
         </View>
       </View>
     </View>
